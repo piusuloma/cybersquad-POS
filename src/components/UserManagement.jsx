@@ -25,7 +25,6 @@ import {
 	MoreVertical,
 	CheckCircle,
 	XCircle,
-	UserCheck,
 	FileDown,
 	ChevronLeft,
 	ChevronRight,
@@ -56,6 +55,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { useApi } from "../hooks/useApi";
+import { exportRowsAsPdfReport } from "../lib/printReport";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -441,111 +441,8 @@ export function UserManagement() {
 		link.click();
 	};
 
-	// Export as PDF using print functionality
-	const exportAsPDF = (data, type) => {
-		if (!data.length) return;
-
-		const headers = Object.keys(data[0]);
-
-		// Create a new window for printing
-		const printWindow = window.open("", "_blank");
-
-		const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${type.charAt(0).toUpperCase() + type.slice(1)} Report</title>
-        <style>
-          @media print {
-            @page { margin: 1cm; }
-          }
-          body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            color: #333;
-          }
-          h1 { 
-            color: #333; 
-            margin-bottom: 10px;
-            font-size: 24px;
-          }
-          .meta { 
-            margin-bottom: 20px; 
-            color: #666;
-            font-size: 12px;
-          }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px;
-            page-break-inside: auto;
-          }
-          tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-          }
-          th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
-            font-size: 10px;
-          }
-          th { 
-            background-color: #4CAF50; 
-            color: white;
-            font-weight: bold;
-          }
-          tr:nth-child(even) { 
-            background-color: #f9f9f9; 
-          }
-          .no-print {
-            margin-top: 20px;
-          }
-          @media print {
-            .no-print {
-              display: none;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>${type.charAt(0).toUpperCase() + type.slice(1)} Report</h1>
-        <div class="meta">
-          <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
-          <p><strong>Total Records:</strong> ${data.length}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr>
-          </thead>
-          <tbody>
-            ${data
-							.map(
-								(row) => `
-              <tr>${headers.map((h) => `<td>${row[h] || "-"}</td>`).join("")}</tr>
-            `,
-							)
-							.join("")}
-          </tbody>
-        </table>
-        <div class="no-print" style="margin-top: 30px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
-          <p style="margin: 0;"><strong>Note:</strong> Use your browser's print function (Ctrl+P or Cmd+P) and select "Save as PDF" to download this report as a PDF file.</p>
-          <button onclick="window.print()" style="margin-top: 10px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Print / Save as PDF
-          </button>
-        </div>
-      </body>
-      </html>
-    `;
-
-		printWindow.document.write(htmlContent);
-		printWindow.document.close();
-
-		// Auto-trigger print dialog after a short delay
-		setTimeout(() => {
-			printWindow.print();
-		}, 250);
-	};
+	// Export as PDF using print functionality (shared template — src/lib/printReport.js)
+	const exportAsPDF = (data, type) => exportRowsAsPdfReport(data, type);
 
 	const handleViewTechnicianDetails = (technician) => {
 		setSelectedTechnician(technician);

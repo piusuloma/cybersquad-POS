@@ -21,9 +21,8 @@ import {
 	BarChart3,
 	Settings,
 	Bell,
-	ShieldCheck,
+	Megaphone,
 	LogOut,
-	Shield,
 	Wrench,
 	Clock,
 	Store,
@@ -72,7 +71,11 @@ const menuItems = [
 		icon: Store,
 		requiresSuperUser: true,
 	},
-	{ id: "notifications", label: "Notifications", icon: Bell },
+	// Labeled/iconed distinctly from the header bell (NotificationModal.jsx),
+	// which is the actual personal alert inbox — this page is the broadcast/
+	// compose tool (NotificationsCenter.jsx: "Send Notification" + "History"),
+	// a different concept that happened to share the same word and icon.
+	{ id: "notifications", label: "Messaging Center", icon: Megaphone },
 	{
 		id: "settings",
 		label: "Settings",

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { humanizeLabel as formatLabel } from "../lib/text";
 import {
   Dialog,
   DialogContent,
@@ -57,11 +58,6 @@ function toIsoDateTime(value) {
   }
 }
 
-function formatLabel(value) {
-  return String(value || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
   const { api } = useApi();

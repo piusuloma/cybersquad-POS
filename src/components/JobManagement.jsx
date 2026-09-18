@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "./ui/table";
 import {
+  Search,
   Filter,
   Download,
   MoreVertical,
@@ -48,6 +49,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useApi } from "../hooks/useApi";
+import { exportRowsAsPdfReport } from "../lib/printReport";
 import {
   PENDING_STATUSES,
   ACTIVE_STATUSES,
@@ -122,6 +124,11 @@ function PaginationBar({
 
 export function JobManagement({ initialFilter } = {}) {
   const { api } = useApi();
+  // Was declared and never wired to anything — no input rendered it, no
+  // fetch read it, so this page (unlike Sales/Payments/Payouts) had no
+  // free-text search at all. One search box, applied across all four tabs'
+  // fetches below, so "find this customer's job" works regardless of which
+  // tab it's actually sitting in.
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
@@ -243,6 +250,12 @@ export function JobManagement({ initialFilter } = {}) {
 
       let url = `/jobs/admin/bookings/?status=${baseStatuses}&page=${pendingPage}&page_size=${pendingPageSize}`;
 
+      // Optional: backend filters if it supports this param, ignores it otherwise
+      // (same defensive pattern as PaymentFinance.jsx's payments/payouts search).
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
+
       // Add service_type filter
       if (
         pendingFilters.service_type &&
@@ -299,6 +312,12 @@ export function JobManagement({ initialFilter } = {}) {
 
       let url = `/jobs/admin/bookings/?status=${baseStatuses}&page=${activePage}&page_size=${activePageSize}`;
 
+      // Optional: backend filters if it supports this param, ignores it otherwise
+      // (same defensive pattern as PaymentFinance.jsx's payments/payouts search).
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
+
       // Add service_type filter
       if (activeFilters.service_type && activeFilters.service_type !== "all") {
         url += `&service_type=${activeFilters.service_type}`;
@@ -351,6 +370,12 @@ export function JobManagement({ initialFilter } = {}) {
       }
 
       let url = `/jobs/admin/bookings/?status=${baseStatuses}&page=${completedPage}&page_size=${completedPageSize}`;
+
+      // Optional: backend filters if it supports this param, ignores it otherwise
+      // (same defensive pattern as PaymentFinance.jsx's payments/payouts search).
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
 
       // Add service_type filter
       if (
@@ -408,6 +433,12 @@ export function JobManagement({ initialFilter } = {}) {
 
       let url = `/jobs/admin/bookings/?status=${baseStatuses}&page=${cancelledPage}&page_size=${cancelledPageSize}`;
 
+      // Optional: backend filters if it supports this param, ignores it otherwise
+      // (same defensive pattern as PaymentFinance.jsx's payments/payouts search).
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
+
       // Add service_type filter
       if (
         cancelledFilters.service_type &&
@@ -452,19 +483,32 @@ export function JobManagement({ initialFilter } = {}) {
   // Fetch on mount and when pagination or filters change
   useEffect(() => {
     fetchPendingJobs();
-  }, [pendingPage, pendingPageSize, pendingFilters]);
+  }, [pendingPage, pendingPageSize, pendingFilters, searchQuery]);
 
   useEffect(() => {
     fetchActiveJobs();
-  }, [activePage, activePageSize, activeFilters]);
+  }, [activePage, activePageSize, activeFilters, searchQuery]);
 
   useEffect(() => {
     fetchCompletedJobs();
-  }, [completedPage, completedPageSize, completedFilters]);
+  }, [completedPage, completedPageSize, completedFilters, searchQuery]);
 
   useEffect(() => {
     fetchCancelledJobs();
-  }, [cancelledPage, cancelledPageSize, cancelledFilters]);
+  }, [cancelledPage, cancelledPageSize, cancelledFilters, searchQuery]);
+
+  // Resets every tab back to page 1 in the same update as the search text
+  // change (not a separate effect keyed on searchQuery) — that way each
+  // fetch effect above sees the new search term and page 1 together in one
+  // re-render, instead of firing once for the search change and again a
+  // moment later when the page reset lands.
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    setPendingPage(1);
+    setActivePage(1);
+    setCompletedPage(1);
+    setCancelledPage(1);
+  };
 
   // Jump to a tab and scope it to a given status filter — used both for a
   // filter handed in from the Dashboard's Repair Status cards (via the effect
@@ -650,111 +694,8 @@ export function JobManagement({ initialFilter } = {}) {
     link.click();
   };
 
-  // Export as PDF using print functionality
-  const exportAsPDF = (data, type) => {
-    if (!data.length) return;
-
-    const headers = Object.keys(data[0]);
-
-    // Create a new window for printing
-    const printWindow = window.open("", "_blank");
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())} Report</title>
-        <style>
-          @media print {
-            @page { margin: 1cm; }
-          }
-          body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            color: #333;
-          }
-          h1 { 
-            color: #333; 
-            margin-bottom: 10px;
-            font-size: 24px;
-          }
-          .meta { 
-            margin-bottom: 20px; 
-            color: #666;
-            font-size: 12px;
-          }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px;
-            page-break-inside: auto;
-          }
-          tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-          }
-          th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
-            font-size: 10px;
-          }
-          th { 
-            background-color: #4CAF50; 
-            color: white;
-            font-weight: bold;
-          }
-          tr:nth-child(even) { 
-            background-color: #f9f9f9; 
-          }
-          .no-print {
-            margin-top: 20px;
-          }
-          @media print {
-            .no-print {
-              display: none;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>${type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())} Report</h1>
-        <div class="meta">
-          <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
-          <p><strong>Total Records:</strong> ${data.length}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr>
-          </thead>
-          <tbody>
-            ${data
-              .map(
-                (row) => `
-              <tr>${headers.map((h) => `<td>${row[h] || "-"}</td>`).join("")}</tr>
-            `,
-              )
-              .join("")}
-          </tbody>
-        </table>
-        <div class="no-print" style="margin-top: 30px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
-          <p style="margin: 0;"><strong>Note:</strong> Use your browser's print function (Ctrl+P or Cmd+P) and select "Save as PDF" to download this report as a PDF file.</p>
-          <button onclick="window.print()" style="margin-top: 10px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Print / Save as PDF
-          </button>
-        </div>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-
-    // Auto-trigger print dialog after a short delay
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
-  };
+  // Export as PDF using print functionality (shared template — src/lib/printReport.js)
+  const exportAsPDF = (data, type) => exportRowsAsPdfReport(data, type);
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -907,11 +848,22 @@ export function JobManagement({ initialFilter } = {}) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1>Job Management</h1>
-        <p className="text-muted-foreground">
-          Oversee and manage all platform jobs
-        </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1>Job Management</h1>
+          <p className="text-muted-foreground">
+            Oversee and manage all platform jobs
+          </p>
+        </div>
+        <div className="relative md:w-[280px]">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by customer, job ID..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Merged with the old Pending/Active/Completed/Cancelled total cards —

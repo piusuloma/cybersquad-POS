@@ -178,11 +178,11 @@ export function FilterModal({ open, onClose, type, initialFilters, onApply }) {
         <style>{`
           .filter-scroll::-webkit-scrollbar { width: 4px; }
           .filter-scroll::-webkit-scrollbar-track { background: transparent; }
-          .filter-scroll::-webkit-scrollbar-thumb { background-color: hsl(var(--border)); border-radius: 9999px; }
+          .filter-scroll::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 9999px; }
         `}</style>
         <div
           className="filter-scroll space-y-4 py-2 overflow-y-auto max-h-[60vh] pr-1"
-          style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(var(--border)) transparent" }}
+          style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border) transparent" }}
         >
           {type === "sla" && (
             <>

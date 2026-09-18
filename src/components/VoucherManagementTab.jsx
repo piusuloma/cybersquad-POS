@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { VoucherFormModal } from "./VoucherFormModal";
 import { VoucherUsageModal } from "./VoucherUsageModal";
 import { formatAmount } from "../lib/currency";
+import { humanizeLabel as formatLabel } from "../lib/text";
 
 const PAYMENT_TYPE_OPTIONS = [
   "repair_fee",
@@ -35,13 +36,6 @@ const PAYMENT_TYPE_OPTIONS = [
   "deposit",
   "balance",
 ];
-
-function formatLabel(value) {
-  if (!value) return "-";
-  return String(value)
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 function formatVoucherDiscount(voucher) {
   if (!voucher) return "-";

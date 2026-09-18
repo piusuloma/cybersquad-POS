@@ -57,10 +57,12 @@ const FILTER_LABELS = {
 	all: "All time",
 };
 
+// Same design-system chart tokens as the bar/area charts above, so every
+// color on this page traces back to one palette instead of one-off hex.
 const JOB_STATUS_COLORS = {
-	active: "#8b5cf6",
-	completed: "#14b8a6",
-	cancelled: "#ef4444",
+	active: "var(--chart-1)",
+	completed: "var(--chart-4)",
+	cancelled: "var(--destructive)",
 };
 
 const formatDelta = (pct) => {
@@ -278,14 +280,19 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 	const statsCards = stats
 		? [
 				{
+					// Same three revenue channels as Payment & Finance's "Total
+					// Revenue (All-Time)" and the Reports tab's "Job Revenue" +
+					// "POS Revenue" pair (jobs, in-store POS, website) — this one
+					// is scoped to the selected time-range filter instead of
+					// all-time or a custom date range.
 					title: "Total Revenue",
 					value: periodSalesLoading
 						? formatCurrency(stats.stats.revenue)
 						: formatCurrency(stats.stats.revenue + (periodSalesRevenue ?? 0)),
 					change: formatDelta(stats.deltas.revenue_change_pct),
 					note: periodSalesIncludesWebsite
-						? "Repair + in-store + website sales"
-						: "Repair + in-store sales (this device only)",
+						? `Jobs + in-store + website — ${FILTER_LABELS[filter]?.toLowerCase() || "selected period"}`
+						: `Jobs + in-store (this device only) — website not synced yet — ${FILTER_LABELS[filter]?.toLowerCase() || "selected period"}`,
 					icon: NairaIcon,
 					color: "text-success",
 					bgColor: "bg-success/10",
@@ -335,7 +342,7 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 
 	return (
 		<div className="space-y-7">
-			<div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-secondary/30 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
+			<div className="flex flex-col gap-4 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/30 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
 				<div>
 					<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 						{todayLabel}
@@ -514,35 +521,32 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 							</CardHeader>
 							<CardContent>
 								<ResponsiveContainer width="100%" height={260}>
-									<BarChart data={jobVolumeData} barSize={28}>
+									<BarChart data={jobVolumeData} barSize={24} margin={{ left: -12 }}>
 										<defs>
 											<linearGradient id="jobVolumeGradient" x1="0" y1="0" x2="0" y2="1">
-												<stop offset="0%" stopColor="#8b5cf6" stopOpacity={1} />
-												<stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.55} />
+												<stop offset="0%" stopColor="var(--chart-1)" stopOpacity={1} />
+												<stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.6} />
 											</linearGradient>
 										</defs>
-										<CartesianGrid
-											vertical={false}
-											strokeDasharray="3 3"
-											stroke="hsl(var(--border))"
-										/>
+										<CartesianGrid vertical={false} stroke="var(--border)" />
 										<XAxis
 											dataKey="day"
-											stroke="hsl(var(--muted-foreground))"
+											tick={chartAxisTick}
 											tickLine={false}
 											axisLine={false}
 										/>
 										<YAxis
-											stroke="hsl(var(--muted-foreground))"
+											tick={chartAxisTick}
 											allowDecimals={false}
 											tickLine={false}
 											axisLine={false}
+											width={32}
 										/>
 										<Tooltip
-											cursor={{ fill: "hsl(var(--accent))", opacity: 0.4 }}
+											cursor={{ fill: "var(--accent)", opacity: 0.5 }}
 											contentStyle={chartTooltipStyle}
 										/>
-										<Bar dataKey="jobs" name="Jobs" fill="url(#jobVolumeGradient)" radius={[8, 8, 0, 0]} />
+										<Bar dataKey="jobs" name="Jobs" fill="url(#jobVolumeGradient)" radius={[6, 6, 0, 0]} maxBarSize={32} />
 									</BarChart>
 								</ResponsiveContainer>
 							</CardContent>
@@ -563,26 +567,23 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 									<AreaChart data={revenueData}>
 										<defs>
 											<linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-												<stop offset="0%" stopColor="#14b8a6" stopOpacity={0.45} />
-												<stop offset="100%" stopColor="#14b8a6" stopOpacity={0.02} />
+												<stop offset="0%" stopColor="var(--chart-4)" stopOpacity={0.4} />
+												<stop offset="100%" stopColor="var(--chart-4)" stopOpacity={0.02} />
 											</linearGradient>
 										</defs>
-										<CartesianGrid
-											vertical={false}
-											strokeDasharray="3 3"
-											stroke="hsl(var(--border))"
-										/>
+										<CartesianGrid vertical={false} stroke="var(--border)" />
 										<XAxis
 											dataKey="month"
-											stroke="hsl(var(--muted-foreground))"
+											tick={chartAxisTick}
 											tickLine={false}
 											axisLine={false}
 										/>
 										<YAxis
-											stroke="hsl(var(--muted-foreground))"
+											tick={chartAxisTick}
 											tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`}
 											tickLine={false}
 											axisLine={false}
+											width={44}
 										/>
 										<Tooltip
 											formatter={(v) => [formatCurrency(v), "Revenue"]}
@@ -592,7 +593,7 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 											type="monotone"
 											dataKey="revenue"
 											name="Revenue"
-											stroke="#14b8a6"
+											stroke="var(--chart-4)"
 											strokeWidth={2.5}
 											fill="url(#revenueGradient)"
 											activeDot={{ r: 5, strokeWidth: 2 }}
@@ -624,7 +625,7 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 												outerRadius={80}
 												paddingAngle={3}
 												dataKey="value"
-												stroke="hsl(var(--card))"
+												stroke="var(--card)"
 												strokeWidth={2}
 											>
 												{jobDistribution.map((entry, index) => (

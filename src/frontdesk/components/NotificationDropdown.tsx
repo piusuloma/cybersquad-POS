@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Bell, CheckCircle, AlertTriangle, Info, Key, Mail, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Bell, AlertTriangle, Info, Key, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useApi } from '@/hooks/useApi';
-import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
+import { useNotificationFeed } from '@/hooks/useNotificationFeed';
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
@@ -21,80 +19,26 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
-export function NotificationDropdown({ 
-  open, 
-  onOpenChange, 
-  onUnreadCountChange, 
-  unreadCount 
+export function NotificationDropdown({
+  open,
+  onOpenChange,
+  onUnreadCountChange,
+  unreadCount
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onUnreadCountChange: (v: number) => void;
   unreadCount: number;
 }) {
-  const { api } = useApi();
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [markingRead, setMarkingRead] = useState(false);
+  const { notifications, loading, markingRead, markAsRead, markAllAsRead, fetchUnreadCount } =
+    useNotificationFeed({ open, pageSize: 20, onUnreadCountChange });
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get(`/notifications/notifications/?page=1&page_size=20`);
-      const data = res?.data || {};
-      setNotifications(Array.isArray(data.result) ? data.result : []);
-    } catch (e) {
-      console.error('Error fetching notifications:', e);
-      toast.error('Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const res = await api.get('/notifications/notifications/unread_count/');
-      const count = res?.data?.result?.unread_count ?? res?.data?.data?.unread_count ?? 0;
-      onUnreadCountChange(count);
-    } catch (e) {
-      console.error('Error fetching unread count:', e);
-    }
-  };
-
-  const markAsRead = async (notificationId: number) => {
-    try {
-      await api.post(`/notifications/notifications/${notificationId}/mark_as_read/`);
-      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
-      fetchUnreadCount();
-    } catch (e) {
-      toast.error('Failed to mark notification as read');
-    }
-  };
-
-  const markAllAsRead = async () => {
-    setMarkingRead(true);
-    try {
-      await api.post('/notifications/notifications/mark_all_as_read/');
-      toast.success('All notifications marked as read');
-      fetchNotifications();
-      fetchUnreadCount();
-    } catch (e) {
-      toast.error('Failed to mark all notifications as read');
-    } finally {
-      setMarkingRead(false);
-    }
-  };
-
+  // Unlike the admin dialog, this dropdown's bell badge needs a count as soon
+  // as the header mounts, not just after the user opens it.
   useEffect(() => {
     fetchUnreadCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (open) {
-      fetchNotifications();
-      fetchUnreadCount();
-    }
-  }, [open]);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';

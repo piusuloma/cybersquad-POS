@@ -63,7 +63,6 @@ import { fetchWebsiteSalesSummary } from "../lib/websiteSales";
 import { formatAmount } from "../lib/currency";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
-const NAIRA_SYMBOL = "\u20A6";
 
 function PaginationBar({
   page,
@@ -290,31 +289,43 @@ export function PaymentFinance() {
   // UI tab control
   const [activeTab, setActiveTab] = useState("payments");
 
-  // POS sales (src/pos/lib/store.ts) live only in this browser's local
-  // storage — there's no backend sales endpoint yet, so unlike every other
-  // figure on this page, these numbers are device-local and can't be
-  // reconciled across admins/devices. Kept as its own labeled section below
-  // rather than folded into Total Revenue, which would silently make that
-  // backend-verified figure device-dependent too.
+  // Revenue on this page previously only counted jobs — but the business
+  // actually collects money through three channels: repair jobs (backend,
+  // real-time), in-store POS sales (this browser's local storage only, no
+  // backend endpoint yet), and website sales (Odoo eCommerce — endpoint not
+  // deployed yet, so fetchWebsiteSalesSummary always resolves null for now
+  // and every figure below shows that honestly instead of pretending it's
+  // zero). Total Revenue and Payments Today below fold in all three so the
+  // headline numbers on this page reflect where the business's money
+  // actually comes from, not just the jobs pipeline.
   const [posSalesSummary, setPosSalesSummary] = useState(null);
-  const [posSalesLoading, setPosSalesLoading] = useState(true);
   const [posWebsiteSalesToday, setPosWebsiteSalesToday] = useState(null);
+  const [posAllTimeRevenue, setPosAllTimeRevenue] = useState(0);
+  const [posWebsiteAllTime, setPosWebsiteAllTime] = useState(null);
 
+  // Feeds "Total Revenue (All-Time)" and "Payments Today" below.
   useEffect(() => {
     let mounted = true;
-    Promise.all([getSalesSummary("today"), fetchWebsiteSalesSummary(api, "today")]).then(
-      ([summary, website]) => {
-        if (!mounted) return;
-        setPosSalesSummary(summary);
-        setPosWebsiteSalesToday(website);
-        setPosSalesLoading(false);
-      },
-    );
+    Promise.all([
+      getSalesSummary("today"),
+      fetchWebsiteSalesSummary(api, "today"),
+      getSalesSummary("all"),
+      fetchWebsiteSalesSummary(api, "all"),
+    ]).then(([summary, website, allTimeSummary, websiteAllTime]) => {
+      if (!mounted) return;
+      setPosSalesSummary(summary);
+      setPosWebsiteSalesToday(website);
+      setPosAllTimeRevenue(allTimeSummary?.totalRevenue ?? 0);
+      setPosWebsiteAllTime(websiteAllTime);
+    });
     return () => {
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const websiteAvailable = posWebsiteAllTime !== null;
+  const revenueSourcesNote = websiteAvailable ? "Jobs + in-store + website" : "Jobs + in-store";
 
   useEffect(() => {
     if (!canApprovePayouts && activeTab === "payouts") {
@@ -476,19 +487,46 @@ export function PaymentFinance() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState(null);
 
+  // The Dashboard's "Total Revenue" and this page's used to disagree even at
+  // matching scopes, because each called a different backend endpoint for
+  // what both labeled "revenue": this page used
+  // /payouts/platform/dashboard-stats/'s revenue.all_time.total_gross, while
+  // the Dashboard uses /jobs/admin/dashboard/stats/?range=. Two independently
+  // computed aggregates for the same metric will drift — different status
+  // filters, different gross/net treatment, no guarantee they're even
+  // recomputed on the same cadence. The fix is a single source of truth: this
+  // page now calls the exact same endpoint (range=all, since this card is
+  // all-time) that the Dashboard already calls, so the jobs-revenue figure
+  // both pages show is the same query, not two guesses at the same number.
+  // /payouts/platform/dashboard-stats/ is kept for what only it has —
+  // payouts, commissions, escrow.
+  const [jobsRevenueAllTime, setJobsRevenueAllTime] = useState(0);
+
   const fetchDashboardStats = async () => {
     setStatsLoading(true);
     setStatsError(null);
 
+    // Independent try/catches (not a single Promise.all) so a failure in
+    // either call doesn't wipe out data the other one successfully returned.
     try {
-      const res = await api.get("/payouts/platform/dashboard-stats/", {
+      const payoutsStatsRes = await api.get("/payouts/platform/dashboard-stats/", {
         showLoader: false,
       });
-      setDashboardStats(res?.data?.result || null);
+      setDashboardStats(payoutsStatsRes?.data?.result || null);
     } catch (e) {
       setStatsError("Failed to load dashboard stats");
       console.error("Error fetching finance dashboard stats:", e);
       setDashboardStats(null);
+    }
+
+    try {
+      const jobsStatsRes = await api.get("/jobs/admin/dashboard/stats/?range=all", {
+        showLoader: false,
+      });
+      setJobsRevenueAllTime(jobsStatsRes?.data?.result?.stats?.revenue ?? 0);
+    } catch (e) {
+      console.error("Error fetching jobs revenue (all-time):", e);
+      setJobsRevenueAllTime(0);
     } finally {
       setStatsLoading(false);
     }
@@ -763,24 +801,10 @@ export function PaymentFinance() {
     }
 
     if (fileFormat === "pdf") {
-      // Simple PDF fallback: open printable page (browser “Save as PDF”)
-      const html = `
-        <html>
-          <head><title>${type}s export</title></head>
-          <body>
-            <h2>${type.toUpperCase()} EXPORT</h2>
-            <pre>${JSON.stringify(finalRows, null, 2)}</pre>
-          </body>
-        </html>
-      `;
-      const w = window.open("", "_blank");
-      if (w) {
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-        w.focus();
-        w.print();
-      }
+      // Same formatted-table template Job/Dispute/User Management use
+      // (src/lib/printReport.js) — this used to just dump raw JSON into a
+      // <pre> tag, a noticeably rougher export than every other admin page.
+      exportRowsAsPdfReport(finalRows, type);
       return;
     }
   };
@@ -835,14 +859,22 @@ export function PaymentFinance() {
   }, [payouts]);
 
   const financeSummary = useMemo(() => {
+    // Jobs-revenue component now always comes from jobsRevenueAllTime (see
+    // the comment by its declaration) regardless of whether the payouts
+    // endpoint below loaded — that's what makes it match the Dashboard's
+    // figure, and it shouldn't stop matching just because a payouts-specific
+    // call had trouble.
+    const totalRevenueAmount = jobsRevenueAllTime + posAllTimeRevenue + (posWebsiteAllTime?.revenue ?? 0);
+
     if (!dashboardStats) {
-      const fallbackTransactionCount = paymentsPagination.count || 0;
+      const posTodayAmount = (posSalesSummary?.totalRevenue ?? 0) + (posWebsiteSalesToday?.revenue ?? 0);
+      const posTodayCount = (posSalesSummary?.totalSalesCount ?? 0) + (posWebsiteSalesToday?.count ?? 0);
 
       return {
-        totalRevenueAmount: totalRevenue,
-        totalRevenueLabel: `From ${fallbackTransactionCount} transactions`,
-        paymentsTodayAmount,
-        paymentsTodayCount: paymentsToday,
+        totalRevenueAmount,
+        totalRevenueLabel: `${revenueSourcesNote}`,
+        paymentsTodayAmount: paymentsTodayAmount + posTodayAmount,
+        paymentsTodayCount: paymentsToday + posTodayCount,
         pendingPayoutAmount: pendingPayoutsAmount,
         pendingPayoutCount: pendingPayouts.length,
         commissionAmount: commissionEarned,
@@ -854,7 +886,6 @@ export function PaymentFinance() {
       };
     }
 
-    const revenueAllTime = dashboardStats?.revenue?.all_time || {};
     const paymentsCollectedToday =
       dashboardStats?.payments_collected?.today || {};
     const commissionsAllTime = dashboardStats?.commissions?.all_time || {};
@@ -874,14 +905,15 @@ export function PaymentFinance() {
       safeNumber(pendingApproval.total_amount) +
       safeNumber(approvedPending.total_amount) +
       safeNumber(processing.total_amount);
-    const totalRevenueCount = safeNumber(revenueAllTime.jobs_count);
     const effectiveRate = safeNumber(commissionsAllTime.effective_rate);
+    const posTodayAmount = (posSalesSummary?.totalRevenue ?? 0) + (posWebsiteSalesToday?.revenue ?? 0);
+    const posTodayCount = (posSalesSummary?.totalSalesCount ?? 0) + (posWebsiteSalesToday?.count ?? 0);
 
     return {
-      totalRevenueAmount: safeNumber(revenueAllTime.total_gross),
-      totalRevenueLabel: `Across ${totalRevenueCount.toLocaleString()} jobs`,
-      paymentsTodayAmount: safeNumber(paymentsCollectedToday.total),
-      paymentsTodayCount: safeNumber(paymentsCollectedToday.count),
+      totalRevenueAmount,
+      totalRevenueLabel: `${revenueSourcesNote}`,
+      paymentsTodayAmount: safeNumber(paymentsCollectedToday.total) + posTodayAmount,
+      paymentsTodayCount: safeNumber(paymentsCollectedToday.count) + posTodayCount,
       pendingPayoutAmount,
       pendingPayoutCount,
       commissionAmount: safeNumber(commissionsAllTime.total_commission),
@@ -894,12 +926,17 @@ export function PaymentFinance() {
   }, [
     commissionEarned,
     dashboardStats,
-    paymentsPagination.count,
     paymentsToday,
     paymentsTodayAmount,
     pendingPayouts.length,
     pendingPayoutsAmount,
     totalRevenue,
+    posSalesSummary,
+    posWebsiteSalesToday,
+    posAllTimeRevenue,
+    posWebsiteAllTime,
+    revenueSourcesNote,
+    jobsRevenueAllTime,
   ]);
 
   return (
@@ -916,7 +953,7 @@ export function PaymentFinance() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <p className="text-sm">
-                <span className="text-base">₦</span> Total Revenue
+                <span className="text-base">₦</span> Total Revenue (All-Time)
               </p>
             </CardTitle>
           </CardHeader>
@@ -924,6 +961,16 @@ export function PaymentFinance() {
             <div className="text-2xl font-semibold">
               ₦{financeSummary.totalRevenueAmount.toLocaleString()}
             </div>
+            {/* All three channels the business actually collects money
+                through: repair jobs, in-store POS (this device), and website
+                sales (once that backend endpoint exists). The jobs portion
+                is fetched from the exact same endpoint the Dashboard's
+                "Total Revenue" uses (see jobsRevenueAllTime above) instead of
+                a second, independently-computed figure — that's what makes
+                the two numbers agree instead of drifting. The Dashboard's is
+                the same three sources for a selected time range instead of
+                all-time; the Reports tab's is the same three for a custom
+                date range. */}
             <p className="text-xs text-muted-foreground mt-1">{financeSummary.totalRevenueLabel}</p>
           </CardContent>
         </Card>
@@ -977,52 +1024,6 @@ export function PaymentFinance() {
           </CardContent>
         </Card>
       </div>
-
-      {/* POS sales — device-local (see the note by posSalesSummary state
-          above), so kept separate from the backend-verified cards above
-          instead of being blended into Total Revenue. */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-success" />
-            POS Sales Today
-          </CardTitle>
-          <CardDescription>
-            This device only — not yet synced to a shared backend
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {posSalesLoading ? (
-            <div className="flex items-center py-2">
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <div className="text-2xl font-semibold">
-                  {NAIRA_SYMBOL}
-                  {(
-                    (posSalesSummary?.totalRevenue ?? 0) + (posWebsiteSalesToday?.revenue ?? 0)
-                  ).toLocaleString()}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Revenue</p>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">
-                  {posSalesSummary?.totalSalesCount ?? 0}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Sales</p>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold truncate">
-                  {posSalesSummary?.topSellingItems?.[0]?.name ?? "—"}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Top item</p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <Tabs
         value={activeTab}

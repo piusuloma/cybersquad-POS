@@ -135,6 +135,11 @@
 }
 
 @theme inline {
+  /* Loaded via @fontsource/plus-jakarta-sans in src/index.css (400/500/600/700).
+     Drives Tailwind's font-sans utility and, since nothing else sets a
+     font-family, the base body font for the whole app. */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
   /* Brand Purple Gradient */
   --color-purple-50: var(--purple-50);
   --color-purple-100: var(--purple-100);
@@ -224,8 +229,20 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
+}
+
+/* src/frontdesk/styles/frontdesk.css is a frozen, generated legacy
+   stylesheet (see comments elsewhere referencing it) that sets
+   .frontdesk-theme { font-family: Outfit... } as plain unlayered CSS with no
+   !important. Unlayered author CSS always beats anything inside @layer
+   base regardless of specificity or import order, so the body{@apply
+   font-sans} rule above never wins on any page that adds the
+   "frontdesk-theme" class to <body> (the login page and every frontdesk/POS
+   route). This is the only reliable way to override it. */
+.frontdesk-theme {
+  font-family: var(--font-sans) !important;
 }
 
 /**

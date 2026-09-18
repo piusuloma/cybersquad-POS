@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { Badge } from './ui/badge';
-import { Bell, CheckCircle, AlertTriangle, Info, DollarSign, Users, Briefcase, Mail, Key, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Bell, AlertTriangle, Info, Mail, Key, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useApi } from '../hooks/useApi';
-import { toast } from 'sonner';
 import { Separator } from './ui/separator';
+import { useNotificationFeed } from '../hooks/useNotificationFeed';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -75,102 +74,26 @@ const getNotificationIcon = (type) => {
 };
 
 export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
-  const { api } = useApi();
-  
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [markingRead, setMarkingRead] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [pagination, setPagination] = useState({
-    count: 0,
-    pages: 1,
-    page: 1,
-    page_size: 10,
-    next: null,
-    previous: null,
-  });
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get(
-        `/notifications/notifications/?page=${page}&page_size=${pageSize}`
-      );
-
-      const data = res?.data || {};
-      setNotifications(Array.isArray(data.result) ? data.result : []);
-      setPagination(data.pagination || {});
-    } catch (e) {
-      console.error('Error fetching notifications:', e);
-      toast.error('Failed to load notifications');
-      setNotifications([]);
-      setPagination({
-        count: 0,
-        pages: 1,
-        page,
-        page_size: pageSize,
-        next: null,
-        previous: null,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const res = await api.get('/notifications/notifications/unread_count/');
-      const count = res?.data?.result?.unread_count ?? res?.data?.data?.unread_count ?? 0;
+  const {
+    notifications,
+    loading,
+    markingRead,
+    pagination,
+    markAsRead,
+    markAllAsRead,
+  } = useNotificationFeed({
+    open,
+    page,
+    pageSize,
+    onUnreadCountChange: (count) => {
       setUnreadCount(count);
       onUnreadCountChange?.(count);
-    } catch (e) {
-      console.error('Error fetching unread count:', e);
-    }
-  };
-
-  const markAsRead = async (notificationId) => {
-    try {
-      await api.post(`/notifications/notifications/${notificationId}/mark_as_read/`);
-      
-      // Update local state
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
-      );
-      
-      // Refresh unread count
-      fetchUnreadCount();
-    } catch (e) {
-      console.error('Error marking notification as read:', e);
-      toast.error('Failed to mark notification as read');
-    }
-  };
-
-  const markAllAsRead = async () => {
-    setMarkingRead(true);
-    try {
-      await api.post('/notifications/notifications/mark_all_as_read/');
-      
-      toast.success('All notifications marked as read');
-      
-      // Refresh data
-      fetchNotifications();
-      fetchUnreadCount();
-    } catch (e) {
-      console.error('Error marking all as read:', e);
-      toast.error('Failed to mark all notifications as read');
-    } finally {
-      setMarkingRead(false);
-    }
-  };
-
-  useEffect(() => {
-    if (open) {
-      fetchNotifications();
-      fetchUnreadCount();
-    }
-  }, [open, page, pageSize]);
+    },
+  });
 
   // Reset pagination when modal opens
   useEffect(() => {
@@ -181,7 +104,7 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now - date;
@@ -193,7 +116,7 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
     if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    
+
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -216,8 +139,8 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
               )}
             </div>
             {unreadCount > 0 && (
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
                 disabled={markingRead}
@@ -245,7 +168,7 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
             ) : (
               notifications.map((notification) => {
                 const { icon: Icon, color, bgColor } = getNotificationIcon(notification.type);
-                
+
                 return (
                   <div
                     key={notification.id}

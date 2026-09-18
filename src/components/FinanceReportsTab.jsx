@@ -22,6 +22,8 @@ import {
 import { Badge } from "./ui/badge";
 import { Loader2, RefreshCw, Store, Users, Wallet } from "lucide-react";
 import { formatAmount } from "../lib/currency";
+import { humanizeLabel as formatLabel } from "../lib/text";
+import { getSales } from "../pos/lib/store";
 
 const PAYMENT_TYPE_OPTIONS = [
   { value: "all", label: "All Payment Types" },
@@ -70,12 +72,6 @@ function formatDate(value) {
   }
 }
 
-function formatLabel(value) {
-  if (!value) return "-";
-  return String(value)
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 function formatBreakdown(breakdown, currency) {
   const entries = Object.entries(breakdown || {});
@@ -110,6 +106,19 @@ export function FinanceReportsTab() {
   const [technicianReport, setTechnicianReport] = useState(null);
   const [storeReport, setStoreReport] = useState(null);
   const [voucherReport, setVoucherReport] = useState(null);
+
+  // These daily/technician/store/voucher reports all come from job-payment
+  // endpoints and are sliceable by dimensions (payment type, source channel,
+  // technician, store) that only apply to jobs — a POS retail sale has none
+  // of those, so it can't be folded into those breakdowns without misreporting
+  // them. Instead, in-store POS revenue for the same date range is fetched
+  // separately here and shown as its own card, so "how much did we actually
+  // make in this period" is answerable without corrupting the job-specific
+  // tables below. (Website sales have no backend endpoint yet — see
+  // src/lib/websiteSales.js — so only in-store is available today.)
+  const [posRangeRevenue, setPosRangeRevenue] = useState(0);
+  const [posRangeCount, setPosRangeCount] = useState(0);
+  const [posRangeLoading, setPosRangeLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -225,6 +234,32 @@ export function FinanceReportsTab() {
       mounted = false;
     };
   }, [api, appliedFilters]);
+
+  useEffect(() => {
+    let mounted = true;
+    setPosRangeLoading(true);
+
+    const from = appliedFilters.startDate ? new Date(appliedFilters.startDate).setHours(0, 0, 0, 0) : null;
+    // End-of-day so a sale made on the end date itself is included.
+    const to = appliedFilters.endDate
+      ? new Date(appliedFilters.endDate).setHours(23, 59, 59, 999)
+      : null;
+
+    getSales().then((sales) => {
+      if (!mounted) return;
+      const inRange = sales.filter((sale) => {
+        const created = new Date(sale.createdAt).getTime();
+        return (from === null || created >= from) && (to === null || created <= to);
+      });
+      setPosRangeRevenue(inRange.reduce((sum, sale) => sum + sale.total, 0));
+      setPosRangeCount(inRange.length);
+      setPosRangeLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [appliedFilters.startDate, appliedFilters.endDate]);
 
   const storeOptions = useMemo(
     () =>
@@ -460,21 +495,50 @@ export function FinanceReportsTab() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-green-600" />
-              Total Revenue
+              Job Revenue (Selected Period)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">
               {formatAmount(revenueSummary.total_revenue, revenueSummary.currency)}
             </div>
+            {/* Jobs only — this report's other breakdowns (payment type,
+                source channel, technician, store) are job-specific dimensions
+                a POS sale doesn't have, so POS revenue is a separate card
+                (below) instead of being blended in here. */}
             <p className="text-xs text-muted-foreground mt-1">
               {Number(revenueSummary.total_transactions || 0).toLocaleString()} transactions
             </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-success" />
+              POS Revenue (Selected Period)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {posRangeLoading ? (
+              <div className="flex items-center py-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-semibold">
+                  {formatAmount(posRangeRevenue, "NGN")}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {posRangeCount.toLocaleString()} in-store sales — this device only, website not synced yet
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
