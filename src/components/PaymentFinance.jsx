@@ -59,6 +59,8 @@ import { FilterModal } from "./FilterModal";
 import { ExportModal } from "./ExportModal";
 
 import { useApi } from "../hooks/useApi";
+import { getSalesSummary } from "../pos/lib/store";
+import { fetchWebsiteSalesSummary } from "../lib/websiteSales";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 const NAIRA_SYMBOL = "\u20A6";
@@ -293,6 +295,32 @@ export function PaymentFinance() {
 
   // UI tab control
   const [activeTab, setActiveTab] = useState("payments");
+
+  // POS sales (src/pos/lib/store.ts) live only in this browser's local
+  // storage — there's no backend sales endpoint yet, so unlike every other
+  // figure on this page, these numbers are device-local and can't be
+  // reconciled across admins/devices. Kept as its own labeled section below
+  // rather than folded into Total Revenue, which would silently make that
+  // backend-verified figure device-dependent too.
+  const [posSalesSummary, setPosSalesSummary] = useState(null);
+  const [posSalesLoading, setPosSalesLoading] = useState(true);
+  const [posWebsiteSalesToday, setPosWebsiteSalesToday] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([getSalesSummary("today"), fetchWebsiteSalesSummary(api, "today")]).then(
+      ([summary, website]) => {
+        if (!mounted) return;
+        setPosSalesSummary(summary);
+        setPosWebsiteSalesToday(website);
+        setPosSalesLoading(false);
+      },
+    );
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!canApprovePayouts && activeTab === "payouts") {
@@ -959,6 +987,52 @@ export function PaymentFinance() {
           </CardContent>
         </Card>
       </div>
+
+      {/* POS sales — device-local (see the note by posSalesSummary state
+          above), so kept separate from the backend-verified cards above
+          instead of being blended into Total Revenue. */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Wallet className="w-4 h-4 text-success" />
+            POS Sales Today
+          </CardTitle>
+          <CardDescription>
+            This device only — not yet synced to a shared backend
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {posSalesLoading ? (
+            <div className="flex items-center py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <div className="text-2xl font-semibold">
+                  {NAIRA_SYMBOL}
+                  {(
+                    (posSalesSummary?.totalRevenue ?? 0) + (posWebsiteSalesToday?.revenue ?? 0)
+                  ).toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Revenue</p>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">
+                  {posSalesSummary?.totalSalesCount ?? 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Sales</p>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold truncate">
+                  {posSalesSummary?.topSellingItems?.[0]?.name ?? "—"}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Top item</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Tabs
         value={activeTab}

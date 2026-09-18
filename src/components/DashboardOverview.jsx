@@ -23,12 +23,16 @@ import {
 	Store,
 	Globe,
 	ArrowRight,
+	Wallet,
+	Activity,
+	BarChart3,
+	PieChart as PieChartIcon,
 } from "lucide-react";
 import {
 	BarChart,
 	Bar,
-	LineChart,
-	Line,
+	AreaChart,
+	Area,
 	XAxis,
 	YAxis,
 	CartesianGrid,
@@ -90,9 +94,55 @@ const NairaIcon = ({ className }) => (
 	<span className={`${className} font-semibold leading-none`}>₦</span>
 );
 
+const chartTooltipStyle = {
+	backgroundColor: "hsl(var(--popover))",
+	border: "1px solid hsl(var(--border))",
+	borderRadius: "10px",
+	boxShadow: "0 4px 16px -4px rgba(0,0,0,0.12)",
+	padding: "8px 12px",
+};
+
+// Consistent "icon badge + title + description (+ optional link)" header used
+// across every section on this page, so they all read as one system.
+function SectionHeading({ icon: Icon, title, description, actionLabel, onAction }) {
+	return (
+		<div className="flex flex-wrap items-center justify-between gap-2">
+			<div className="flex items-center gap-2.5">
+				{Icon && (
+					<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+						<Icon className="h-4 w-4 text-primary" />
+					</span>
+				)}
+				<div>
+					<h2 className="text-base font-semibold text-foreground">{title}</h2>
+					{description && (
+						<p className="text-xs text-muted-foreground">{description}</p>
+					)}
+				</div>
+			</div>
+			{onAction && (
+				<button
+					type="button"
+					onClick={onAction}
+					className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+				>
+					{actionLabel}
+					<ArrowRight className="w-3.5 h-3.5" />
+				</button>
+			)}
+		</div>
+	);
+}
+
 export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 	const [filter, setFilter] = useState("7d");
 	const { api } = useApi();
+
+	const todayLabel = new Date().toLocaleDateString("en-US", {
+		weekday: "long",
+		month: "long",
+		day: "numeric",
+	});
 
 	// Dashboard Stats State
 	const [stats, setStats] = useState(null);
@@ -237,6 +287,11 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 			]
 		: [];
 
+	// Sales-only revenue for today (in-store + website, when available) — kept
+	// separate from the "Total Revenue" stat below, which mixes in repair jobs
+	// revenue for the selected time-range filter instead of just today.
+	const todaySalesRevenue = (salesSummary?.totalRevenue ?? 0) + (websiteSalesToday?.revenue ?? 0);
+
 	const jobVolumeData =
 		stats?.weekly_volume?.map((d) => ({
 			day: formatDay(d.day),
@@ -273,17 +328,19 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div className="flex items-center justify-between flex-wrap gap-3">
+		<div className="space-y-7">
+			<div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-secondary/30 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
 				<div>
-					<h1>Dashboard Overview</h1>
-					<p className="text-muted-foreground">
-						Welcome back! Here's what's happening today.
+					<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+						{todayLabel}
 					</p>
+					<h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+						Dashboard Overview
+					</h1>
 				</div>
 
 				<Select value={filter} onValueChange={setFilter}>
-					<SelectTrigger className="w-[200px]">
+					<SelectTrigger className="w-full sm:w-[200px]">
 						<SelectValue placeholder="Select Time Range" />
 					</SelectTrigger>
 					<SelectContent>
@@ -297,36 +354,42 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 				</Select>
 			</div>
 
-			{/* Sales Today — revenue itself lives in the Total Revenue card above, so this
-			    only surfaces what isn't shown anywhere else: count and top item. */}
+			{/* Sales */}
 			<div className="space-y-3">
-				<div className="flex items-center justify-between flex-wrap gap-2">
-					<h2 className="text-lg font-semibold">Sales Today</h2>
-					{onViewSales && (
-						<button
-							type="button"
-							onClick={onViewSales}
-							className="flex items-center gap-1 text-sm text-primary hover:underline"
-						>
-							View All Sales
-							<ArrowRight className="w-3.5 h-3.5" />
-						</button>
-					)}
-				</div>
+				<SectionHeading
+					icon={Wallet}
+					title="Sales"
+					description="This device, today"
+					actionLabel={onViewSales ? "View All" : undefined}
+					onAction={onViewSales ? () => onViewSales() : undefined}
+				/>
 
 				{salesLoading ? (
 					<div className="flex items-center justify-center py-4">
 						<Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
 					</div>
 				) : (
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+					<div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+						<StatCard
+							title="Total Revenue"
+							value={formatCurrency(todaySalesRevenue)}
+							note={websiteSalesToday ? "Includes website" : "In-store only"}
+							icon={Wallet}
+							color="text-success"
+							bgColor="bg-success/10"
+							onClick={
+								onViewSales ? () => onViewSales({ dateScope: "today" }) : undefined
+							}
+						/>
 						<StatCard
 							title="Sales Count"
 							value={salesSummary?.totalSalesCount ?? 0}
-							note="In-store, this device"
 							icon={ShoppingCart}
 							color="text-cyan-500"
 							bgColor="bg-cyan-50"
+							onClick={
+								onViewSales ? () => onViewSales({ dateScope: "today" }) : undefined
+							}
 						/>
 						<StatCard
 							title="Top Selling Item"
@@ -334,6 +397,17 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 							icon={TrendingUp}
 							color="text-purple-600"
 							bgColor="bg-purple-50"
+							onClick={
+								onViewSales
+									? () =>
+											onViewSales({
+												dateScope: "today",
+												...(salesSummary?.topSellingItems?.[0]?.name
+													? { search: salesSummary.topSellingItems[0].name }
+													: {}),
+											})
+									: undefined
+							}
 						/>
 						<StatCard
 							title="In-Store"
@@ -341,6 +415,11 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 							icon={Store}
 							color="text-blue-500"
 							bgColor="bg-blue-50"
+							onClick={
+								onViewSales
+									? () => onViewSales({ dateScope: "today", channel: "in_store" })
+									: undefined
+							}
 						/>
 						{websiteSalesToday ? (
 							<StatCard
@@ -350,6 +429,11 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 								icon={Globe}
 								color="text-indigo-500"
 								bgColor="bg-indigo-50"
+								onClick={
+									onViewSales
+										? () => onViewSales({ dateScope: "today", channel: "website" })
+										: undefined
+								}
 							/>
 						) : (
 							<StatCard
@@ -359,6 +443,11 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 								icon={Globe}
 								color="text-muted-foreground"
 								bgColor="bg-secondary"
+								onClick={
+									onViewSales
+										? () => onViewSales({ dateScope: "today", channel: "website" })
+										: undefined
+								}
 							/>
 						)}
 					</div>
@@ -366,7 +455,9 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 			</div>
 
 			{/* Repair Performance — repair status snapshot + SLA risk, separate from sales */}
-			<RepairPerformance onViewSLA={onViewSLA} onViewJobs={onViewJobs} />
+			<div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm sm:p-6">
+				<RepairPerformance onViewSLA={onViewSLA} onViewJobs={onViewJobs} />
+			</div>
 
 			{/* Stats Grid */}
 			{statsLoading ? (
@@ -379,6 +470,12 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 				</div>
 			) : (
 				<>
+					<SectionHeading
+						icon={BarChart3}
+						title="Performance & Trends"
+						description={FILTER_LABELS[filter] || "—"}
+					/>
+
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 						{statsCards.map((stat) => (
 							<StatCard key={stat.title} {...stat} />
@@ -387,9 +484,12 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 
 					{/* Charts Row */}
 					<div className="grid gap-4 md:grid-cols-2">
-						<Card>
+						<Card className="rounded-xl border-border/60 shadow-sm">
 							<CardHeader>
-								<CardTitle>{getJobVolumeTitle()}</CardTitle>
+								<CardTitle className="flex items-center gap-2 text-base">
+									<BarChart3 className="h-4 w-4 text-primary" />
+									{getJobVolumeTitle()}
+								</CardTitle>
 								<CardDescription>
 									Jobs created — {FILTER_LABELS[filter] || "—"}
 									{stats?.weekly_volume_change_pct !== undefined && (
@@ -407,71 +507,91 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<ResponsiveContainer width="100%" height={250}>
-									<BarChart data={jobVolumeData}>
+								<ResponsiveContainer width="100%" height={260}>
+									<BarChart data={jobVolumeData} barSize={28}>
+										<defs>
+											<linearGradient id="jobVolumeGradient" x1="0" y1="0" x2="0" y2="1">
+												<stop offset="0%" stopColor="#8b5cf6" stopOpacity={1} />
+												<stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.55} />
+											</linearGradient>
+										</defs>
 										<CartesianGrid
+											vertical={false}
 											strokeDasharray="3 3"
 											stroke="hsl(var(--border))"
 										/>
 										<XAxis
 											dataKey="day"
 											stroke="hsl(var(--muted-foreground))"
+											tickLine={false}
+											axisLine={false}
 										/>
 										<YAxis
 											stroke="hsl(var(--muted-foreground))"
 											allowDecimals={false}
+											tickLine={false}
+											axisLine={false}
 										/>
 										<Tooltip
-											contentStyle={{
-												backgroundColor: "hsl(var(--popover))",
-												border: "1px solid hsl(var(--border))",
-												borderRadius: "8px",
-											}}
+											cursor={{ fill: "hsl(var(--accent))", opacity: 0.4 }}
+											contentStyle={chartTooltipStyle}
 										/>
-										<Bar dataKey="jobs" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
+										<Bar dataKey="jobs" name="Jobs" fill="url(#jobVolumeGradient)" radius={[8, 8, 0, 0]} />
 									</BarChart>
 								</ResponsiveContainer>
 							</CardContent>
 						</Card>
 
-						<Card>
+						<Card className="rounded-xl border-border/60 shadow-sm">
 							<CardHeader>
-								<CardTitle>Revenue Trend</CardTitle>
+								<CardTitle className="flex items-center gap-2 text-base">
+									<TrendingUp className="h-4 w-4 text-primary" />
+									Revenue Trend
+								</CardTitle>
 								<CardDescription>
 									Monthly revenue — {FILTER_LABELS[filter] || "—"}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<ResponsiveContainer width="100%" height={250}>
-									<LineChart data={revenueData}>
+								<ResponsiveContainer width="100%" height={260}>
+									<AreaChart data={revenueData}>
+										<defs>
+											<linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+												<stop offset="0%" stopColor="#14b8a6" stopOpacity={0.45} />
+												<stop offset="100%" stopColor="#14b8a6" stopOpacity={0.02} />
+											</linearGradient>
+										</defs>
 										<CartesianGrid
+											vertical={false}
 											strokeDasharray="3 3"
 											stroke="hsl(var(--border))"
 										/>
 										<XAxis
 											dataKey="month"
 											stroke="hsl(var(--muted-foreground))"
+											tickLine={false}
+											axisLine={false}
 										/>
 										<YAxis
 											stroke="hsl(var(--muted-foreground))"
 											tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`}
+											tickLine={false}
+											axisLine={false}
 										/>
 										<Tooltip
 											formatter={(v) => [formatCurrency(v), "Revenue"]}
-											contentStyle={{
-												backgroundColor: "hsl(var(--popover))",
-												border: "1px solid hsl(var(--border))",
-												borderRadius: "8px",
-											}}
+											contentStyle={chartTooltipStyle}
 										/>
-										<Line
+										<Area
 											type="monotone"
 											dataKey="revenue"
+											name="Revenue"
 											stroke="#14b8a6"
-											strokeWidth={3}
-											dot={{ r: 4 }}
+											strokeWidth={2.5}
+											fill="url(#revenueGradient)"
+											activeDot={{ r: 5, strokeWidth: 2 }}
 										/>
-									</LineChart>
+									</AreaChart>
 								</ResponsiveContainer>
 							</CardContent>
 						</Card>
@@ -479,38 +599,51 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 
 					{/* Job Status & Activity */}
 					<div className="grid gap-4 md:grid-cols-3">
-						<Card>
+						<Card className="rounded-xl border-border/60 shadow-sm">
 							<CardHeader>
-								<CardTitle>Job Status Distribution</CardTitle>
+								<CardTitle className="flex items-center gap-2 text-base">
+									<PieChartIcon className="h-4 w-4 text-primary" />
+									Job Status Distribution
+								</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<ResponsiveContainer width="100%" height={200}>
-									<PieChart>
-										<Pie
-											data={jobDistribution}
-											cx="50%"
-											cy="50%"
-											innerRadius={50}
-											outerRadius={80}
-											paddingAngle={2}
-											dataKey="value"
-										>
-											{jobDistribution.map((entry, index) => (
-												<Cell key={`cell-${index}`} fill={entry.color} />
-											))}
-										</Pie>
-										<Tooltip />
-									</PieChart>
-								</ResponsiveContainer>
+								<div className="relative">
+									<ResponsiveContainer width="100%" height={200}>
+										<PieChart>
+											<Pie
+												data={jobDistribution}
+												cx="50%"
+												cy="50%"
+												innerRadius={55}
+												outerRadius={80}
+												paddingAngle={3}
+												dataKey="value"
+												stroke="hsl(var(--card))"
+												strokeWidth={2}
+											>
+												{jobDistribution.map((entry, index) => (
+													<Cell key={`cell-${index}`} fill={entry.color} />
+												))}
+											</Pie>
+											<Tooltip contentStyle={chartTooltipStyle} />
+										</PieChart>
+									</ResponsiveContainer>
+									<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+										<span className="text-xl font-semibold tracking-tight text-foreground">
+											{jobDistribution.reduce((sum, item) => sum + item.value, 0)}
+										</span>
+										<span className="text-[11px] text-muted-foreground">Total Jobs</span>
+									</div>
+								</div>
 								<div className="grid grid-cols-2 gap-2 mt-4">
 									{jobDistribution.map((item) => (
 										<div key={item.name} className="flex items-center gap-2">
 											<div
-												className="w-3 h-3 rounded-full"
+												className="w-2.5 h-2.5 rounded-full"
 												style={{ backgroundColor: item.color }}
 											/>
-											<span className="text-xs">
-												{item.name}: {item.value}
+											<span className="text-xs text-muted-foreground">
+												{item.name}: <span className="font-medium text-foreground">{item.value}</span>
 											</span>
 										</div>
 									))}
@@ -518,9 +651,12 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 							</CardContent>
 						</Card>
 
-						<Card className="md:col-span-2">
+						<Card className="rounded-xl border-border/60 shadow-sm md:col-span-2">
 							<CardHeader>
-								<CardTitle>Recent Activity</CardTitle>
+								<CardTitle className="flex items-center gap-2 text-base">
+									<Activity className="h-4 w-4 text-primary" />
+									Recent Activity
+								</CardTitle>
 								<CardDescription>Latest platform events</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -587,9 +723,12 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 			)}
 
 			{/* Alerts */}
-			<Card>
+			<Card className="rounded-xl border-border/60 shadow-sm">
 				<CardHeader>
-					<CardTitle>System Alerts</CardTitle>
+					<CardTitle className="flex items-center gap-2 text-base">
+						<AlertCircle className="h-4 w-4 text-primary" />
+						System Alerts
+					</CardTitle>
 					<CardDescription>
 						Important notifications requiring attention
 					</CardDescription>
@@ -612,17 +751,27 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 							{alerts.map((alert) => (
 								<div
 									key={alert.id}
-									className="flex items-center gap-3 p-3 border rounded-lg"
+									className="flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:bg-secondary/40"
 								>
-									<AlertCircle
-										className={`w-5 h-5 ${
+									<span
+										className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
 											alert.priority === "HIGH"
-												? "text-error"
+												? "bg-error/10"
 												: alert.priority === "MEDIUM"
-													? "text-warning"
-													: "text-purple-600"
+													? "bg-warning/10"
+													: "bg-purple-50"
 										}`}
-									/>
+									>
+										<AlertCircle
+											className={`w-4 h-4 ${
+												alert.priority === "HIGH"
+													? "text-error"
+													: alert.priority === "MEDIUM"
+														? "text-warning"
+														: "text-purple-600"
+											}`}
+										/>
+									</span>
 									<div className="flex-1">
 										<h4 className="text-sm font-medium">{alert.title}</h4>
 										<p className="text-xs text-muted-foreground">

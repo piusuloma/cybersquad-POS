@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
   Card,
@@ -30,6 +30,7 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  Layers,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ import {
 } from "./ui/dropdown-menu";
 import { JobDetailsModal } from "./JobDetailsModal";
 import { FilterModal } from "./FilterModal";
+import { RepairStatusCards } from "./RepairStatusCards";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   Select,
@@ -50,6 +52,12 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useApi } from "../hooks/useApi";
+import {
+  PENDING_STATUSES,
+  ACTIVE_STATUSES,
+  COMPLETED_STATUSES,
+  CANCELLED_STATUSES,
+} from "../lib/jobStatusGroups";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -116,13 +124,42 @@ function PaginationBar({
   );
 }
 
-export function JobManagement() {
+export function JobManagement({ initialFilter } = {}) {
   const { api } = useApi();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [showFilterPopover, setShowFilterPopover] = useState(false);
+  // Which tab is showing — controlled so a Dashboard card click can jump
+  // straight to the right one (see the initialFilter effect below).
+  const [activeTab, setActiveTab] = useState(initialFilter?.tab || "pending");
+
+  // Stable reference — passed to RepairStatusCards' extraBuckets, which
+  // re-fetches whenever this array changes identity.
+  const repairStatusExtraBuckets = useMemo(
+    () => [
+      {
+        key: "active_total",
+        label: "Active Jobs (All)",
+        icon: Layers,
+        color: "text-cyan-600",
+        bgColor: "bg-cyan-50",
+        status: ACTIVE_STATUSES.join(","),
+        tab: "active",
+      },
+      {
+        key: "cancelled",
+        label: "Cancelled",
+        icon: XCircle,
+        color: "text-error",
+        bgColor: "bg-error/10",
+        status: CANCELLED_STATUSES.join(","),
+        tab: "cancelled",
+      },
+    ],
+    [],
+  );
 
   // Filter states for each tab
   const [pendingFilters, setPendingFilters] = useState({});
@@ -201,7 +238,7 @@ export function JobManagement() {
     setPendingError(null);
 
     try {
-      let baseStatuses = "pending,offers_sent,offer_confirmed,registered,awaiting_diagnosis_fee,awaiting_assignment,awaiting_reassignment";
+      let baseStatuses = PENDING_STATUSES.join(",");
 
       // Apply status filter if not "all"
       if (pendingFilters.status && pendingFilters.status !== "all") {
@@ -257,26 +294,7 @@ export function JobManagement() {
     setActiveError(null);
 
     try {
-      let baseStatuses = [
-        "awaiting_shipping_fee",
-        "ready_to_schedule",
-        "pickup_scheduled",
-        "picked_up",
-        "diagnosing",
-        "quote_sent",
-        "quote_accepted",
-        "awaiting_service_fee",
-        "service_fee_paid",
-        "repair_in_progress",
-        "repaired",
-        "awaiting_payment",
-        "payment_confirmed",
-        "repeat_case_validation_pending",
-        "warranty_validation_pending",
-        "warranty_validated",
-        "submitted_for_qc_review",
-        "qc_passed",
-      ].join(",");
+      let baseStatuses = ACTIVE_STATUSES.join(",");
 
       // Apply status filter if not "all"
       if (activeFilters.status && activeFilters.status !== "all") {
@@ -329,7 +347,7 @@ export function JobManagement() {
     setCompletedError(null);
 
     try {
-      let baseStatuses = "delivered,ready_for_collection,closed";
+      let baseStatuses = COMPLETED_STATUSES.join(",");
 
       // Apply status filter if not "all"
       if (completedFilters.status && completedFilters.status !== "all") {
@@ -385,7 +403,7 @@ export function JobManagement() {
     setCancelledError(null);
 
     try {
-      let baseStatuses = "cancelled,quote_rejected";
+      let baseStatuses = CANCELLED_STATUSES.join(",");
 
       // Apply status filter if not "all"
       if (cancelledFilters.status && cancelledFilters.status !== "all") {
@@ -451,6 +469,37 @@ export function JobManagement() {
   useEffect(() => {
     fetchCancelledJobs();
   }, [cancelledPage, cancelledPageSize, cancelledFilters]);
+
+  // Jump to a tab and scope it to a given status filter — used both for a
+  // filter handed in from the Dashboard's Repair Status cards (via the effect
+  // below) and for the same cards rendered directly on this page.
+  const applyStatusFilter = ({ tab, status }) => {
+    if (!tab) return;
+
+    setActiveTab(tab);
+
+    if (tab === "pending") {
+      setPendingFilters((prev) => ({ ...prev, status: status || "all" }));
+      setPendingPage(1);
+    } else if (tab === "active") {
+      setActiveFilters((prev) => ({ ...prev, status: status || "all" }));
+      setActivePage(1);
+    } else if (tab === "completed") {
+      setCompletedFilters((prev) => ({ ...prev, status: status || "all" }));
+      setCompletedPage(1);
+    } else if (tab === "cancelled") {
+      setCancelledFilters((prev) => ({ ...prev, status: status || "all" }));
+      setCancelledPage(1);
+    }
+  };
+
+  // Apply a filter handed in from the Dashboard's Repair Status cards. Fires
+  // again whenever a new object is passed (each card click creates a fresh one).
+  useEffect(() => {
+    if (!initialFilter?.tab) return;
+    applyStatusFilter(initialFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFilter]);
 
   const handleViewDetails = (job) => {
     setSelectedJob(job);
@@ -869,56 +918,22 @@ export function JobManagement() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Pending Offers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">
-              {pendingPagination.count ?? 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Awaiting acceptance
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Active Jobs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{activePagination.count ?? 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Currently ongoing
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Completed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{completedPagination.count ?? 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Successfully finished
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Cancelled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{cancelledPagination.count ?? 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Rejected or cancelled
-            </p>
-          </CardContent>
-        </Card>
+      {/* Merged with the old Pending/Active/Completed/Cancelled total cards —
+          same tab totals, plus the same granular breakdown the Dashboard
+          shows, in one row instead of two. "Active Jobs (All)" and
+          "Cancelled" are fetched independently of the active tab filter, so
+          they always show the true tab total even after drilling into a
+          narrower status via one of the other cards. */}
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold">Repair Status</h2>
+        <RepairStatusCards
+          onSelect={applyStatusFilter}
+          gridClassName="grid-cols-2 md:grid-cols-4 xl:grid-cols-8"
+          extraBuckets={repairStatusExtraBuckets}
+        />
       </div>
 
-      <Tabs defaultValue="pending" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="pending">Pending Offers</TabsTrigger>
           <TabsTrigger value="active">Active Jobs</TabsTrigger>

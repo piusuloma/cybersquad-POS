@@ -91,6 +91,10 @@ export function DashboardLayout({ onLogout }) {
 	const [showNotifications, setShowNotifications] = useState(false);
 	const [isSuperUser, setIsSuperUser] = useState(false);
 	const [userRole, setUserRole] = useState(null);
+	// Filters carried from a Dashboard card click into Job Management / Sales,
+	// so the destination page opens already scoped to what was clicked.
+	const [jobsInitialFilter, setJobsInitialFilter] = useState(null);
+	const [salesInitialFilter, setSalesInitialFilter] = useState(null);
 
 	// Fetch user role and privileges on mount
 	useEffect(() => {
@@ -146,15 +150,21 @@ export function DashboardLayout({ onLogout }) {
 			case "dashboard":
 				return (
 					<DashboardOverview
-						onViewSales={() => setActiveView("sales")}
+						onViewSales={(filter) => {
+							setSalesInitialFilter(filter ?? null);
+							setActiveView("sales");
+						}}
 						onViewSLA={() => setActiveView("sla")}
-						onViewJobs={() => setActiveView("jobs")}
+						onViewJobs={(filter) => {
+							setJobsInitialFilter(filter ?? null);
+							setActiveView("jobs");
+						}}
 					/>
 				);
 			case "users":
 				return <UserManagement />;
 			case "jobs":
-				return <JobManagement />;
+				return <JobManagement initialFilter={jobsInitialFilter} />;
 			case "payments":
 				return <PaymentFinance />;
 			case "disputes":
@@ -164,7 +174,7 @@ export function DashboardLayout({ onLogout }) {
 			case "services":
 				return <ServiceManagement />;
 			case "sales":
-				return <SalesRecords />;
+				return <SalesRecords initialFilter={salesInitialFilter} />;
 			case "tracking":
 				return <LiveTracking />;
 			case "admin":

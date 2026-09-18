@@ -22,6 +22,13 @@ export interface Sale {
   cashTendered?: number;
   changeDue?: number;
   createdAt: string;
+  // Outbox flag for the eventual backend sales endpoint (see the module
+  // comment above). Every sale is created unsynced; once a real endpoint
+  // exists, a sync routine can find exactly the records it hasn't posted yet
+  // via getUnsyncedSales() and flip them with markSalesSynced() on success —
+  // so nothing recorded today has to be re-entered or gets silently skipped
+  // when that wiring lands. Until then this is inert: nothing reads it.
+  synced?: boolean;
 }
 
 export interface HeldSale {
@@ -102,11 +109,29 @@ export async function createSale(
     id: generateId(),
     saleNumber: generateSaleNumber(sales),
     createdAt: new Date().toISOString(),
+    synced: false,
   };
 
   sales.push(sale);
   await writeToStorage(SALES_KEY, sales);
   return sale;
+}
+
+// Sales recorded before a real backend endpoint exists are treated as
+// unsynced by default (`synced` may be absent on older records — `!== true`
+// covers both). Once such an endpoint exists, a sync routine posts exactly
+// these, then calls markSalesSynced() with the ids that succeeded.
+export async function getUnsyncedSales(): Promise<Sale[]> {
+  const sales = await getSales();
+  return sales.filter((sale) => sale.synced !== true);
+}
+
+export async function markSalesSynced(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const idSet = new Set(ids);
+  const sales = await getSales();
+  const updated = sales.map((sale) => (idSet.has(sale.id) ? { ...sale, synced: true } : sale));
+  await writeToStorage(SALES_KEY, updated);
 }
 
 // ===== Held sales (park a cart, resume it later) =====
@@ -223,7 +248,10 @@ const RANGE_DAYS: Record<Exclude<SalesSummaryRange, "today" | "all">, number> = 
   "90d": 90,
 };
 
-function isWithinRange(createdAt: string, range: SalesSummaryRange) {
+// Exported so the Sales Records page (src/components/SalesRecords.jsx) can
+// filter by the same broad range set as the dashboard, instead of keeping a
+// second, narrower copy of this logic.
+export function isWithinRange(createdAt: string, range: SalesSummaryRange) {
   if (range === "all") return true;
 
   const created = new Date(createdAt).getTime();

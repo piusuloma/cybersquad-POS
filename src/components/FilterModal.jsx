@@ -126,11 +126,22 @@ export function FilterModal({ open, onClose, type, initialFilters, onApply }) {
         { value: "quote_accepted", label: "Quote Accepted" },
         { value: "awaiting_service_fee", label: "Awaiting Service Fee" },
         { value: "service_fee_paid", label: "Service Fee Paid" },
+        { value: "awaiting_parts_release", label: "Awaiting Parts" },
+        { value: "ready_for_repair", label: "Ready for Repair" },
+        { value: "repairing", label: "Repairing" },
         { value: "repair_in_progress", label: "Repair in Progress" },
         { value: "repaired", label: "Repaired" },
+        { value: "submitted_for_qc_review", label: "Submitted for QC Review" },
+        { value: "quality_check", label: "Quality Check" },
+        { value: "qc_passed", label: "QC Passed" },
       ];
     } else if (tabType === "completed") {
-      return [{ value: "delivered", label: "Delivered" }];
+      return [
+        { value: "delivered", label: "Delivered" },
+        { value: "ready_for_collection", label: "Ready for Collection" },
+        { value: "ready_for_handover", label: "Ready for Handover" },
+        { value: "closed", label: "Closed" },
+      ];
     } else if (tabType === "cancelled") {
       return [
         { value: "cancelled", label: "Cancelled" },

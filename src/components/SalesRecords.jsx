@@ -4,18 +4,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { formatCurrency } from "../frontdesk/lib/invoice";
 import { PAYMENT_MODE_LABELS } from "../frontdesk/lib/store";
-import { getSales } from "../pos/lib/store";
+import { getSales, isWithinRange } from "../pos/lib/store";
 import { SaleRecordDetailModal } from "./SaleRecordDetailModal";
 
 const PAGE_SIZE = 15;
 
-export function SalesRecords() {
+const CHANNEL_OPTIONS = [
+  { value: "all", label: "All Channels" },
+  { value: "in_store", label: "In-Store" },
+  { value: "website", label: "Website" },
+];
+
+// Same range set as the dashboard's own time filter, so "not broad enough"
+// isn't a recurring complaint — this page can reach any period that filter can.
+const DATE_OPTIONS = [
+  { value: "all", label: "All Dates" },
+  { value: "today", label: "Today" },
+  { value: "7d", label: "Last 7 Days" },
+  { value: "30d", label: "Last 30 Days" },
+  { value: "90d", label: "Last 90 Days" },
+];
+
+// `initialFilter` arrives from the Dashboard's Sales cards — e.g.
+// { dateScope: "today", channel: "in_store" } or { dateScope: "today", search: "<item name>" } —
+// so this page opens already scoped to whatever card was clicked.
+export function SalesRecords({ initialFilter } = {}) {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialFilter?.search || "");
+  const [channel, setChannel] = useState(initialFilter?.channel || "all");
+  const [dateScope, setDateScope] = useState(initialFilter?.dateScope || "all");
   const [page, setPage] = useState(1);
   const [selectedSale, setSelectedSale] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -34,19 +62,32 @@ export function SalesRecords() {
     };
   }, []);
 
+  // Re-apply whenever a new filter object arrives from the dashboard (each
+  // card click passes a freshly created object, so this fires every time).
+  useEffect(() => {
+    if (!initialFilter) return;
+    setSearch(initialFilter.search || "");
+    setChannel(initialFilter.channel || "all");
+    setDateScope(initialFilter.dateScope || "all");
+    setPage(1);
+  }, [initialFilter]);
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     const sorted = [...sales].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-    if (!query) return sorted;
-    return sorted.filter(
-      (sale) =>
+    return sorted.filter((sale) => {
+      if (!isWithinRange(sale.createdAt, dateScope)) return false;
+      if (channel !== "all" && sale.channel !== channel) return false;
+      if (!query) return true;
+      return (
         sale.saleNumber.toLowerCase().includes(query) ||
         sale.cashierName.toLowerCase().includes(query) ||
         sale.lines.some((line) => line.name.toLowerCase().includes(query))
-    );
-  }, [sales, search]);
+      );
+    });
+  }, [sales, search, channel, dateScope]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -60,9 +101,7 @@ export function SalesRecords() {
     <div className="space-y-6">
       <div>
         <h1>Sales</h1>
-        <p className="text-muted-foreground">
-          Every sale recorded on this device's POS terminal — not yet synced to a shared backend.
-        </p>
+        <p className="text-muted-foreground">This device — not yet synced to a shared backend.</p>
       </div>
 
       <Card>
@@ -70,20 +109,64 @@ export function SalesRecords() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle>Sale Records</CardTitle>
-              <CardDescription>{filtered.length} sale(s)</CardDescription>
+              <CardDescription>
+                {filtered.length} sale(s)
+                {dateScope !== "all" ? ` · ${DATE_OPTIONS.find((o) => o.value === dateScope)?.label}` : ""}
+                {channel !== "all" ? ` · ${CHANNEL_OPTIONS.find((o) => o.value === channel)?.label}` : ""}
+              </CardDescription>
             </div>
 
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by sale #, cashier, or item..."
-                className="pl-8 w-[280px]"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={dateScope}
+                onValueChange={(v) => {
+                  setDateScope(v);
                   setPage(1);
                 }}
-              />
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DATE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={channel}
+                onValueChange={(v) => {
+                  setChannel(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CHANNEL_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by sale #, cashier, or item..."
+                  className="pl-8 w-[280px]"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
