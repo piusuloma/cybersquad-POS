@@ -20,7 +20,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # editor specific
-.vscode/
 .idea/
 
 # macOS specific
@@ -28,7 +27,5 @@ yarn-error.log*
 config.bat
 
 
-.env
-.env.local
 node_modules/
 dist/
