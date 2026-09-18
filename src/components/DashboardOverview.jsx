@@ -45,6 +45,7 @@ import {
 import { useApi } from "../hooks/useApi";
 import { getSalesSummary } from "../pos/lib/store";
 import { fetchWebsiteSalesSummary } from "../lib/websiteSales";
+import { formatCurrency } from "../lib/currency";
 import { RepairPerformance } from "./RepairPerformance";
 
 const FILTER_LABELS = {
@@ -61,9 +62,6 @@ const JOB_STATUS_COLORS = {
 	completed: "#14b8a6",
 	cancelled: "#ef4444",
 };
-
-const formatCurrency = (val) =>
-	`₦${Number(val).toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
 
 const formatDelta = (pct) => {
 	if (pct === null || pct === undefined) return null;

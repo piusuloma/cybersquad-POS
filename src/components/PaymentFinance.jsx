@@ -61,6 +61,7 @@ import { ExportModal } from "./ExportModal";
 import { useApi } from "../hooks/useApi";
 import { getSalesSummary } from "../pos/lib/store";
 import { fetchWebsiteSalesSummary } from "../lib/websiteSales";
+import { formatAmount } from "../lib/currency";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 const NAIRA_SYMBOL = "\u20A6";
@@ -156,12 +157,6 @@ function formatDate(dateString) {
   } catch {
     return "-";
   }
-}
-
-function formatAmount(amount, currency = "NGN") {
-  if (amount === null || amount === undefined || amount === "") return "-";
-  const symbol = currency === "NGN" ? "₦" : currency;
-  return `${symbol}${safeNumber(amount).toLocaleString()}`;
 }
 
 function formatType(type) {
@@ -928,11 +923,9 @@ export function PaymentFinance() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">
-              ₦{totalRevenue.toLocaleString()}
+              ₦{financeSummary.totalRevenueAmount.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              From {paymentsPagination.count} transactions
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{financeSummary.totalRevenueLabel}</p>
           </CardContent>
         </Card>
 
@@ -945,10 +938,10 @@ export function PaymentFinance() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">
-              ₦{paymentsTodayAmount.toLocaleString()}
+              ₦{financeSummary.paymentsTodayAmount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {paymentsToday} transactions
+              {financeSummary.paymentsTodayCount} transactions
             </p>
           </CardContent>
         </Card>
@@ -962,10 +955,10 @@ export function PaymentFinance() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">
-              ₦{pendingPayoutsAmount.toLocaleString()}
+              ₦{financeSummary.pendingPayoutAmount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {pendingPayouts.length} payouts
+              {financeSummary.pendingPayoutCount} payouts
             </p>
           </CardContent>
         </Card>
@@ -979,11 +972,9 @@ export function PaymentFinance() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">
-              ₦{commissionEarned.toLocaleString()}
+              ₦{financeSummary.commissionAmount.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              From payouts (page)
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{financeSummary.commissionLabel}</p>
           </CardContent>
         </Card>
       </div>

@@ -24,6 +24,7 @@ import { Loader2, Pencil, Plus, Search, TicketPercent, Trash2 } from "lucide-rea
 import { toast } from "sonner";
 import { VoucherFormModal } from "./VoucherFormModal";
 import { VoucherUsageModal } from "./VoucherUsageModal";
+import { formatAmount } from "../lib/currency";
 
 const PAYMENT_TYPE_OPTIONS = [
   "repair_fee",
@@ -34,12 +35,6 @@ const PAYMENT_TYPE_OPTIONS = [
   "deposit",
   "balance",
 ];
-
-function formatAmount(amount, currency = "NGN") {
-  const value = Number(amount || 0);
-  const symbol = currency === "NGN" ? "₦" : `${currency} `;
-  return `${symbol}${value.toLocaleString()}`;
-}
 
 function formatLabel(value) {
   if (!value) return "-";

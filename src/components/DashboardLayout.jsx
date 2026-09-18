@@ -37,10 +37,8 @@ import { JobManagement } from "./JobManagement";
 import { PaymentFinance } from "./PaymentFinance";
 import { DisputeManagement } from "./DisputeManagement";
 import { SLAManagement } from "./SLAManagement";
-import { ReportsAnalytics } from "./ReportsAnalytics";
 import { ServiceManagement } from "./ServiceManagement";
 import { NotificationsCenter } from "./NotificationsCenter";
-import { SecurityAuditLogs } from "./SecurityAuditLogs";
 import { Button } from "./ui/button";
 import { NotificationModal } from "./NotificationModal";
 import { Badge } from "./ui/badge";
@@ -197,7 +195,8 @@ export function DashboardLayout({ onLogout }) {
 					<SidebarHeader className="border-b border-sidebar-border p-4">
 						<div className="flex items-center gap-2">
 							<div className="flex flex-col">
-								<img src={Logo} className="w-25 h-8" />
+								{/* Fixed height, auto width — a fixed-width box squeezed this logo since it didn't match the PNG's aspect ratio. */}
+								<img src={Logo} alt="Cybersquad" className="h-9 w-auto" />
 								<span className="text-sm mt-1 text-muted-foreground">
 									Admin Panel
 								</span>

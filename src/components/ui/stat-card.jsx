@@ -11,8 +11,8 @@ export function StatCard({ title, value, change, note, icon: Icon, color = "text
 
   const card = (
     <Card
-      className={`h-full rounded-xl border-border/60 shadow-sm transition-all duration-200 ${
-        onClick ? "hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md" : ""
+      className={`h-full rounded-xl border-border/60 shadow-sm transition-colors duration-150 ${
+        onClick ? "hover:border-primary/30 hover:bg-secondary/30" : ""
       }`}
     >
       <CardContent className="p-4 sm:p-5">

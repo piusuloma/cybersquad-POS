@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApi } from '../hooks/useApi';
+import { formatAmount } from '../lib/currency';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -65,12 +66,6 @@ function PaginationBar({
 function safeNumber(v) {
   const n = parseFloat(v);
   return Number.isFinite(n) ? n : 0;
-}
-
-function formatAmount(amount, currency = 'NGN') {
-  if (amount === null || amount === undefined || amount === '') return '-';
-  const symbol = currency === 'NGN' ? '₦' : currency;
-  return `${symbol}${safeNumber(amount).toLocaleString()}`;
 }
 
 function formatDate(dateString) {

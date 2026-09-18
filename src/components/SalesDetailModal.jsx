@@ -24,27 +24,20 @@ import {
   SelectValue,
 } from "./ui/select";
 import { ShoppingCart, Loader2 } from "lucide-react";
-import { getSales } from "../pos/lib/store";
+import { getSales, isWithinRange } from "../pos/lib/store";
 import { PAYMENT_MODE_LABELS } from "../frontdesk/lib/store";
+import { formatCurrency } from "../lib/currency";
 
+// Same range set as the admin Sales Records page (src/components/SalesRecords.jsx)
+// and the dashboard's own time filter — kept identical so this dialog never
+// drifts to offering a narrower set of periods than those pages do.
 const RANGE_OPTIONS = [
   { value: "today", label: "Today" },
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },
+  { value: "90d", label: "Last 90 days" },
   { value: "all", label: "All time" },
 ];
-
-const formatCurrency = (val) =>
-  `₦${Number(val || 0).toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
-
-function isWithinRange(createdAt, range) {
-  if (range === "all") return true;
-  const created = new Date(createdAt).getTime();
-  const now = Date.now();
-  const days = range === "today" ? 1 : range === "7d" ? 7 : 30;
-  const start = range === "today" ? new Date().setHours(0, 0, 0, 0) : now - days * 24 * 60 * 60 * 1000;
-  return created >= start;
-}
 
 export function SalesDetailModal({ open, onOpenChange }) {
   const [sales, setSales] = useState([]);

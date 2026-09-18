@@ -17,12 +17,7 @@ import {
 } from "./ui/table";
 import { Loader2 } from "lucide-react";
 import { useApi } from "../hooks/useApi";
-
-function formatAmount(amount, currency = "NGN") {
-  const value = Number(amount || 0);
-  const symbol = currency === "NGN" ? "₦" : `${currency} `;
-  return `${symbol}${value.toLocaleString()}`;
-}
+import { formatAmount } from "../lib/currency";
 
 function formatDate(value) {
   if (!value) return "-";

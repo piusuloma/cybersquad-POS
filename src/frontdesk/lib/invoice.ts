@@ -1,11 +1,6 @@
 import { AppSettings, Invoice, PAYMENT_MODE_LABELS, Ticket } from "@/frontdesk/lib/store";
 import cybersquadLightLogo from "@/frontdesk/assets/cybersquad black.png";
-
-const formatter = new Intl.NumberFormat("en-NG", {
-  style: "currency",
-  currency: "NGN",
-  maximumFractionDigits: 0,
-});
+import { formatCurrency as formatCurrencyShared } from "@/lib/currency";
 
 function escapeHtml(value: string) {
   return value
@@ -16,8 +11,10 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
+// Re-exported from the shared formatter (src/lib/currency.js) so every
+// existing `from "@/frontdesk/lib/invoice"` import keeps working unchanged.
 export function formatCurrency(amount: number) {
-  return formatter.format(amount);
+  return formatCurrencyShared(amount);
 }
 
 export function printInvoice(

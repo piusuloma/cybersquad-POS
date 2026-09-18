@@ -9,11 +9,7 @@ import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { ScrollArea } from "./ui/scroll-area";
 import { User, Calendar, DollarSign, Briefcase } from "lucide-react";
-
-function safeNumber(v) {
-	const n = parseFloat(v);
-	return Number.isFinite(n) ? n : 0;
-}
+import { formatAmount } from "../lib/currency";
 
 function formatDate(dateString) {
 	if (!dateString) return "-";
@@ -28,12 +24,6 @@ function formatDate(dateString) {
 	} catch {
 		return "-";
 	}
-}
-
-function formatAmount(amount, currency = "NGN") {
-	if (amount === null || amount === undefined || amount === "") return "-";
-	const symbol = currency === "NGN" ? "₦" : currency;
-	return `${symbol}${safeNumber(amount).toLocaleString()}`;
 }
 
 function getPayoutStateStyle(state) {

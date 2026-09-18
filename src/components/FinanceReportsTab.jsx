@@ -21,6 +21,7 @@ import {
 } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { Loader2, RefreshCw, Store, Users, Wallet } from "lucide-react";
+import { formatAmount } from "../lib/currency";
 
 const PAYMENT_TYPE_OPTIONS = [
   { value: "all", label: "All Payment Types" },
@@ -54,12 +55,6 @@ function getMonthStartIsoDate() {
   const date = new Date();
   date.setDate(1);
   return date.toISOString().split("T")[0];
-}
-
-function formatAmount(amount, currency = "NGN") {
-  const value = Number(amount || 0);
-  const symbol = currency === "NGN" ? "₦" : `${currency} `;
-  return `${symbol}${value.toLocaleString()}`;
 }
 
 function formatDate(value) {
