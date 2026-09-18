@@ -19,14 +19,10 @@ import {
   TableRow,
 } from "./ui/table";
 import {
-  Search,
   Filter,
   Download,
   MoreVertical,
-  Clock,
-  CheckCircle,
   XCircle,
-  AlertCircle,
   Eye,
   ChevronLeft,
   ChevronRight,

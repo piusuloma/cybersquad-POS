@@ -23,7 +23,6 @@ import {
   Filter,
   Download,
   MoreVertical,
-  DollarSign,
   TrendingUp,
   CreditCard,
   Wallet,

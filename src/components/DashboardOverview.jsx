@@ -92,13 +92,21 @@ const NairaIcon = ({ className }) => (
 	<span className={`${className} font-semibold leading-none`}>₦</span>
 );
 
+// This app's theme tokens (src/styles/globals.css) are plain hex values
+// (e.g. --border: #e5e7eb), not the bare "H S% L%" triplets the shadcn
+// convention expects — so wrapping them in hsl(var(--x)) produces the
+// invalid CSS `hsl(#e5e7eb)`, which browsers silently drop (verified: it
+// computes to `none`/transparent, not the intended muted color). Every chart
+// color below references the tokens directly instead.
 const chartTooltipStyle = {
-	backgroundColor: "hsl(var(--popover))",
-	border: "1px solid hsl(var(--border))",
+	backgroundColor: "var(--popover)",
+	border: "1px solid var(--border)",
 	borderRadius: "10px",
-	boxShadow: "0 4px 16px -4px rgba(0,0,0,0.12)",
+	boxShadow: "0 8px 24px -8px rgba(0,0,0,0.14)",
 	padding: "8px 12px",
 };
+
+const chartAxisTick = { fill: "var(--muted-foreground)", fontSize: 12 };
 
 // Consistent "icon badge + title + description (+ optional link)" header used
 // across every section on this page, so they all read as one system.
