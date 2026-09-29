@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getAuth } from "@/frontdesk/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
-import { createRefund, getRefunds, refundableQuantity, refundLineValue, updateRefund, getSalePayments, type Sale, type Refund, type RefundLine, type SalePaymentMode } from "../lib/store";
+import { createRefund, getRefunds, refundableQuantity, refundLineValue, updateRefund, decideRefund, getSalePayments, REFUND_APPROVAL_LIMIT, type Sale, type Refund, type RefundLine, type SalePaymentMode } from "../lib/store";
 import { printRefundReceipt } from "../lib/receipt";
 
 export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged?: () => void }) {
@@ -13,12 +13,12 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
   const [selection, setSelection] = useState<RefundLine[]>([]); const [reason, setReason] = useState("");
   const [condition, setCondition] = useState<Refund["condition"]>("resellable");
   const [mode, setMode] = useState<SalePaymentMode>("cash"); const [cashPaid, setCashPaid] = useState(false);
-  const [actor, setActor] = useState(""); const [allowed, setAllowed] = useState(false);
+  const [actor, setActor] = useState(""); const [role, setRole] = useState(""); const [allowed, setAllowed] = useState(false);
   const [busy, setBusy] = useState(false); const [references, setReferences] = useState<Record<string, string>>({});
   const [depositAmount, setDepositAmount] = useState("");
   const refresh = () => getRefunds().then(setRefunds);
   useEffect(() => { refresh().catch(() => toast.error("Could not load refunds."));
-    getAuth().then((user) => { setActor(user?.name ?? ""); setAllowed(user?.role === "sales" || user?.role === "admin"); });
+    getAuth().then((user) => { setActor(user?.name ?? ""); setRole(user?.role ?? ""); setAllowed(user?.role === "sales" || user?.role === "admin"); });
   }, [sale.id]);
   const related = refunds.filter((refund) => refund.saleId === sale.id);
   const deposit = sale.lifecycle === "reserved";
@@ -34,8 +34,9 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
     </div>
     {editing && <form className="space-y-3 rounded-lg border border-border p-3" onSubmit={(event) => {
       event.preventDefault(); void run(async () => {
-        await createRefund({ saleId: sale.id, lines: deposit ? [] : selection, reason, condition: deposit ? "not_returned" : condition, mode, actor, cashPaid, depositAmount: Number(depositAmount) });
-        setEditing(false); setSelection([]); setReason(""); setCashPaid(false); toast.success(mode === "cash" ? "Cash refund recorded." : "Refund recorded as awaiting repayment.");
+        await createRefund({ saleId: sale.id, lines: deposit ? [] : selection, reason, condition: deposit ? "not_returned" : condition, mode, actor, actorRole: role, cashPaid, depositAmount: Number(depositAmount) });
+        setEditing(false); setSelection([]); setReason(""); setCashPaid(false);
+        toast.success(role !== "admin" && total > REFUND_APPROVAL_LIMIT ? "Refund sent for admin approval." : mode === "cash" ? "Cash refund recorded." : "Refund recorded as awaiting repayment.");
       });
     }}>
       {deposit ? <><Label htmlFor="refund-deposit">Deposit to repay (maximum {formatCurrency(availableMoney)})</Label><Input id="refund-deposit" type="number" step="0.01" min="0.01" max={availableMoney} required value={depositAmount} onChange={(event) => setDepositAmount(event.target.value)} /></> :
@@ -59,8 +60,8 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
       <label className="block text-sm">Repayment method<select aria-label="Refund method" className="block w-full border rounded p-2 bg-background" value={mode} onChange={(event) => setMode(event.target.value as SalePaymentMode)}>
         <option value="cash">Cash</option><option value="pos">Card terminal</option><option value="bank_transfer">Bank transfer</option>
       </select></label>
-      {mode === "cash" ? <label className="flex gap-2 text-sm"><input type="checkbox" required checked={cashPaid} onChange={(event) => setCashPaid(event.target.checked)} />I have handed this cash to the customer.</label> :
-        <p className="text-sm text-muted-foreground">This records a pending refund. Confirm repayment with its reference after the card or bank refund has completed.</p>}
+      {mode === "cash" && (role === "admin" || total <= REFUND_APPROVAL_LIMIT) ? <label className="flex gap-2 text-sm"><input type="checkbox" required checked={cashPaid} onChange={(event) => setCashPaid(event.target.checked)} />I have handed this cash to the customer.</label> :
+        <p className="text-sm text-muted-foreground">{role !== "admin" && total > REFUND_APPROVAL_LIMIT ? "Refunds above " + formatCurrency(REFUND_APPROVAL_LIMIT) + " need admin approval before any money is repaid. " : ""}This records a pending refund. Confirm repayment with its reference after the card or bank refund has completed.</p>}
       <p className="font-medium">Refund amount: {formatCurrency(total)}</p><Button disabled={busy || total <= 0} type="submit">{busy ? "Saving..." : "Record refund"}</Button>
     </form>}
     {!related.length && <p className="text-sm text-muted-foreground">No refunds recorded.</p>}
@@ -70,7 +71,13 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
       {refund.reference && <p>Repayment reference: {refund.reference}</p>}
       {refund.cancellationReason && <p>Cancelled: {refund.cancellationReason}</p>}
       <Button size="sm" variant="outline" onClick={() => printRefundReceipt(refund, sale)}>Print refund record</Button>
-      {allowed && refund.status === "pending" && <div className="space-y-2"><Input aria-label={"Repayment reference for " + refund.id} placeholder="Repayment reference / cancellation reason" value={references[refund.id] ?? ""} onChange={(event) => setReferences({ ...references, [refund.id]: event.target.value })} />
+      {refund.approval && <p>Approval: {refund.approval.status}{refund.approval.by ? " by " + refund.approval.by : ""}{refund.approval.note ? " · " + refund.approval.note : ""}</p>}
+      {refund.status === "pending" && refund.approval?.status === "required" && (role === "admin" ? <div className="space-y-2">
+        <Input aria-label={"Approval note for " + refund.id} placeholder="Approval note / rejection reason" value={references[refund.id] ?? ""} onChange={(event) => setReferences({ ...references, [refund.id]: event.target.value })} />
+        <div className="flex gap-2"><Button size="sm" disabled={busy} onClick={() => void run(() => decideRefund(refund.id, "approved", actor, role, references[refund.id] ?? ""))}>Approve</Button>
+        <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(() => decideRefund(refund.id, "rejected", actor, role, references[refund.id] ?? ""))}>Reject</Button></div>
+      </div> : <p className="text-muted-foreground">Waiting for an admin to approve this refund.</p>)}
+      {allowed && refund.status === "pending" && refund.approval?.status !== "required" && <div className="space-y-2"><Input aria-label={"Repayment reference for " + refund.id} placeholder="Repayment reference / cancellation reason" value={references[refund.id] ?? ""} onChange={(event) => setReferences({ ...references, [refund.id]: event.target.value })} />
         <div className="flex gap-2"><Button size="sm" disabled={busy} onClick={() => void run(() => updateRefund(refund.id, "paid", references[refund.id] ?? ""))}>Confirm repayment</Button>
         <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(() => updateRefund(refund.id, "cancelled", references[refund.id] ?? ""))}>Cancel request</Button></div></div>}
     </div>)}

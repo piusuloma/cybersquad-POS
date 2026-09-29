@@ -489,7 +489,10 @@ export interface Refund {
   mode: SalePaymentMode; status: "pending" | "paid" | "cancelled"; actor: string;
   createdAt: string; paidAt?: string; shiftId?: string; reference?: string; isDemo?: boolean;
   kind: "return" | "deposit"; cancellationReason?: string;
+  // Present only when the refund was above REFUND_APPROVAL_LIMIT and raised by a non-admin.
+  approval?: { status: "required" | "approved" | "rejected"; by?: string; at?: string; note?: string };
 }
+export const REFUND_APPROVAL_LIMIT = 50000;
 export async function getRefunds(): Promise<Refund[]> { return (await readFromStorage<Refund[]>("pos_refunds")) ?? []; }
 export function refundableQuantity(sale: Sale, index: number, refunds: Refund[]) {
   return sale.lines[index].quantity - refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled")
@@ -498,7 +501,7 @@ export function refundableQuantity(sale: Sale, index: number, refunds: Refund[])
 }
 export function createRefund(input: {
   saleId: string; lines: RefundLine[]; reason: string; condition: Refund["condition"];
-  mode: SalePaymentMode; actor: string; cashPaid: boolean; depositAmount?: number;
+  mode: SalePaymentMode; actor: string; actorRole?: string; cashPaid: boolean; depositAmount?: number;
 }): Promise<Refund> {
   return withSaleLock(async () => {
     const sale = (await getSales()).find((entry) => entry.id === input.saleId);
@@ -530,16 +533,18 @@ export function createRefund(input: {
     const remaining = money(paid - alreadyAllocated);
     if (total > remaining && total - remaining <= 0.05) total = remaining;
     if (!Number.isFinite(total) || total <= 0 || money(total + alreadyAllocated) > money(paid)) throw new Error("Refund exceeds the amount paid.");
+    const needsApproval = input.actorRole !== "admin" && total > REFUND_APPROVAL_LIMIT;
     const shift = await getActiveShift();
-    if (input.mode === "cash" && (!shift || !input.cashPaid)) throw new Error("Open a shift and confirm cash was handed to the customer.");
+    const paidNow = input.mode === "cash" && !needsApproval;
+    if (paidNow && (!shift || !input.cashPaid)) throw new Error("Open a shift and confirm cash was handed to the customer.");
     const now = new Date().toISOString();
     const refund: Refund = { id: generateId(), saleId: sale.id, saleNumber: sale.saleNumber, lines: input.lines,
       total, reason: input.reason.trim(), condition: input.condition, mode: input.mode, actor: input.actor,
-      status: input.mode === "cash" ? "paid" : "pending", createdAt: now,
-      paidAt: input.mode === "cash" ? now : undefined, shiftId: input.mode === "cash" ? shift?.id : undefined,
-      isDemo: sale.isDemo, kind };
+      status: paidNow ? "paid" : "pending", createdAt: now,
+      paidAt: paidNow ? now : undefined, shiftId: paidNow ? shift?.id : undefined,
+      isDemo: sale.isDemo, kind, ...(needsApproval ? { approval: { status: "required" as const } } : {}) };
     await writeToStorage("pos_refunds", [...refunds, refund]);
-    await appendAudit(input.actor, "refund_recorded", sale.saleNumber + " · " + refund.kind + " · " + total.toFixed(2) + " · " + refund.status + " · " + refund.reason);
+    await appendAudit(input.actor, "refund_recorded", sale.saleNumber + " · " + refund.kind + " · " + total.toFixed(2) + " · " + (needsApproval ? "awaiting approval" : refund.status) + " · " + refund.reason);
     return refund;
   });
 }
@@ -547,10 +552,30 @@ export function updateRefund(id: string, action: "paid" | "cancelled", reference
   return withSaleLock(async () => {
     const refunds = await getRefunds(); const refund = refunds.find((entry) => entry.id === id);
     if (!refund || refund.status !== "pending" || !reference.trim()) throw new Error("Enter the repayment reference or cancellation reason.");
+    if (action === "paid" && refund.approval?.status === "required") throw new Error("This refund needs admin approval before repayment.");
+    if (action === "paid" && refund.mode === "cash") {
+      const shift = await getActiveShift();
+      if (!shift) throw new Error("Open a shift before handing over cash.");
+      refund.shiftId = shift.id;
+    }
     refund.status = action;
     if (action === "paid") { refund.reference = reference.trim(); refund.paidAt = new Date().toISOString(); }
     else refund.cancellationReason = reference.trim();
     await writeToStorage("pos_refunds", refunds);
     await appendAudit(refund.actor, "refund_" + action, refund.saleNumber + " · " + refund.total.toFixed(2) + " · " + reference.trim());
+  });
+}
+
+export function decideRefund(id: string, decision: "approved" | "rejected", actor: string, actorRole: string | undefined, note: string): Promise<void> {
+  return withSaleLock(async () => {
+    if (actorRole !== "admin") throw new Error("Only an admin can approve or reject this refund.");
+    const refunds = await getRefunds(); const refund = refunds.find((entry) => entry.id === id);
+    if (!refund || refund.status !== "pending" || refund.approval?.status !== "required") throw new Error("This refund is not awaiting approval.");
+    if (decision === "rejected" && !note.trim()) throw new Error("Enter the reason for rejecting this refund.");
+    const at = new Date().toISOString();
+    refund.approval = { status: decision, by: actor, at, note: note.trim() };
+    if (decision === "rejected") { refund.status = "cancelled"; refund.cancellationReason = "Rejected: " + note.trim(); }
+    await writeToStorage("pos_refunds", refunds);
+    await appendAudit(actor, "refund_" + decision, refund.saleNumber + " · " + refund.total.toFixed(2) + (note.trim() ? " · " + note.trim() : ""));
   });
 }

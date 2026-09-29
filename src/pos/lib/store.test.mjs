@@ -68,3 +68,20 @@ test("order discount reduces the total and refunds are prorated and audited", as
   const log = await store.getAuditLog();
   assert.deepEqual(log.map((entry) => entry.action).slice(-2), ["discount_applied", "refund_recorded"]);
 });
+test("large refunds by non-admins wait for approval before any repayment", async () => {
+  const laptop = { productId: "laptop", name: "Laptop", quantity: 1, unitPrice: 120000 };
+  const sale = await store.createSale({ cashierName: "Test", channel: "in_store", lines: [laptop], subtotal: 120000, total: 120000,
+    payments: [{ mode: "bank_transfer", amount: 120000 }], paymentMode: "bank_transfer" });
+  const request = { saleId: sale.id, lines: [{ lineIndex: 0, quantity: 1, deviceIds: [] }], reason: "Changed mind", condition: "resellable",
+    mode: "bank_transfer", actor: "Cashier", actorRole: "sales", cashPaid: false };
+  const refund = await store.createRefund(request);
+  assert.equal(refund.status, "pending");
+  assert.equal(refund.approval.status, "required");
+  await assert.rejects(store.updateRefund(refund.id, "paid", "REF-1"), /approval/);
+  await assert.rejects(store.decideRefund(refund.id, "approved", "Cashier", "sales", ""), /admin/);
+  await store.decideRefund(refund.id, "approved", "Boss", "admin", "OK");
+  await store.updateRefund(refund.id, "paid", "REF-1");
+  const saved = (await store.getRefunds()).find((entry) => entry.id === refund.id);
+  assert.equal(saved.status, "paid");
+  assert.equal(saved.approval.by, "Boss");
+});
