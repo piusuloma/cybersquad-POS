@@ -25,18 +25,18 @@ export default function CustomerDirectory({ onOpenRepair }: { onOpenRepair: (tic
     <div className="grid md:grid-cols-2 gap-4">
       <div className="space-y-2 max-h-[36rem] overflow-y-auto">{customers.filter((entry) => (entry.name + " " + entry.phone + " " + entry.email).toLowerCase().includes(query.toLowerCase())).map((entry) =>
         <button key={entry.id} type="button" className="w-full text-left rounded-lg border border-border p-3 hover:bg-secondary" onClick={() => setCustomer(entry)}>
-          <span className="block font-medium">{entry.name}</span><span className="text-sm text-muted-foreground">{entry.phone} ? {entry.email}</span>
+          <span className="block font-medium">{entry.name}</span><span className="text-sm text-muted-foreground">{entry.phone} · {entry.email}</span>
         </button>)}{!customers.length && <p className="text-muted-foreground">No customers yet.</p>}</div>
       <div className="space-y-3">{customer?.name ? <>
         <h3 className="font-semibold">{customer.name}: purchases, returns and repairs</h3>
         {sales.filter((sale) => !sale.isDemo && sameCustomer(sale.customer, customer)).map((sale) => <div key={sale.id} className="border border-border rounded p-3 space-y-1">
           <Button variant="link" onClick={() => setSelected(sale)}>{sale.saleNumber}</Button>
-          <p className="text-sm">{formatCurrency(sale.total)} ? {sale.lifecycle ?? "completed"}</p>
-          {refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled").map((refund) => <p key={refund.id} className="text-xs">Refund {formatCurrency(refund.total)} ? {refund.status}</p>)}
+          <p className="text-sm">{formatCurrency(sale.total)} · {sale.lifecycle ?? "completed"}</p>
+          {refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled").map((refund) => <p key={refund.id} className="text-xs">Refund {formatCurrency(refund.total)} · {refund.status}</p>)}
         </div>)}
         {enquiries.filter((enquiry) => sameCustomer(enquiry.customer, customer)).map((enquiry) => <div key={enquiry.id} className="border border-border rounded p-3 text-sm">
           <p className="font-medium">Enquiry: {enquiry.request}</p><p>{enquiry.status} · {enquiry.owner} · follow up {new Date(enquiry.followUpAt).toLocaleDateString()} · {enquiry.contacts?.length ?? 0} contact(s)</p></div>)}
-        {tickets.filter((ticket) => sameCustomer(ticket.customer, customer)).map((ticket) => <Button key={ticket.id} variant="outline" className="w-full justify-start" onClick={() => onOpenRepair(ticket)}>{ticket.jobId} ? {ticket.device.model} ? {ticket.status.replaceAll("_", " ")}</Button>)}
+        {tickets.filter((ticket) => sameCustomer(ticket.customer, customer)).map((ticket) => <Button key={ticket.id} variant="outline" className="w-full justify-start" onClick={() => onOpenRepair(ticket)}>{ticket.jobId} · {ticket.device.model} · {ticket.status.replaceAll("_", " ")}</Button>)}
       </> : <p className="text-sm text-muted-foreground">Select a customer to see their history.</p>}</div>
     </div>
     <SaleRecordDetailModal open={Boolean(selected)} sale={selected} onOpenChange={(open: boolean) => { if (!open) { setSelected(null); void load(); } }} />

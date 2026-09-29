@@ -134,7 +134,7 @@ export function SalesDetailModal({ open, onOpenChange }) {
                 {!loading &&
                   filtered.map((sale) => (
                     <TableRow key={sale.id}>
-                      <TableCell className="font-mono text-sm font-medium"><button type="button" className="text-primary underline" onClick={() => setSelectedSale(sale)}>{sale.saleNumber}</button><span className="block text-xs">{sale.lifecycle ?? "completed"} ? {sale.customer?.name}</span>{sale.isDemo && <span className="block text-xs">Sample</span>}</TableCell>
+                      <TableCell className="font-mono text-sm font-medium"><button type="button" className="text-primary underline" onClick={() => setSelectedSale(sale)}>{sale.saleNumber}</button><span className="block text-xs">{sale.lifecycle ?? "completed"} · {sale.customer?.name}</span>{sale.isDemo && <span className="block text-xs">Sample</span>}</TableCell>
                       <TableCell>{sale.cashierName}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {sale.lines.reduce((sum, l) => sum + l.quantity, 0)} item(s)

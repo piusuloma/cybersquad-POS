@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getTickets, mapBackendTicketToFrontend, type Ticket } from "@/frontdesk/lib/store";
+import { getAuth, getTickets, mapBackendTicketToFrontend, type Ticket } from "@/frontdesk/lib/store";
 import { useApi } from "@/hooks/useApi";
 import { getSales, getRefunds, orderBalance, type Sale, type Refund } from "@/pos/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { SaleRecordDetailModal } from "@/components/SaleRecordDetailModal";
+import { getPipeline, quoteStatus, type Pipeline } from "./pipeline";
 import { getBusiness, periodBounds, repairStage, saveBlocker, type BlockerContext } from "./business";
 
 type Blocker = { id: string; title: string; state: string; owner: string; action: string; since: string; open: () => void; };
@@ -16,7 +17,7 @@ function BlockerRow({ item, context, refresh }: { item: Blocker; context?: Block
   const [due, setDue] = useState(context?.dueAt ?? ""); const [editing, setEditing] = useState(false); const [busy, setBusy] = useState(false);
   const age = Math.max(0, Math.floor((Date.now() - Date.parse(item.since)) / 86400000));
   return <div className="border border-border rounded-lg p-3 space-y-2">
-    <div className="flex flex-wrap justify-between gap-2"><Button variant="link" className="p-0" onClick={item.open}>{item.title}</Button><span className={age > 3 ? "text-sm font-medium text-destructive" : "text-sm"}>{item.state} ? {age} days{age > 3 ? " · Aged" : ""}</span></div>
+    <div className="flex flex-wrap justify-between gap-2"><Button variant="link" className="p-0" onClick={item.open}>{item.title}</Button><span className={age > 3 ? "text-sm font-medium text-destructive" : "text-sm"}>{item.state} · {age} days{age > 3 ? " · Aged" : ""}</span></div>
     <p className="text-sm">Owner: {context?.owner ?? item.owner} ? Next: {context?.nextAction ?? item.action}</p>
     {context?.dueAt && <p className="text-xs">Action due {new Date(context.dueAt).toLocaleDateString()}{Date.parse(context.dueAt) < Date.now() ? " ? Overdue" : ""}</p>}
     <Button size="sm" variant="outline" onClick={() => setEditing(!editing)}>Assign / update action</Button>
@@ -27,20 +28,22 @@ function BlockerRow({ item, context, refresh }: { item: Blocker; context?: Block
       <Input aria-label="Action due date" type="date" value={due} onChange={(event) => setDue(event.target.value)} /><Button disabled={busy} type="submit" size="sm">Save action</Button></form>}
   </div>;
 }
-export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: {
-  onOpenRepair: (ticket: Ticket) => void; onEnquiries: () => void; role: string;
+export default function OperationsOverview({ onOpenRepair, onEnquiries, onTab, role }: {
+  onOpenRepair: (ticket: Ticket) => void; onEnquiries: () => void; onTab: (tab: string) => void; role: string;
 }) {
   const { api } = useApi();
   const [sales, setSales] = useState<Sale[]>([]); const [refunds, setRefunds] = useState<Refund[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]); const [state, setState] = useState<Awaited<ReturnType<typeof getBusiness>>>();
   const [period, setPeriod] = useState("today"); const [selected, setSelected] = useState<Sale | null>(null);
   const [filter, setFilter] = useState("all"); const [loadedAt, setLoadedAt] = useState(""); const [repairSource, setRepairSource] = useState("Saved repair records");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); const [userName, setUserName] = useState("");
+  const management = role === "admin"; const [flow, setFlow] = useState<Pipeline>({ quotes: [], sourcing: [], transfers: [] });
+  useEffect(() => { getAuth().then((user) => setUserName(user?.name ?? "")); }, []);
   const load = async () => {
     setLoading(true);
     try {
-      const [orders, returns, repairs, context] = await Promise.all([getSales(), getRefunds(), getTickets(), getBusiness()]);
-      setSales(orders); setRefunds(returns); setTickets(repairs); setState(context);
+      const [orders, returns, repairs, context, pipeline] = await Promise.all([getSales(), getRefunds(), getTickets(), getBusiness(), getPipeline()]);
+      setFlow(pipeline); setSales(orders); setRefunds(returns); setTickets(repairs); setState(context);
       if (role === "admin" || role === "front_desk") {
         try {
           const response = await api.get("/jobs/admin/bookings/", { params: { page_size: 1000 } });
@@ -68,23 +71,35 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: 
   const enquiryCohort = enquiries.filter((enquiry) => inPeriod(enquiry.createdAt));
   const conversion = enquiryCohort.length ? Math.round(enquiryCohort.filter((entry) => entry.status === "converted").length / enquiryCohort.length * 100) : 0;
   const blockers: Blocker[] = [
-    ...orders.map((sale) => ({ id: "order:" + sale.id, title: sale.saleNumber + " ? " + (sale.customer?.name ?? "Customer"), state: orderBalance(sale) > 0 ? "Order balance due" : "Paid, uncollected", owner: sale.cashierName,
+    ...orders.map((sale) => ({ id: "order:" + sale.id, title: sale.saleNumber + " · " + (sale.customer?.name ?? "Customer"), state: orderBalance(sale) > 0 ? "Order balance due" : "Paid, uncollected", owner: sale.cashierName,
       action: orderBalance(sale) > 0 ? "Confirm payment and arrange collection" : "Contact customer for collection", since: sale.orderCreatedAt ?? sale.createdAt, open: () => setSelected(sale) })),
-    ...active.map((ticket) => ({ id: "repair:" + ticket.id, title: ticket.jobId + " ? " + ticket.customer.name, state: repairStage(ticket),
-      owner: ticket.assignedEngineer || (repairStage(ticket) === "QC pending" ? "QA desk" : "Front desk"), action: "Review " + repairStage(ticket).toLowerCase(),
+    ...active.map((ticket) => ({ id: "repair:" + ticket.id, title: ticket.jobId + " · " + ticket.customer.name, state: repairStage(ticket),
+      owner: ticket.assignedEngineer || (repairStage(ticket) === "QC pending" · "QA desk" : "Front desk"), action: "Review " + repairStage(ticket).toLowerCase(),
       since: ticket.updatedAt || ticket.createdAt, open: () => onOpenRepair(ticket) })),
-    ...enquiries.filter((enquiry) => enquiry.status === "open").map((enquiry) => ({ id: "enquiry:" + enquiry.id, title: enquiry.customer.name + " ? " + enquiry.request,
+    ...enquiries.filter((enquiry) => enquiry.status === "open").map((enquiry) => ({ id: "enquiry:" + enquiry.id, title: enquiry.customer.name + " · " + enquiry.request,
       state: Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue follow-up" : "Follow-up", owner: enquiry.owner, action: "Contact customer",
       since: enquiry.createdAt, open: onEnquiries })),
-    ...refunds.filter((refund) => !refund.isDemo && refund.status === "pending").map((refund) => ({ id: "refund:" + refund.id, title: "Refund ? " + refund.saleNumber, state: refund.approval?.status === "required" ? "Refund awaiting approval" : "Repayment pending",
-      owner: refund.approval?.status === "required" ? "Admin" : refund.actor, action: refund.approval?.status === "required" ? "Approve or reject refund" : "Complete repayment and record reference", since: refund.createdAt, open: () => setSelected(sales.find((sale) => sale.id === refund.saleId) ?? null) })),
+    ...flow.quotes.filter((quote) => quoteStatus(quote) === "sent").map((quote) => ({ id: "quote:" + quote.id, title: quote.number + " · " + quote.customer.name, state: "Quote awaiting response",
+      owner: quote.owner, action: "Follow up with customer", since: quote.updatedAt, open: () => onTab("quotes") })),
+    ...flow.sourcing.filter((request) => request.status === "requested" || request.status === "quoted").map((request) => ({ id: "sourcing:" + request.id, title: request.number + " · " + request.product,
+      state: request.status === "requested" · "Sourcing awaiting procurement" : "Sourcing quote not yet sent to customer", owner: request.status === "requested" · "Procurement" : request.requestedBy,
+      action: request.status === "requested" · "Return price and availability" : "Create customer quote", since: request.updatedAt, open: () => onTab("sourcing") })),
+    ...flow.transfers.filter((transfer) => transfer.status === "requested" || transfer.status === "dispatched").map((transfer) => ({ id: "transfer:" + transfer.id, title: transfer.number + " · " + transfer.product,
+      state: transfer.status === "requested" · "Transfer awaiting dispatch" : "Transfer in transit", owner: transfer.status === "requested" ? transfer.fromBranch + " inventory" : transfer.requestedBy,
+      action: transfer.status === "requested" · "Verify and dispatch" : "Confirm receipt", since: transfer.updatedAt, open: () => onTab("transfers") })),
+    ...refunds.filter((refund) => !refund.isDemo && refund.status === "pending").map((refund) => ({ id: "refund:" + refund.id, title: "Refund ? " + refund.saleNumber, state: refund.approval?.status === "required" · "Refund awaiting approval" : "Repayment pending",
+      owner: refund.approval?.status === "required" · "Admin" : refund.actor, action: refund.approval?.status === "required" · "Approve or reject refund" : "Complete repayment and record reference", since: refund.createdAt, open: () => setSelected(sales.find((sale) => sale.id === refund.saleId) ?? null) })),
   ];
-  const groups = [...new Set(blockers.map((item) => item.state))];
+  const ownerOf = (item: Blocker) => state?.blockers[item.id]?.owner ?? item.owner;
+  const visible = management ? blockers : blockers.filter((item) => ownerOf(item) === userName || (role === "front_desk" && ownerOf(item) === "Front desk") ||
+    (role === "inventory_manager" && (ownerOf(item) === "Procurement" || ownerOf(item).endsWith(" inventory"))));
+  const groups = [...new Set(visible.map((item) => item.state))];
   const performance = new Map<string, { count: number; amount: number }>();
   completed.forEach((sale) => { const row = performance.get(sale.cashierName) ?? { count: 0, amount: 0 }; row.count++; row.amount += sale.total; performance.set(sale.cashierName, row); });
   const products = new Map<string, { name: string; quantity: number; amount: number }>();
   completed.forEach((sale) => sale.lines.forEach((line) => { const row = products.get(line.productId) ?? { name: line.name, quantity: 0, amount: 0 }; row.quantity += line.quantity; row.amount += line.quantity * line.unitPrice; products.set(line.productId, row); }));
   return <div className="space-y-4">
+    {management ? <>
     <div className="flex flex-wrap justify-between gap-3"><select aria-label="Reporting period" className="border rounded p-2 bg-background" value={period} onChange={(event) => setPeriod(event.target.value)}>
       {[["today", "Today"], ["week", "This week"], ["previous_week", "Previous week"], ["30", "30 days"], ["60", "60 days"], ["90", "90 days"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
     </select><Button variant="outline" disabled={loading} onClick={() => void load()}>{loading ? "Refreshing..." : "Refresh"}</Button></div>
@@ -99,12 +114,31 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: 
         ["New repair jobs", String(tickets.filter((ticket) => inPeriod(ticket.createdAt)).length)],
         ["Completed repairs", String(tickets.filter((ticket) => ["completed", "closed", "delivered"].includes(ticket.status) && inPeriod(ticket.handedOverAt ?? ticket.updatedAt)).length)],
         ["Warranty / repeat intake", String(tickets.filter((ticket) => (ticket.isWarranty || ticket.isRepeatCase) && inPeriod(ticket.createdAt)).length)],
+        ["Quotes issued / accepted / pending / declined", (() => { const inRange = flow.quotes.filter((quote) => quote.status !== "draft" && inPeriod(quote.createdAt)); const count = (state: string) => inRange.filter((quote) => quoteStatus(quote) === state).length;
+          return inRange.length + " / " + count("accepted") + " / " + count("sent") + " / " + count("declined"); })()],
+        ["Quote conversion", (() => { const inRange = flow.quotes.filter((quote) => quote.status !== "draft" && inPeriod(quote.createdAt)); return (inRange.length ? Math.round(inRange.filter((quote) => quote.status === "accepted").length / inRange.length * 100) : 0) + "%"; })()],
       ].map(([label, value]) => <div key={label} className="glass-card p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-semibold mt-1">{value}</p></div>)}
     </div>
     <div className="grid md:grid-cols-2 gap-4"><div className="glass-card p-4 space-y-2"><h3 className="font-medium">Salesperson performance</h3>{[...performance].map(([name, row]) => <p key={name} className="text-sm">{name}: {row.count} sales ? {formatCurrency(row.amount)}</p>)}{!performance.size && <p className="text-sm text-muted-foreground">No completed sales in this period.</p>}</div>
-    <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Products sold</h3>{[...products.values()].sort((a, b) => b.amount - a.amount).slice(0, 8).map((row) => <p key={row.name} className="text-sm">{row.name}: {row.quantity} ? {formatCurrency(row.amount)}</p>)}</div></div>
+    <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Products sold</h3>{[...products.values()].sort((a, b) => b.amount - a.amount).slice(0, 8).map((row) => <p key={row.name} className="text-sm">{row.name}: {row.quantity} · {formatCurrency(row.amount)}</p>)}</div></div>
+    <div className="grid md:grid-cols-2 gap-4">
+      <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Stock and parts exceptions</h3>
+        {(() => { const day = 86400000; const parts = active.filter((ticket) => repairStage(ticket) === "Awaiting parts");
+          const lines = [...parts.map((ticket) => ticket.jobId + " waiting on parts ? " + Math.floor((Date.now() - Date.parse(ticket.updatedAt || ticket.createdAt)) / day) + " days"),
+            ...flow.sourcing.filter((request) => request.status === "requested" || request.status === "quoted").map((request) => request.number + " " + request.product + " unavailable ? " + Math.floor((Date.now() - Date.parse(request.createdAt)) / day) + " days"),
+            ...flow.transfers.filter((transfer) => (transfer.status === "requested" || transfer.status === "dispatched") && Date.now() - Date.parse(transfer.createdAt) > day).map((transfer) => transfer.number + " transfer delayed " + Math.floor((Date.now() - Date.parse(transfer.createdAt)) / 3600000) + "h")];
+          return lines.length ? lines.map((line) => <p key={line} className="text-sm">{line}</p>) : <p className="text-sm text-muted-foreground">No stock or parts exceptions.</p>; })()}</div>
+      <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Branch comparison</h3>
+        {(() => { const rows = new Map<string, { sales: number; revenue: number; transfers: number }>();
+          const row = (branch: string) => rows.get(branch) ?? { sales: 0, revenue: 0, transfers: 0 };
+          completed.forEach((sale) => { const key = sale.branch ?? "Unassigned"; const entry = row(key); entry.sales++; entry.revenue += sale.total; rows.set(key, entry); });
+          flow.transfers.filter((transfer) => inPeriod(transfer.createdAt)).forEach((transfer) => { const entry = row(transfer.toBranch); entry.transfers++; rows.set(transfer.toBranch, entry); });
+          return rows.size ? [...rows].map(([branch, entry]) => <p key={branch} className="text-sm">{branch}: {entry.sales} sales ? {formatCurrency(entry.revenue)} · {entry.transfers} transfers in</p>) : <p className="text-sm text-muted-foreground">No branch activity in this period.</p>; })()}
+        <p className="text-xs text-muted-foreground">Repair volume by branch needs a branch on each repair job.</p></div>
+    </div>
+    </> : <div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-semibold">My work</h2><p className="text-sm text-muted-foreground">Follow-ups, orders and actions assigned to you.</p></div><Button variant="outline" disabled={loading} onClick={() => void load()}>{loading ? "Refreshing..." : "Refresh"}</Button></div>}
     {(() => { const endOfDay = new Date(); endOfDay.setHours(23, 59, 59, 999);
-      const due = enquiries.filter((enquiry) => enquiry.status === "open" && Date.parse(enquiry.followUpAt) <= endOfDay.getTime())
+      const due = enquiries.filter((enquiry) => enquiry.status === "open" && (management || enquiry.owner === userName) && Date.parse(enquiry.followUpAt) <= endOfDay.getTime())
         .sort((a, b) => Date.parse(a.followUpAt) - Date.parse(b.followUpAt));
       return <div className="glass-card p-4 space-y-2"><div className="flex justify-between"><h3 className="font-semibold">Follow-ups due today or overdue ({due.length})</h3>
         <Button size="sm" variant="outline" onClick={onEnquiries}>Open follow-ups</Button></div>
@@ -112,9 +146,9 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: 
         {due.slice(0, 8).map((enquiry) => <p key={enquiry.id} className="text-sm">{Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue · " : "Today · "}{enquiry.customer.name} · {enquiry.request} · {enquiry.owner} · {new Date(enquiry.followUpAt).toLocaleString()}</p>)}
       </div>; })()}
     <div className="glass-card p-4 space-y-3"><h3 className="font-semibold">Open work and next actions</h3><p className="text-xs text-muted-foreground">Includes all open work, regardless of reporting period. Repair age is time since its latest recorded update; action due dates are explicit commitments, not inferred SLA deadlines.</p>
-      <select aria-label="Filter blockers" className="border rounded p-2 bg-background" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All open work ({blockers.length})</option>{groups.map((group) => <option key={group}>{group}</option>)}</select>
-      {blockers.filter((item) => filter === "all" || item.state === filter).sort((a, b) => Date.parse(a.since) - Date.parse(b.since)).map((item) => <BlockerRow key={item.id} item={item} context={state?.blockers[item.id]} refresh={load} />)}
-      {!blockers.length && <p>No open work in the available records.</p>}
+      <select aria-label="Filter blockers" className="border rounded p-2 bg-background" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All open work ({visible.length})</option>{groups.map((group) => <option key={group}>{group}</option>)}</select>
+      {visible.filter((item) => filter === "all" || item.state === filter).sort((a, b) => Date.parse(a.since) - Date.parse(b.since)).map((item) => <BlockerRow key={item.id} item={item} context={state?.blockers[item.id]} refresh={load} />)}
+      {!visible.length && <p>No open work in the available records.</p>}
     </div>
     <SaleRecordDetailModal sale={selected} open={Boolean(selected)} onOpenChange={(open: boolean) => { if (!open) { setSelected(null); void load(); } }} />
   </div>;

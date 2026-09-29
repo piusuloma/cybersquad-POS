@@ -16,8 +16,8 @@ export default function RepairWarrantyPanel({ ticket, user }: { ticket: Ticket; 
   const canRecord = ["admin", "qa"].includes(user?.role ?? "") && ["completed", "delivered", "closed"].includes(ticket.status);
   return <section className="glass-card p-4 space-y-3">
     <h2 className="font-semibold">Warranty records</h2>
-    {linked ? <div className="text-sm space-y-1"><p>Original {linked.source}: {linked.reference} ? {linked.serial}</p>
-      <p>{warrantyStatus(linked)} ? {linked.coverage.startsAt.slice(0, 10)} to {linked.coverage.expiresAt.slice(0, 10)}</p><p>{linked.coverage.terms}</p>
+    {linked ? <div className="text-sm space-y-1"><p>Original {linked.source}: {linked.reference} · {linked.serial}</p>
+      <p>{warrantyStatus(linked)} · {linked.coverage.startsAt.slice(0, 10)} to {linked.coverage.expiresAt.slice(0, 10)}</p><p>{linked.coverage.terms}</p>
     </div> : <p className="text-sm text-muted-foreground">No original sale or repair warranty linked. Eligibility must be verified against recorded terms.</p>}
     {issued && <div className="text-sm"><p>Warranty issued for this repair: {issued.coverage.startsAt.slice(0, 10)} to {issued.coverage.expiresAt.slice(0, 10)}</p><p>{issued.coverage.terms}</p></div>}
     {canRecord && !issued && <form className="space-y-2" onSubmit={async (event) => {

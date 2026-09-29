@@ -52,7 +52,7 @@ export function SaleRecordDetailModal({ open, onOpenChange, sale: inputSale }) {
             </DialogHeader>
 
             <div className="flex items-center gap-2">
-              <Badge variant="outline">{sale.channel === "website" ? "Website" : "In-Store"}</Badge>
+              <Badge variant="outline">{sale.channel === "website" · "Website" : "In-Store"}</Badge>
               {isSplit ? (
                 <Badge variant="outline">Split Payment</Badge>
               ) : (
@@ -61,7 +61,7 @@ export function SaleRecordDetailModal({ open, onOpenChange, sale: inputSale }) {
             </div>
 
             {sale.isDemo && <Badge variant="outline">Sample sale</Badge>}
-            {sale.customer && <p className="text-sm">Customer: {sale.customer.name} ? {sale.customer.phone}</p>}
+            {sale.customer && <p className="text-sm">Customer: {sale.customer.name} · {sale.customer.phone}</p>}
             {sale.note && <p className="text-sm">Customer note: {sale.note}</p>}
             <p className="text-sm">Status: {sale.lifecycle ?? "completed"}</p>
             <OrderActions sale={sale} onChanged={refreshSale} />

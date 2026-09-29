@@ -56,7 +56,7 @@ export default function RefundsDialog({ open, onOpenChange }: { open: boolean; o
               <div>
                 <p className="font-medium">{refund.saleNumber} · {formatCurrency(refund.total)} <Badge variant="outline">{STATUS_LABEL[refund.status]}</Badge></p>
                 <p>{refund.reason} · {refund.actor} · {refund.mode.replaceAll("_", " ")}</p>
-                <p className="text-muted-foreground">{new Date(refund.createdAt).toLocaleString()} · {refund.kind === "deposit" ? "Deposit" : "Return"}</p>
+                <p className="text-muted-foreground">{new Date(refund.createdAt).toLocaleString()} · {refund.kind === "deposit" · "Deposit" : "Return"}</p>
               </div>
               <div className="flex gap-2 items-start">
                 {sale && <Button size="sm" variant="outline" onClick={() => openSale(sale.id)}>Open sale</Button>}

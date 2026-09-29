@@ -67,7 +67,7 @@ export default function SaleCompleteDialog({ sale, settings, onNewSale }: SaleCo
             </div>
 
             <div className="space-y-3 max-h-[35vh] overflow-y-auto">
-              {sale.customer && <p className="text-sm">{sale.customer.name} ? {sale.customer.phone}</p>}
+              {sale.customer && <p className="text-sm">{sale.customer.name} · {sale.customer.phone}</p>}
               {sale.lines.filter((line) => line.devices?.length).map((line) => <div key={line.productId}>
                 <p className="text-sm font-medium">{line.name}</p><DeviceDetails line={line} />
               </div>)}

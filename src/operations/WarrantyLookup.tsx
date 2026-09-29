@@ -27,9 +27,9 @@ export default function WarrantyLookup({ onSelect, initialId, includeSamples = f
     <div className="space-y-3 max-h-[32rem] overflow-y-auto">
       {matches.map((record) => <article key={record.id} className="rounded-lg border border-border p-4 space-y-2">
         <div className="flex justify-between gap-2"><p className="font-medium">{record.product}</p><span className="text-xs">{record.isDemo ? "Sample ? " : ""}{record.source} warranty</span></div>
-        <p className="text-sm">{record.reference} ? {record.customer.name} ? {record.customer.phone}</p>
-        <p className="text-sm break-words">{record.identifiers.join(" ? ")}</p>
-        <p className="text-sm">{record.coverage.type} ? {record.coverage.startsAt.slice(0, 10)} to {record.coverage.expiresAt.slice(0, 10)}</p>
+        <p className="text-sm">{record.reference} · {record.customer.name} · {record.customer.phone}</p>
+        <p className="text-sm break-words">{record.identifiers.join(" · ")}</p>
+        <p className="text-sm">{record.coverage.type} · {record.coverage.startsAt.slice(0, 10)} to {record.coverage.expiresAt.slice(0, 10)}</p>
         <p className="text-sm font-medium">{warrantyStatus(record)}</p><p className="text-xs text-muted-foreground">{record.coverage.terms}</p>
         {onSelect && <Button size="sm" variant="outline" disabled={record.returned || record.isDemo} onClick={() => onSelect(record)}>Use original record for intake</Button>}
       </article>)}

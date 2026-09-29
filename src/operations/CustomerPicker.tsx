@@ -18,14 +18,14 @@ export default function CustomerPicker({ value, onChange }: { value?: SaleCustom
   return <div className="space-y-2">
     <div className="flex flex-wrap items-center gap-2">
       <Button type="button" variant="outline" onClick={() => setOpen(true)}>{value?.name ? "Change customer" : "Select / add customer"}</Button>
-      {value?.name && <><span className="text-sm">{value.name} ? {value.phone}</span><Button type="button" variant="ghost" onClick={() => onChange({ name: "", phone: "" })}>Clear</Button></>}
+      {value?.name && <><span className="text-sm">{value.name} · {value.phone}</span><Button type="button" variant="ghost" onClick={() => onChange({ name: "", phone: "" })}>Clear</Button></>}
     </div>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent style={{ maxWidth: "36rem", maxHeight: "85vh", overflowY: "auto" }}>
       <DialogHeader><DialogTitle>Customers</DialogTitle><DialogDescription>Search existing customers or create a contact without losing the current sale.</DialogDescription></DialogHeader>
       <Input aria-label="Search customers" placeholder="Name, phone or email" value={query} onChange={(event) => setQuery(event.target.value)} />
       <div className="space-y-2 max-h-48 overflow-y-auto">
         {matches.slice(0, 30).map((customer) => <button type="button" key={customer.id} className="w-full text-left border border-border rounded-lg p-3 hover:bg-secondary" onClick={() => choose(customer)}>
-          <span className="block font-medium">{customer.name}</span><span className="text-sm text-muted-foreground">{customer.phone} ? {customer.email}</span>
+          <span className="block font-medium">{customer.name}</span><span className="text-sm text-muted-foreground">{customer.phone} · {customer.email}</span>
         </button>)}
         {!matches.length && <p className="text-sm text-muted-foreground">No matching customer.</p>}
       </div>

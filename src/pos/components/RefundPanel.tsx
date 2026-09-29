@@ -36,7 +36,7 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
       event.preventDefault(); void run(async () => {
         await createRefund({ saleId: sale.id, lines: deposit ? [] : selection, reason, condition: deposit ? "not_returned" : condition, mode, actor, actorRole: role, cashPaid, depositAmount: Number(depositAmount) });
         setEditing(false); setSelection([]); setReason(""); setCashPaid(false);
-        toast.success(role !== "admin" && total > REFUND_APPROVAL_LIMIT ? "Refund sent for admin approval." : mode === "cash" ? "Cash refund recorded." : "Refund recorded as awaiting repayment.");
+        toast.success(role !== "admin" && total > REFUND_APPROVAL_LIMIT ? "Refund sent for admin approval." : mode === "cash" · "Cash refund recorded." : "Refund recorded as awaiting repayment.");
       });
     }}>
       {deposit ? <><Label htmlFor="refund-deposit">Deposit to repay (maximum {formatCurrency(availableMoney)})</Label><Input id="refund-deposit" type="number" step="0.01" min="0.01" max={availableMoney} required value={depositAmount} onChange={(event) => setDepositAmount(event.target.value)} /></> :
@@ -44,7 +44,7 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
           const chosen = selection.find((entry) => entry.lineIndex === index);
           const remaining = refundableQuantity(sale, index, refunds);
           const change = (quantity: number, deviceIds: string[]) => setSelection((current) => [...current.filter((entry) => entry.lineIndex !== index), ...(quantity > 0 ? [{ lineIndex: index, quantity, deviceIds }] : [])]);
-          return <div key={index} className="border-b border-border pb-2 space-y-2"><p className="text-sm font-medium">{line.name} ? {remaining} refundable</p>
+          return <div key={index} className="border-b border-border pb-2 space-y-2"><p className="text-sm font-medium">{line.name} · {remaining} refundable</p>
             {line.tracking === "serial" ? line.devices?.map((unit) => {
               const returned = related.some((refund) => refund.status !== "cancelled" && refund.lines.some((entry) => entry.deviceIds.includes(unit.id)));
               return <label key={unit.id} className="flex gap-2 text-sm"><input type="checkbox" disabled={returned || busy} checked={chosen?.deviceIds.includes(unit.id) ?? false}
@@ -66,8 +66,8 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
     </form>}
     {!related.length && <p className="text-sm text-muted-foreground">No refunds recorded.</p>}
     {related.map((refund) => <div key={refund.id} className="rounded-lg border border-border p-3 space-y-2 text-sm">
-      <p className="font-medium">{formatCurrency(refund.total)} ? {refund.status} ? {refund.mode.replaceAll("_", " ")}</p>
-      <p>{refund.reason} ? {refund.actor}</p><p className="text-muted-foreground">Stock disposition: {refund.condition.replaceAll("_", " ")}. Inventory release is separate.</p>
+      <p className="font-medium">{formatCurrency(refund.total)} · {refund.status} · {refund.mode.replaceAll("_", " ")}</p>
+      <p>{refund.reason} · {refund.actor}</p><p className="text-muted-foreground">Stock disposition: {refund.condition.replaceAll("_", " ")}. Inventory release is separate.</p>
       {refund.reference && <p>Repayment reference: {refund.reference}</p>}
       {refund.cancellationReason && <p>Cancelled: {refund.cancellationReason}</p>}
       <Button size="sm" variant="outline" onClick={() => printRefundReceipt(refund, sale)}>Print refund record</Button>
