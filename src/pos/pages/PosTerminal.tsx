@@ -191,6 +191,7 @@ export default function PosTerminal() {
       const primary = payments[0];
       const sale = await createSale({
         cashierName: user?.name || "Cashier",
+        branch: user?.storeLocation,
         customer: customer.name.trim() ? { ...customer, name: customer.name.trim(), phone: customer.phone.trim() } : undefined,
         note,
         channel: "in_store",
@@ -219,7 +220,7 @@ export default function PosTerminal() {
     setCharging(true);
     try {
       if (!shift && amount > 0) throw new Error("Start a shift before receiving a deposit.");
-      await createSale({ cashierName: user?.name || "Cashier", channel: "in_store",
+      await createSale({ cashierName: user?.name || "Cashier", branch: user?.storeLocation, channel: "in_store",
         customer, note, lifecycle: "reserved", collectionDueAt: dueAt, lines: cart.lines,
         subtotal: cart.subtotal, total: payable,
         ...(discount ? { discount: { ...discount, approvedBy: user?.name || "Cashier" } } : {}),

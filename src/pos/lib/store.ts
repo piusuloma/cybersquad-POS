@@ -33,6 +33,7 @@ export interface Sale {
   id: string;
   saleNumber: string;
   cashierName: string;
+  branch?: string;
   customer?: SaleCustomer;
   isDemo?: boolean;
   channel: SaleChannel;
