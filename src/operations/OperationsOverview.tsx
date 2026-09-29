@@ -27,8 +27,8 @@ function BlockerRow({ item, context, refresh }: { item: Blocker; context?: Block
       <Input aria-label="Action due date" type="date" value={due} onChange={(event) => setDue(event.target.value)} /><Button disabled={busy} type="submit" size="sm">Save action</Button></form>}
   </div>;
 }
-export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: {
-  onOpenRepair: (ticket: Ticket) => void; onEnquiries: () => void; role: string;
+export default function OperationsOverview({ onOpenRepair, onEnquiries, role, attentionOnly = false }: {
+  onOpenRepair: (ticket: Ticket) => void; onEnquiries: () => void; role: string; attentionOnly?: boolean;
 }) {
   const { api } = useApi();
   const [sales, setSales] = useState<Sale[]>([]); const [refunds, setRefunds] = useState<Refund[]>([]);
@@ -104,10 +104,12 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: 
         ["New repair jobs", String(tickets.filter((ticket) => inPeriod(ticket.createdAt)).length)],
         ["Completed repairs", String(tickets.filter((ticket) => ["completed", "closed", "delivered"].includes(ticket.status) && inPeriod(ticket.handedOverAt ?? ticket.updatedAt)).length)],
         ["Warranty / repeat intake", String(tickets.filter((ticket) => (ticket.isWarranty || ticket.isRepeatCase) && inPeriod(ticket.createdAt)).length)],
-      ].map(([label, value]) => <div key={label} className="glass-card p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-semibold mt-1">{value}</p></div>)}
+      ].filter(([label]) => !attentionOnly || ["Paid returns", "Net sales", "Paid, uncollected", "Order balances", "Enquiry conversion", "Warranty / repeat intake"].includes(label)).map(([label, value]) => <div key={label} className="glass-card p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-semibold mt-1">{value}</p></div>)}
     </div>
+    {!attentionOnly && <>
     <div className="grid md:grid-cols-2 gap-4"><div className="glass-card p-4 space-y-2"><h3 className="font-medium">Salesperson performance</h3>{[...performance].map(([name, row]) => <p key={name} className="text-sm">{name}: {row.count} sales ? {formatCurrency(row.amount)}</p>)}{!performance.size && <p className="text-sm text-muted-foreground">No completed sales in this period.</p>}</div>
     <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Products sold</h3>{[...products.values()].sort((a, b) => b.amount - a.amount).slice(0, 8).map((row) => <p key={row.name} className="text-sm">{row.name}: {row.quantity} · {formatCurrency(row.amount)}</p>)}</div></div>
+    </>}
     <div className="grid md:grid-cols-2 gap-4">
       <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Repairs waiting on parts</h3>
         {(() => { const parts = active.filter((ticket) => repairStage(ticket) === "Awaiting parts");

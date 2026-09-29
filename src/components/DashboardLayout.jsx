@@ -31,6 +31,9 @@ import {
 	ClipboardList,
 } from "lucide-react";
 import OperationsWorkspace from "../operations/OperationsWorkspace";
+import OperationsOverview from "../operations/OperationsOverview";
+import { SectionTabs } from "./SectionTabs";
+import { useNavigate } from "react-router-dom";
 import { DashboardOverview } from "./DashboardOverview";
 import { SalesRecords } from "./SalesRecords";
 import { UserManagement } from "./UserManagement";
@@ -52,28 +55,11 @@ import { useWS } from "../context/WebSocketContext";
 import Logo from "../components/figma/public/images/cybersquad black.png";
 
 const menuItems = [
-	{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-	{ id: "users", label: "User Management", icon: Users },
-	{ id: "jobs", label: "Job Management", icon: Briefcase },
-	{ id: "payments", label: "Payment", icon: CreditCard },
-	{ id: "disputes", label: "Dispute Management", icon: AlertTriangle },
-	{ id: "sla", label: "SLA Management", icon: Clock },
-	{ id: "services", label: "Service Management", icon: Wrench },
-	{ id: "sales", label: "Sales", icon: ShoppingCart },
-	{ id: "operations", label: "Operations", icon: ClipboardList },
-	{ id: "tracking", label: "Live Tracking", icon: MapPin },
-	{
-		id: "admin",
-		label: "Admin Management",
-		icon: Users,
-		requiresSuperUser: true,
-	},
-	{
-		id: "stores",
-		label: "Store Management",
-		icon: Store,
-		requiresSuperUser: true,
-	},
+	{ id: "overview", label: "Overview", icon: LayoutDashboard },
+	{ id: "sales", label: "Sales & Operations", icon: ShoppingCart },
+	{ id: "repairs", label: "Repairs", icon: Wrench },
+	{ id: "finance", label: "Finance", icon: CreditCard },
+	{ id: "people", label: "People & access", icon: Users },
 	// Labeled/iconed distinctly from the header bell (NotificationModal.jsx),
 	// which is the actual personal alert inbox — this page is the broadcast/
 	// compose tool (NotificationsCenter.jsx: "Send Notification" + "History"),
@@ -91,7 +77,14 @@ export function DashboardLayout({ onLogout }) {
 	const { api } = useApi();
 	const { isConnected, unreadCount, updateUnreadCount } = useWS();
 
-	const [activeView, setActiveView] = useState("dashboard");
+	const navigate = useNavigate();
+	const [activeView, setActiveView] = useState("overview");
+	// The tab open inside each multi-screen section; dashboard cards set these to land on the right screen.
+	const [sectionTabs, setSectionTabs] = useState({ sales: "records", repairs: "jobs", finance: "payments", people: "users" });
+	const openSection = (section, tab) => {
+		setSectionTabs((current) => ({ ...current, [section]: tab }));
+		setActiveView(section);
+	};
 	const [showNotifications, setShowNotifications] = useState(false);
 	const [isSuperUser, setIsSuperUser] = useState(false);
 	const [userRole, setUserRole] = useState(null);
@@ -149,44 +142,88 @@ export function DashboardLayout({ onLogout }) {
 		return true;
 	});
 
+	const openRepair = (ticket) => navigate("/ticket/" + encodeURIComponent(ticket.id));
+	const tabState = (section) => ({
+		value: sectionTabs[section],
+		onValueChange: (tab) => setSectionTabs((current) => ({ ...current, [section]: tab })),
+	});
+
 	const renderContent = () => {
 		switch (activeView) {
-			case "dashboard":
+			case "overview":
 				return (
-					<DashboardOverview
-						onViewSales={(filter) => {
-							setSalesInitialFilter(filter ?? null);
-							setActiveView("sales");
-						}}
-						onViewSLA={() => setActiveView("sla")}
-						onViewJobs={(filter) => {
-							setJobsInitialFilter(filter ?? null);
-							setActiveView("jobs");
-						}}
+					<div className="space-y-7">
+						<DashboardOverview
+							onViewSales={(filter) => {
+								setSalesInitialFilter(filter ?? null);
+								openSection("sales", "records");
+							}}
+							onViewSLA={() => openSection("repairs", "sla")}
+							onViewJobs={(filter) => {
+								setJobsInitialFilter(filter ?? null);
+								openSection("repairs", "jobs");
+							}}
+						/>
+						<div className="space-y-3">
+							<h2 className="text-base font-semibold text-foreground">Needs attention</h2>
+							<OperationsOverview
+								role="admin"
+								attentionOnly
+								onOpenRepair={openRepair}
+								onEnquiries={() => openSection("sales", "enquiries")}
+							/>
+						</div>
+					</div>
+				);
+			case "sales":
+				return (
+					<OperationsWorkspace
+						key={sectionTabs.sales}
+						admin
+						hideOverview
+						initialTab={sectionTabs.sales}
+						extraTabs={[
+							{
+								value: "records",
+								label: "Sales records",
+								content: <SalesRecords initialFilter={salesInitialFilter} />,
+							},
+						]}
 					/>
 				);
-			case "users":
-				return <UserManagement />;
-			case "jobs":
-				return <JobManagement initialFilter={jobsInitialFilter} />;
-			case "payments":
-				return <PaymentFinance />;
-			case "disputes":
-				return <DisputeManagement userRole={userRole} />;
-			case "sla":
-				return <SLAManagement />;
-			case "services":
-				return <ServiceManagement />;
-			case "sales":
-				return <SalesRecords initialFilter={salesInitialFilter} />;
-			case "operations":
-					return <OperationsWorkspace admin />;
-				case "tracking":
-				return <LiveTracking />;
-			case "admin":
-				return <AdminManagement />;
-			case "stores":
-				return <StoreManagement />;
+			case "repairs":
+				return (
+					<SectionTabs
+						{...tabState("repairs")}
+						tabs={[
+							{ value: "jobs", label: "Jobs", content: <JobManagement initialFilter={jobsInitialFilter} /> },
+							{ value: "tracking", label: "Live tracking", content: <LiveTracking /> },
+							{ value: "sla", label: "SLA", content: <SLAManagement /> },
+							{ value: "services", label: "Services", content: <ServiceManagement /> },
+						]}
+					/>
+				);
+			case "finance":
+				return (
+					<SectionTabs
+						{...tabState("finance")}
+						tabs={[
+							{ value: "payments", label: "Payments", content: <PaymentFinance /> },
+							{ value: "disputes", label: "Disputes", content: <DisputeManagement userRole={userRole} /> },
+						]}
+					/>
+				);
+			case "people":
+				return (
+					<SectionTabs
+						{...tabState("people")}
+						tabs={[
+							{ value: "users", label: "Technicians & customers", content: <UserManagement /> },
+							{ value: "admins", label: "Admins & roles", show: isSuperUser, content: <AdminManagement /> },
+							{ value: "stores", label: "Stores", show: isSuperUser, content: <StoreManagement /> },
+						]}
+					/>
+				);
 			case "notifications":
 				return <NotificationsCenter />;
 			case "settings":

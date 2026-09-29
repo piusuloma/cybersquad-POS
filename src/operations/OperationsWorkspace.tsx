@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -22,22 +22,26 @@ function Orders() {
     <SaleRecordDetailModal sale={selected} open={Boolean(selected)} onOpenChange={(open: boolean) => { if (!open) { setSelected(null); void load(); } }} />
   </div>;
 }
-export default function OperationsWorkspace({ admin = false, onOpenRepair }: { admin?: boolean; onOpenRepair?: (ticket: Ticket) => void }) {
-  const navigate = useNavigate(); const [role, setRole] = useState(admin ? "admin" : ""); const [tab, setTab] = useState("overview");
+export interface ExtraTab { value: string; label: string; content: ReactNode; }
+export default function OperationsWorkspace({ admin = false, onOpenRepair, initialTab, extraTabs = [], hideOverview = false }: {
+  admin?: boolean; onOpenRepair?: (ticket: Ticket) => void; initialTab?: string; extraTabs?: ExtraTab[]; hideOverview?: boolean;
+}) {
+  const navigate = useNavigate(); const [role, setRole] = useState(admin ? "admin" : ""); const [tab, setTab] = useState(initialTab ?? "overview");
   useEffect(() => { if (!admin) getAuth().then((user) => { setRole(user?.role ?? ""); }); }, [admin]);
   const openRepair = onOpenRepair ?? ((ticket: Ticket) => navigate("/ticket/" + encodeURIComponent(ticket.id)));
   const salesAccess = role === "sales" || role === "admin";
   return <div className="space-y-5">
     <div><h1 className="text-2xl font-bold">Business operations</h1><p className="text-sm text-muted-foreground">Customers, after-sales support and work needing attention.</p></div>
     <Tabs value={tab} onValueChange={setTab}>
-      <TabsList className="flex flex-wrap h-auto justify-start gap-1"><TabsTrigger value="overview">{role === "admin" ? "Overview" : "My work"}</TabsTrigger>
-        <TabsTrigger value="customers">Customers</TabsTrigger>
+      <TabsList className="flex flex-wrap h-auto justify-start gap-1">{!hideOverview && <TabsTrigger value="overview">{role === "admin" ? "Overview" : "My work"}</TabsTrigger>}
+        <TabsTrigger value="customers">{admin ? "Sales contacts" : "Customers"}</TabsTrigger>
         {salesAccess && <><TabsTrigger value="enquiries">Follow-ups</TabsTrigger><TabsTrigger value="orders">Orders & collection</TabsTrigger></>}
-        <TabsTrigger value="warranty">Warranty lookup</TabsTrigger></TabsList>
-      <TabsContent value="overview"><OperationsOverview role={role} onOpenRepair={openRepair} onEnquiries={() => setTab(salesAccess ? "enquiries" : "customers")} /></TabsContent>
+        <TabsTrigger value="warranty">Warranty lookup</TabsTrigger>{extraTabs.map((tab) => <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>)}</TabsList>
+      {!hideOverview && <TabsContent value="overview"><OperationsOverview role={role} onOpenRepair={openRepair} onEnquiries={() => setTab(salesAccess ? "enquiries" : "customers")} /></TabsContent>}
       <TabsContent value="customers"><CustomerDirectory onOpenRepair={openRepair} /></TabsContent>
       {salesAccess && <><TabsContent value="enquiries"><Enquiries /></TabsContent><TabsContent value="orders"><Orders /></TabsContent></>}
       <TabsContent value="warranty"><WarrantyLookup onSelect={role === "front_desk" ? (record) => navigate("/new-ticket?intakeType=warranty&warrantyId=" + encodeURIComponent(record.id)) : undefined} /></TabsContent>
+      {extraTabs.map((tab) => <TabsContent key={tab.value} value={tab.value}>{tab.content}</TabsContent>)}
     </Tabs>
   </div>;
 }
