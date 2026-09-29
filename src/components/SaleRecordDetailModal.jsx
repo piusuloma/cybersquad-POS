@@ -52,7 +52,7 @@ export function SaleRecordDetailModal({ open, onOpenChange, sale: inputSale }) {
             </DialogHeader>
 
             <div className="flex items-center gap-2">
-              <Badge variant="outline">{sale.channel === "website" · "Website" : "In-Store"}</Badge>
+              <Badge variant="outline">{sale.channel === "website" ? "Website" : "In-Store"}</Badge>
               {isSplit ? (
                 <Badge variant="outline">Split Payment</Badge>
               ) : (

@@ -36,7 +36,7 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
       event.preventDefault(); void run(async () => {
         await createRefund({ saleId: sale.id, lines: deposit ? [] : selection, reason, condition: deposit ? "not_returned" : condition, mode, actor, actorRole: role, cashPaid, depositAmount: Number(depositAmount) });
         setEditing(false); setSelection([]); setReason(""); setCashPaid(false);
-        toast.success(role !== "admin" && total > REFUND_APPROVAL_LIMIT ? "Refund sent for admin approval." : mode === "cash" · "Cash refund recorded." : "Refund recorded as awaiting repayment.");
+        toast.success(role !== "admin" && total > REFUND_APPROVAL_LIMIT ? "Refund sent for admin approval." : mode === "cash" ? "Cash refund recorded." : "Refund recorded as awaiting repayment.");
       });
     }}>
       {deposit ? <><Label htmlFor="refund-deposit">Deposit to repay (maximum {formatCurrency(availableMoney)})</Label><Input id="refund-deposit" type="number" step="0.01" min="0.01" max={availableMoney} required value={depositAmount} onChange={(event) => setDepositAmount(event.target.value)} /></> :

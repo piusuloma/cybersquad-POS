@@ -35,7 +35,7 @@ export default function OperationsWorkspace({ admin = false, onOpenRepair }: { a
   return <div className="space-y-5">
     <div><h1 className="text-2xl font-bold">Business operations</h1><p className="text-sm text-muted-foreground">Customers, after-sales support and work needing attention.</p></div>
     <Tabs value={tab} onValueChange={setTab}>
-      <TabsList className="flex flex-wrap h-auto justify-start gap-1"><TabsTrigger value="overview">{role === "admin" · "Overview" : "My work"}</TabsTrigger>
+      <TabsList className="flex flex-wrap h-auto justify-start gap-1"><TabsTrigger value="overview">{role === "admin" ? "Overview" : "My work"}</TabsTrigger>
         {role !== "inventory_manager" && <TabsTrigger value="customers">Customers</TabsTrigger>}
         {salesAccess && <><TabsTrigger value="enquiries">Follow-ups</TabsTrigger><TabsTrigger value="quotes">Quotes</TabsTrigger><TabsTrigger value="orders">Orders & collection</TabsTrigger></>}
         {procureAccess && <><TabsTrigger value="sourcing">Sourcing</TabsTrigger><TabsTrigger value="transfers">Branch transfers</TabsTrigger></>}

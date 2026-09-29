@@ -74,7 +74,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, onTab, r
     ...orders.map((sale) => ({ id: "order:" + sale.id, title: sale.saleNumber + " · " + (sale.customer?.name ?? "Customer"), state: orderBalance(sale) > 0 ? "Order balance due" : "Paid, uncollected", owner: sale.cashierName,
       action: orderBalance(sale) > 0 ? "Confirm payment and arrange collection" : "Contact customer for collection", since: sale.orderCreatedAt ?? sale.createdAt, open: () => setSelected(sale) })),
     ...active.map((ticket) => ({ id: "repair:" + ticket.id, title: ticket.jobId + " · " + ticket.customer.name, state: repairStage(ticket),
-      owner: ticket.assignedEngineer || (repairStage(ticket) === "QC pending" · "QA desk" : "Front desk"), action: "Review " + repairStage(ticket).toLowerCase(),
+      owner: ticket.assignedEngineer || (repairStage(ticket) === "QC pending" ? "QA desk" : "Front desk"), action: "Review " + repairStage(ticket).toLowerCase(),
       since: ticket.updatedAt || ticket.createdAt, open: () => onOpenRepair(ticket) })),
     ...enquiries.filter((enquiry) => enquiry.status === "open").map((enquiry) => ({ id: "enquiry:" + enquiry.id, title: enquiry.customer.name + " · " + enquiry.request,
       state: Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue follow-up" : "Follow-up", owner: enquiry.owner, action: "Contact customer",
@@ -82,13 +82,13 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, onTab, r
     ...flow.quotes.filter((quote) => quoteStatus(quote) === "sent").map((quote) => ({ id: "quote:" + quote.id, title: quote.number + " · " + quote.customer.name, state: "Quote awaiting response",
       owner: quote.owner, action: "Follow up with customer", since: quote.updatedAt, open: () => onTab("quotes") })),
     ...flow.sourcing.filter((request) => request.status === "requested" || request.status === "quoted").map((request) => ({ id: "sourcing:" + request.id, title: request.number + " · " + request.product,
-      state: request.status === "requested" · "Sourcing awaiting procurement" : "Sourcing quote not yet sent to customer", owner: request.status === "requested" · "Procurement" : request.requestedBy,
-      action: request.status === "requested" · "Return price and availability" : "Create customer quote", since: request.updatedAt, open: () => onTab("sourcing") })),
+      state: request.status === "requested" ? "Sourcing awaiting procurement" : "Sourcing quote not yet sent to customer", owner: request.status === "requested" ? "Procurement" : request.requestedBy,
+      action: request.status === "requested" ? "Return price and availability" : "Create customer quote", since: request.updatedAt, open: () => onTab("sourcing") })),
     ...flow.transfers.filter((transfer) => transfer.status === "requested" || transfer.status === "dispatched").map((transfer) => ({ id: "transfer:" + transfer.id, title: transfer.number + " · " + transfer.product,
-      state: transfer.status === "requested" · "Transfer awaiting dispatch" : "Transfer in transit", owner: transfer.status === "requested" ? transfer.fromBranch + " inventory" : transfer.requestedBy,
-      action: transfer.status === "requested" · "Verify and dispatch" : "Confirm receipt", since: transfer.updatedAt, open: () => onTab("transfers") })),
-    ...refunds.filter((refund) => !refund.isDemo && refund.status === "pending").map((refund) => ({ id: "refund:" + refund.id, title: "Refund ? " + refund.saleNumber, state: refund.approval?.status === "required" · "Refund awaiting approval" : "Repayment pending",
-      owner: refund.approval?.status === "required" · "Admin" : refund.actor, action: refund.approval?.status === "required" · "Approve or reject refund" : "Complete repayment and record reference", since: refund.createdAt, open: () => setSelected(sales.find((sale) => sale.id === refund.saleId) ?? null) })),
+      state: transfer.status === "requested" ? "Transfer awaiting dispatch" : "Transfer in transit", owner: transfer.status === "requested" ? transfer.fromBranch + " inventory" : transfer.requestedBy,
+      action: transfer.status === "requested" ? "Verify and dispatch" : "Confirm receipt", since: transfer.updatedAt, open: () => onTab("transfers") })),
+    ...refunds.filter((refund) => !refund.isDemo && refund.status === "pending").map((refund) => ({ id: "refund:" + refund.id, title: "Refund ? " + refund.saleNumber, state: refund.approval?.status === "required" ? "Refund awaiting approval" : "Repayment pending",
+      owner: refund.approval?.status === "required" ? "Admin" : refund.actor, action: refund.approval?.status === "required" ? "Approve or reject refund" : "Complete repayment and record reference", since: refund.createdAt, open: () => setSelected(sales.find((sale) => sale.id === refund.saleId) ?? null) })),
   ];
   const ownerOf = (item: Blocker) => state?.blockers[item.id]?.owner ?? item.owner;
   const visible = management ? blockers : blockers.filter((item) => ownerOf(item) === userName || (role === "front_desk" && ownerOf(item) === "Front desk") ||

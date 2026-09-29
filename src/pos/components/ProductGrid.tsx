@@ -84,7 +84,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   value={cat}
                   className="rounded-full border border-border data-[state=active]:border-primary"
                 >
-                  {cat === "all" · "All" : cat}
+                  {cat === "all" ? "All" : cat}
                 </TabsTrigger>
               ))}
             </TabsList>
