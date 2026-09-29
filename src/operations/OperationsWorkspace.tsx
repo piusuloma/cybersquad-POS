@@ -10,7 +10,6 @@ import CustomerDirectory from "./CustomerDirectory";
 import Enquiries from "./Enquiries";
 import WarrantyLookup from "./WarrantyLookup";
 import OperationsOverview from "./OperationsOverview";
-import Quotes, { type QuoteSeed } from "./Quotes";
 import Sourcing from "./Sourcing";
 import Transfers from "./Transfers";
 function Orders() {
@@ -26,24 +25,23 @@ function Orders() {
   </div>;
 }
 export default function OperationsWorkspace({ admin = false, onOpenRepair }: { admin?: boolean; onOpenRepair?: (ticket: Ticket) => void }) {
-  const navigate = useNavigate(); const [role, setRole] = useState(admin ? "admin" : ""); const [tab, setTab] = useState("overview"); const [quoteSeed, setQuoteSeed] = useState<QuoteSeed>();
+  const navigate = useNavigate(); const [role, setRole] = useState(admin ? "admin" : ""); const [tab, setTab] = useState("overview");
   useEffect(() => { if (!admin) getAuth().then((user) => { setRole(user?.role ?? ""); if (user?.role === "inventory_manager") setTab("sourcing"); }); }, [admin]);
   const openRepair = onOpenRepair ?? ((ticket: Ticket) => navigate("/ticket/" + encodeURIComponent(ticket.id)));
   const salesAccess = role === "sales" || role === "admin";
   const procureAccess = salesAccess || role === "inventory_manager";
-  const startQuote = (seed: QuoteSeed) => { setQuoteSeed(seed); setTab("quotes"); };
   return <div className="space-y-5">
     <div><h1 className="text-2xl font-bold">Business operations</h1><p className="text-sm text-muted-foreground">Customers, after-sales support and work needing attention.</p></div>
     <Tabs value={tab} onValueChange={setTab}>
       <TabsList className="flex flex-wrap h-auto justify-start gap-1"><TabsTrigger value="overview">{role === "admin" ? "Overview" : "My work"}</TabsTrigger>
         {role !== "inventory_manager" && <TabsTrigger value="customers">Customers</TabsTrigger>}
-        {salesAccess && <><TabsTrigger value="enquiries">Follow-ups</TabsTrigger><TabsTrigger value="quotes">Quotes</TabsTrigger><TabsTrigger value="orders">Orders & collection</TabsTrigger></>}
+        {salesAccess && <><TabsTrigger value="enquiries">Follow-ups</TabsTrigger><TabsTrigger value="orders">Orders & collection</TabsTrigger></>}
         {procureAccess && <><TabsTrigger value="sourcing">Sourcing</TabsTrigger><TabsTrigger value="transfers">Branch transfers</TabsTrigger></>}
         {role !== "inventory_manager" && <TabsTrigger value="warranty">Warranty lookup</TabsTrigger>}</TabsList>
       <TabsContent value="overview"><OperationsOverview role={role} onOpenRepair={openRepair} onEnquiries={() => setTab(salesAccess ? "enquiries" : "customers")} onTab={setTab} /></TabsContent>
       {role !== "inventory_manager" && <TabsContent value="customers"><CustomerDirectory onOpenRepair={openRepair} /></TabsContent>}
-      {salesAccess && <><TabsContent value="enquiries"><Enquiries onQuote={startQuote} /></TabsContent><TabsContent value="quotes"><Quotes seed={quoteSeed} onSeedUsed={() => setQuoteSeed(undefined)} /></TabsContent><TabsContent value="orders"><Orders /></TabsContent></>}
-      {procureAccess && <><TabsContent value="sourcing"><Sourcing onQuote={startQuote} /></TabsContent><TabsContent value="transfers"><Transfers /></TabsContent></>}
+      {salesAccess && <><TabsContent value="enquiries"><Enquiries /></TabsContent><TabsContent value="orders"><Orders /></TabsContent></>}
+      {procureAccess && <><TabsContent value="sourcing"><Sourcing /></TabsContent><TabsContent value="transfers"><Transfers /></TabsContent></>}
       {role !== "inventory_manager" && <TabsContent value="warranty"><WarrantyLookup onSelect={role === "front_desk" ? (record) => navigate("/new-ticket?intakeType=warranty&warrantyId=" + encodeURIComponent(record.id)) : undefined} /></TabsContent>}
     </Tabs>
   </div>;

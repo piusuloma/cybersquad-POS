@@ -7,7 +7,7 @@ import { useApi } from "@/hooks/useApi";
 import { getSales, getRefunds, orderBalance, type Sale, type Refund } from "@/pos/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { SaleRecordDetailModal } from "@/components/SaleRecordDetailModal";
-import { getPipeline, quoteStatus, type Pipeline } from "./pipeline";
+import { getPipeline, type Pipeline } from "./pipeline";
 import { getBusiness, periodBounds, repairStage, saveBlocker, type BlockerContext } from "./business";
 
 type Blocker = { id: string; title: string; state: string; owner: string; action: string; since: string; open: () => void; };
@@ -37,7 +37,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, onTab, r
   const [period, setPeriod] = useState("today"); const [selected, setSelected] = useState<Sale | null>(null);
   const [filter, setFilter] = useState("all"); const [loadedAt, setLoadedAt] = useState(""); const [repairSource, setRepairSource] = useState("Saved repair records");
   const [loading, setLoading] = useState(false); const [userName, setUserName] = useState("");
-  const management = role === "admin"; const [flow, setFlow] = useState<Pipeline>({ quotes: [], sourcing: [], transfers: [] });
+  const management = role === "admin"; const [flow, setFlow] = useState<Pipeline>({ sourcing: [], transfers: [] });
   useEffect(() => { getAuth().then((user) => setUserName(user?.name ?? "")); }, []);
   const load = async () => {
     setLoading(true);
@@ -79,11 +79,9 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, onTab, r
     ...enquiries.filter((enquiry) => enquiry.status === "open").map((enquiry) => ({ id: "enquiry:" + enquiry.id, title: enquiry.customer.name + " · " + enquiry.request,
       state: Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue follow-up" : "Follow-up", owner: enquiry.owner, action: "Contact customer",
       since: enquiry.createdAt, open: onEnquiries })),
-    ...flow.quotes.filter((quote) => quoteStatus(quote) === "sent").map((quote) => ({ id: "quote:" + quote.id, title: quote.number + " · " + quote.customer.name, state: "Quote awaiting response",
-      owner: quote.owner, action: "Follow up with customer", since: quote.updatedAt, open: () => onTab("quotes") })),
     ...flow.sourcing.filter((request) => request.status === "requested" || request.status === "quoted").map((request) => ({ id: "sourcing:" + request.id, title: request.number + " · " + request.product,
-      state: request.status === "requested" ? "Sourcing awaiting procurement" : "Sourcing quote not yet sent to customer", owner: request.status === "requested" ? "Procurement" : request.requestedBy,
-      action: request.status === "requested" ? "Return price and availability" : "Create customer quote", since: request.updatedAt, open: () => onTab("sourcing") })),
+      state: request.status === "requested" ? "Sourcing awaiting procurement" : "Sourcing price awaiting customer decision", owner: request.status === "requested" ? "Procurement" : request.requestedBy,
+      action: request.status === "requested" ? "Return price and availability" : "Confirm with customer and close", since: request.updatedAt, open: () => onTab("sourcing") })),
     ...flow.transfers.filter((transfer) => transfer.status === "requested" || transfer.status === "dispatched").map((transfer) => ({ id: "transfer:" + transfer.id, title: transfer.number + " · " + transfer.product,
       state: transfer.status === "requested" ? "Transfer awaiting dispatch" : "Transfer in transit", owner: transfer.status === "requested" ? transfer.fromBranch + " inventory" : transfer.requestedBy,
       action: transfer.status === "requested" ? "Verify and dispatch" : "Confirm receipt", since: transfer.updatedAt, open: () => onTab("transfers") })),
@@ -114,9 +112,6 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, onTab, r
         ["New repair jobs", String(tickets.filter((ticket) => inPeriod(ticket.createdAt)).length)],
         ["Completed repairs", String(tickets.filter((ticket) => ["completed", "closed", "delivered"].includes(ticket.status) && inPeriod(ticket.handedOverAt ?? ticket.updatedAt)).length)],
         ["Warranty / repeat intake", String(tickets.filter((ticket) => (ticket.isWarranty || ticket.isRepeatCase) && inPeriod(ticket.createdAt)).length)],
-        ["Quotes issued / accepted / pending / declined", (() => { const inRange = flow.quotes.filter((quote) => quote.status !== "draft" && inPeriod(quote.createdAt)); const count = (state: string) => inRange.filter((quote) => quoteStatus(quote) === state).length;
-          return inRange.length + " / " + count("accepted") + " / " + count("sent") + " / " + count("declined"); })()],
-        ["Quote conversion", (() => { const inRange = flow.quotes.filter((quote) => quote.status !== "draft" && inPeriod(quote.createdAt)); return (inRange.length ? Math.round(inRange.filter((quote) => quote.status === "accepted").length / inRange.length * 100) : 0) + "%"; })()],
       ].map(([label, value]) => <div key={label} className="glass-card p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-semibold mt-1">{value}</p></div>)}
     </div>
     <div className="grid md:grid-cols-2 gap-4"><div className="glass-card p-4 space-y-2"><h3 className="font-medium">Salesperson performance</h3>{[...performance].map(([name, row]) => <p key={name} className="text-sm">{name}: {row.count} sales ? {formatCurrency(row.amount)}</p>)}{!performance.size && <p className="text-sm text-muted-foreground">No completed sales in this period.</p>}</div>

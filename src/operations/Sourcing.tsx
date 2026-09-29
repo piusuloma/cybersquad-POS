@@ -7,11 +7,10 @@ import { formatCurrency } from "@/frontdesk/lib/invoice";
 import type { SaleCustomer } from "@/pos/lib/devices";
 import CustomerPicker from "./CustomerPicker";
 import { getPipeline, createSourcing, respondSourcing, closeSourcing, SAMPLE_BRANCH_STOCK, type SourcingRequest } from "./pipeline";
-import type { QuoteSeed } from "./Quotes";
 
-const LABEL: Record<SourcingRequest["status"], string> = { requested: "Awaiting procurement", quoted: "Quoted, awaiting customer quote", quote_created: "Customer quote created", closed: "Closed" };
+const LABEL: Record<SourcingRequest["status"], string> = { requested: "Awaiting procurement", quoted: "Price returned to sales", closed: "Closed" };
 
-function RequestCard({ request, user, refresh, onQuote }: { request: SourcingRequest; user: User | null; refresh: () => void; onQuote: (seed: QuoteSeed) => void }) {
+function RequestCard({ request, user, refresh }: { request: SourcingRequest; user: User | null; refresh: () => void }) {
   const [price, setPrice] = useState(""); const [available, setAvailable] = useState(""); const [procNote, setProcNote] = useState("");
   const [reason, setReason] = useState(""); const [busy, setBusy] = useState(false);
   const by = user?.name ?? ""; const procurement = user?.role === "admin" || user?.role === "inventory_manager"; const selling = user?.role === "sales" || user?.role === "admin";
@@ -31,9 +30,6 @@ function RequestCard({ request, user, refresh, onQuote }: { request: SourcingReq
       <Input aria-label="Procurement note" className="flex-1 min-w-40" placeholder="Supplier / note (optional)" value={procNote} onChange={(event) => setProcNote(event.target.value)} />
       <Button size="sm" disabled={busy} onClick={() => void run(() => respondSourcing(request.id, by, user?.role, Number(price), available, procNote))}>Send quote back</Button></div>}
     {request.status === "requested" && !procurement && <p className="text-sm text-muted-foreground">Waiting for procurement to return a price and availability.</p>}
-    {request.status === "quoted" && selling && <Button size="sm" onClick={() => onQuote({ customer: request.customer, sourcingId: request.id, enquiryId: request.enquiryId,
-      lines: [{ name: request.product + (request.spec ? " (" + request.spec + ")" : ""), quantity: request.quantity, unitPrice: request.quotedPrice ?? 0 }],
-      note: "Expected availability " + request.expectedAvailability?.slice(0, 10) })}>Create customer quote</Button>}
     {(request.status === "requested" || request.status === "quoted") && <div className="flex flex-wrap gap-2">
       <Input aria-label="Close reason" className="flex-1 min-w-48" placeholder="Reason to close (declined, unavailable...)" value={reason} onChange={(event) => setReason(event.target.value)} />
       <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(() => closeSourcing(request.id, by, reason))}>Close request</Button></div>}
@@ -41,7 +37,7 @@ function RequestCard({ request, user, refresh, onQuote }: { request: SourcingReq
   </article>;
 }
 
-export default function Sourcing({ onQuote, seedCustomer }: { onQuote: (seed: QuoteSeed) => void; seedCustomer?: SaleCustomer }) {
+export default function Sourcing({ seedCustomer }: { seedCustomer?: SaleCustomer }) {
   const [requests, setRequests] = useState<SourcingRequest[]>([]); const [user, setUser] = useState<User | null>(null);
   const [customer, setCustomer] = useState<SaleCustomer | undefined>(seedCustomer); const [product, setProduct] = useState("");
   const [spec, setSpec] = useState(""); const [quantity, setQuantity] = useState("1"); const [busy, setBusy] = useState(false); const [filter, setFilter] = useState("open");
@@ -67,7 +63,7 @@ export default function Sourcing({ onQuote, seedCustomer }: { onQuote: (seed: Qu
     <label className="text-sm">Show<select className="ml-2 border rounded p-2 bg-background" value={filter} onChange={(event) => setFilter(event.target.value)}>
       <option value="open">Open</option><option value="closed">Closed</option><option value="all">All</option></select></label>
     {requests.filter((request) => filter === "all" || (filter === "closed" ? request.status === "closed" : request.status !== "closed")).sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
-      .map((request) => <RequestCard key={request.id + request.updatedAt} request={request} user={user} refresh={load} onQuote={onQuote} />)}
+      .map((request) => <RequestCard key={request.id + request.updatedAt} request={request} user={user} refresh={load} />)}
     {!requests.length && <p className="text-muted-foreground">No sourcing requests.</p>}
   </div>;
 }
