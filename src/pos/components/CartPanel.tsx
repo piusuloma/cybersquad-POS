@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DeviceDetails from "./DeviceDetails";
-import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2, BadgePercent } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2, BadgePercent, Delete, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +65,9 @@ interface CartPanelProps {
   discountLimitPercent: number | null;
   onApplyDiscount: (amount: number, reason: string) => string | undefined;
   onRemoveDiscount: () => void;
+  onSetPrice?: (productId: string, price: number) => void;
+  onReserve: () => void;
+  canReserve: boolean;
 }
 
 export default function CartPanel({
@@ -90,8 +93,14 @@ export default function CartPanel({
   discountLimitPercent,
   onApplyDiscount,
   onRemoveDiscount,
+  onSetPrice,
+  onReserve,
+  canReserve,
 }: CartPanelProps) {
   const [confirmClear, setConfirmClear] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [keyMode, setKeyMode] = useState<"qty" | "disc" | "price">("qty");
+  const [keyBuffer, setKeyBuffer] = useState("");
   const [discountOpen, setDiscountOpen] = useState(false);
   const [discountKind, setDiscountKind] = useState<"percent" | "amount">("percent");
   const [discountValue, setDiscountValue] = useState("");
@@ -121,6 +130,17 @@ export default function CartPanel({
     }
   }, [lines.length]);
 
+  const selected = lines.find((line) => line.productId === selectedId) ?? lines[lines.length - 1];
+  const changeKeyMode = (mode: "qty" | "disc" | "price") => { setKeyMode(mode); setKeyBuffer(""); };
+  const pressKey = (key: string) => {
+    const next = key === "back" ? keyBuffer.slice(0, -1) : key === "clear" ? "" : key === "." ? (keyBuffer.includes(".") ? keyBuffer : (keyBuffer || "0") + ".") : keyBuffer + key;
+    setKeyBuffer(next);
+    const value = Number(next);
+    if (keyMode === "disc") { if (!discount) { setDiscountKind("percent"); setDiscountValue(next); setDiscountOpen(true); } return; }
+    if (!selected || !(value >= 0)) return;
+    if (keyMode === "qty" && Number.isInteger(value) && value >= 1 && selected.tracking !== "serial") onUpdateQuantity(selected.productId, value);
+    if (keyMode === "price" && onSetPrice && next !== "") onSetPrice(selected.productId, value);
+  };
   const isSplit = splitRows !== null;
 
   const startSplit = () => {
@@ -190,29 +210,14 @@ export default function CartPanel({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onRefunds}>
-            <Undo2 className="w-3.5 h-3.5 mr-1" />
-            Refunds
-          </Button>
-        {lines.length > 0 && (
-          <>
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onHold}>
-              <PauseCircle className="w-3.5 h-3.5 mr-1" />
-              Hold
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => setConfirmClear(true)}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1" />
-              Clear
-            </Button>
-          </>
-        )}
-        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="w-3.5 h-3.5 mr-1" />Refund</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="w-3.5 h-3.5 mr-1" />Hold</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="w-3.5 h-3.5 mr-1" />Discount</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="w-3.5 h-3.5 mr-1" />Quote / Order</Button>
+        <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="w-3.5 h-3.5 mr-1" />Clear sale</Button>
       </div>
 
       {lines.length > 0 && (
@@ -234,7 +239,7 @@ export default function CartPanel({
       ) : (
         <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto pr-1" aria-live="polite">
           {lines.map((line) => (
-            <div key={line.productId} className="flex items-center justify-between gap-2">
+            <div key={line.productId} onClick={() => { setSelectedId(line.productId); setKeyBuffer(""); }} className={`flex items-center justify-between gap-2 rounded-md p-1 cursor-pointer ${selected?.productId === line.productId ? "ring-2 ring-primary/50 bg-secondary" : ""}`}>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{line.name}</p>
                 <DeviceDetails line={line} />
@@ -292,6 +297,22 @@ export default function CartPanel({
         </div>
       )}
 
+      {lines.length > 0 && (
+        <div className="grid grid-cols-4 gap-1 mb-4" role="group" aria-label="Keypad">
+          {["1", "2", "3", "qty", "4", "5", "6", "disc", "7", "8", "9", "price", "clear", "0", ".", "back"].map((key) => {
+            const mode = key === "qty" || key === "disc" || key === "price";
+            if (mode) {
+              const label = key === "qty" ? "Qty" : key === "disc" ? "% Disc" : "Price";
+              return <Button key={key} type="button" size="sm" variant={keyMode === key ? "default" : "outline"} className="h-11" disabled={key === "price" && !onSetPrice}
+                title={key === "price" && !onSetPrice ? "Price changes need an admin account" : undefined} onClick={() => changeKeyMode(key as "qty" | "disc" | "price")}>{label}</Button>;
+            }
+            return <Button key={key} type="button" size="sm" variant="outline" className="h-11 text-base" aria-label={key === "back" ? "Backspace" : key === "clear" ? "Clear entry" : key}
+              onClick={() => pressKey(key)}>{key === "back" ? <Delete className="w-4 h-4" /> : key === "clear" ? "C" : key}</Button>;
+          })}
+          <p className="col-span-4 text-xs text-muted-foreground">{keyMode === "qty" ? "Type a quantity for the highlighted item." : keyMode === "price" ? "Type a new unit price for the highlighted item." : "Type a % discount, then confirm it below."}</p>
+        </div>
+      )}
+
       <div className="border-t border-border pt-4 space-y-3 mt-auto">
         {lines.length > 0 && (discount ? (
           <div className="space-y-1 text-sm">
@@ -314,9 +335,7 @@ export default function CartPanel({
             {discountError && <p className="text-xs text-destructive" role="alert">{discountError}</p>}
             <div className="flex gap-2"><Button size="sm" onClick={submitDiscount}>Apply</Button><Button size="sm" variant="outline" onClick={() => { setDiscountOpen(false); setDiscountError(""); }}>Cancel</Button></div>
           </div>
-        ) : (
-          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setDiscountOpen(true)}><BadgePercent className="w-3.5 h-3.5 mr-1" />Add discount</Button>
-        ))}
+        ) : null)}
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Total</span>
           <span className="font-semibold text-lg text-foreground">{formatCurrency(subtotal)}</span>

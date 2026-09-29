@@ -478,6 +478,9 @@ async function appendAudit(actor: string, action: string, detail: string) {
   log.push({ id: generateId(), at: new Date().toISOString(), actor, action, detail });
   await writeToStorage("pos_audit_log", log);
 }
+export function logAudit(actor: string, action: string, detail: string) {
+  return withSaleLock(() => appendAudit(actor, action, detail));
+}
 // Order-level discounts are shared across lines, so a returned line is worth its share of what was actually paid.
 export function refundLineValue(sale: Sale, lineIndex: number, quantity: number) {
   const ratio = sale.subtotal > 0 ? sale.total / sale.subtotal : 1;

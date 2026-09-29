@@ -11,6 +11,7 @@ import { fetchPosCatalog } from "@/pos/lib/catalog";
 import { usePosCart } from "@/pos/lib/cart";
 import {
   createSale,
+  logAudit,
   getSales,
   getHeldSales,
   getActiveShift,
@@ -282,12 +283,12 @@ export default function PosTerminal() {
           {sampleMode ? "Back to product catalog" : "Try sample devices"}
         </Button>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 lg:order-2">
           <ProductGrid items={activeCatalog} loading={!sampleMode && loading} onAddItem={handleAddItem} />
         </div>
 
-        <CartPanel
+        <div className="lg:col-span-2 lg:order-1"><CartPanel
           lines={cart.lines}
           subtotal={payable}
           itemsTotal={cart.subtotal}
@@ -313,6 +314,14 @@ export default function PosTerminal() {
           onNoteChange={setNote}
           customerRequired={needsCustomer}
           onRefunds={() => setShowRefunds(true)}
+          onReserve={() => setShowReserve(true)}
+          canReserve={!charging && Boolean(customer.name.trim() && customer.phone.trim())}
+          onSetPrice={user?.role === "admin" ? (productId, price) => {
+            const line = cart.lines.find((entry) => entry.productId === productId);
+            if (!line || !(price >= 0) || price === line.unitPrice) return;
+            cart.setPrice(productId, price);
+            void logAudit(user?.name ?? "Admin", "price_override", line.name + ": " + line.unitPrice + " to " + price);
+          } : undefined}
           onSelectDevices={(productId) => {
             const item = activeCatalog.find((product) => product.id === productId);
             if (item) void selectDevices(item);
@@ -322,10 +331,9 @@ export default function PosTerminal() {
           onCharge={handleCharge}
           charging={charging}
           shiftActive={!!shift}
-        />
+        /></div>
       </div>
 
-      {cart.lines.length > 0 && <Button variant="outline" disabled={charging || !customer.name.trim() || !customer.phone.trim()} onClick={() => setShowReserve(true)}>Reserve for collection</Button>}
       {showReserve && <ReserveOrderDialog total={payable} busy={charging} onClose={() => setShowReserve(false)} onSave={reserveOrder} />}
       {deviceProduct && <DeviceSelectionDialog key={deviceProduct.id} product={deviceProduct}
         selected={cart.lines.find((line) => line.productId === deviceProduct.id)?.devices ?? []}

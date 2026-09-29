@@ -108,7 +108,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
             <p className="text-xs text-muted-foreground">Try a different search term or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
             {filtered.map((item) => {
               const outOfStock = item.quantity - item.locked <= 0;
               return (
@@ -117,7 +117,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   type="button"
                   disabled={outOfStock}
                   onClick={() => onAddItem(item)}
-                  className={`text-left rounded-lg border p-3 transition-all min-h-[6rem] ${
+                  className={`text-left rounded-lg border p-3 transition-all min-h-[8rem] flex flex-col ${
                     scanFlashId === item.id
                       ? "border-primary ring-2 ring-primary/40 bg-secondary"
                       : "border-border hover:border-primary hover:bg-secondary"
@@ -135,7 +135,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   {item.sku && <p className="text-xs text-muted-foreground truncate">SKU: {item.sku}</p>}
                   {item.tracking === "serial" && <p className="text-xs text-primary mt-1">IMEI / serial selection required</p>}
                   <p className="text-xs text-muted-foreground mt-1">{warrantyLabel(item.warranty)}</p>
-                  <p className="text-sm font-semibold text-primary mt-1">{formatCurrency(item.price)}</p>
+                  <p className="mt-2 rounded-md bg-primary text-primary-foreground text-center text-sm font-semibold py-1.5">{formatCurrency(item.price)}</p>
                   {!outOfStock && (
                     <p className={`text-xs mt-1 ${item.quantity - item.locked <= 3 ? "text-amber-600" : "text-muted-foreground"}`}>
                       {item.quantity - item.locked <= 3 ? "Low stock: " : "In stock: "}{item.quantity - item.locked}

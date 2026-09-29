@@ -55,6 +55,10 @@ export function usePosCart() {
     });
   };
 
+  const setPrice = (productId: string, unitPrice: number) => {
+    setLines((prev) => prev.map((line) => (line.productId === productId ? { ...line, unitPrice } : line)));
+  };
+
   const removeItem = (productId: string) => {
     setLines((prev) => prev.filter((line) => line.productId !== productId));
   };
@@ -68,5 +72,5 @@ export function usePosCart() {
     [lines]
   );
 
-  return { lines, addItem, setDevices, updateQuantity, removeItem, clear, restore, subtotal };
+  return { lines, addItem, setDevices, updateQuantity, setPrice, removeItem, clear, restore, subtotal };
 }
