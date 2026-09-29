@@ -28,7 +28,9 @@ import {
 	Store,
 	MapPin,
 	ShoppingCart,
+	ClipboardList,
 } from "lucide-react";
+import OperationsWorkspace from "../operations/OperationsWorkspace";
 import { DashboardOverview } from "./DashboardOverview";
 import { SalesRecords } from "./SalesRecords";
 import { UserManagement } from "./UserManagement";
@@ -58,6 +60,7 @@ const menuItems = [
 	{ id: "sla", label: "SLA Management", icon: Clock },
 	{ id: "services", label: "Service Management", icon: Wrench },
 	{ id: "sales", label: "Sales", icon: ShoppingCart },
+	{ id: "operations", label: "Operations", icon: ClipboardList },
 	{ id: "tracking", label: "Live Tracking", icon: MapPin },
 	{
 		id: "admin",
@@ -176,7 +179,9 @@ export function DashboardLayout({ onLogout }) {
 				return <ServiceManagement />;
 			case "sales":
 				return <SalesRecords initialFilter={salesInitialFilter} />;
-			case "tracking":
+			case "operations":
+					return <OperationsWorkspace admin />;
+				case "tracking":
 				return <LiveTracking />;
 			case "admin":
 				return <AdminManagement />;
