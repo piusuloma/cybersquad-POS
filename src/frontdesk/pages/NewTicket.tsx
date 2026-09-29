@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { getWarrantyRecords, linkWarranty, type WarrantyRecord } from "@/operations/business";
 import {
   ArrowLeft,
   ArrowRight,
@@ -383,6 +384,8 @@ export default function NewTicket() {
   const [returningTicketCount, setReturningTicketCount] = useState(0);
   const [sourceTicket, setSourceTicket] = useState<Ticket | null>(null);
   const [warrantyLookup, setWarrantyLookup] = useState<WarrantyLookupMatch | null>(null);
+  const warrantyRecordId = searchParams.get("warrantyId")?.trim() ?? "";
+  const [linkedWarranty, setLinkedWarranty] = useState<WarrantyRecord | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -949,6 +952,24 @@ export default function NewTicket() {
   }, [draftTicketId, navigate, searchParamString]);
 
   useEffect(() => {
+    if (!warrantyRecordId) { setLinkedWarranty(null); return; }
+    let mounted = true;
+    getWarrantyRecords().then((records) => {
+      const record = records.find((entry) => entry.id === warrantyRecordId);
+      if (!mounted) return;
+      if (!record || record.returned) { toast.error("That warranty record is not available for intake."); return; }
+      setLinkedWarranty(record);
+      setName(record.customer.name);
+      setPhone(record.customer.phone);
+      if (record.customer.email) setEmail(record.customer.email);
+      if (record.make) setMake(record.make);
+      if (record.model) setModel(record.model);
+      if (record.serial) setImei(record.serial);
+    }).catch(() => toast.error("Could not load the original warranty record."));
+    return () => { mounted = false; };
+  }, [warrantyRecordId]);
+
+  useEffect(() => {
     if (corporateParentJobId && step === 0) {
       setStep(1);
       setHighestUnlockedStep(1);
@@ -1182,6 +1203,10 @@ export default function NewTicket() {
     if (!res.data?.success) throw new Error(res.data?.message || "Job creation failed");
 
     const job = res.data.result;
+    if (linkedWarranty) {
+      try { await linkWarranty(String(job.id), linkedWarranty); }
+      catch { toast.error("Ticket created, but the original warranty could not be linked."); }
+    }
     let latestStatus = typeof job.status === "string" ? job.status : undefined;
     if (intakeType === "post_warranty" || intakeType === "onsite" || Boolean(corporateParentJobId)) {
       latestStatus = (await autoAssignTechnician(job.id)) ?? latestStatus;

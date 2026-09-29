@@ -19,6 +19,7 @@ import QADesk from "./frontdesk/pages/QADesk";
 import Inventory from "./frontdesk/pages/Inventory";
 import DeviceCategoriesPage from "./frontdesk/pages/DeviceCategoriesPage";
 import PosTerminal from "./pos/pages/PosTerminal";
+import OperationsWorkspace from "./operations/OperationsWorkspace";
 import "./frontdesk/styles/frontdesk.css";
 
 function ResetPasswordRoute() {
@@ -156,6 +157,14 @@ export default function App() {
             element={
               <FrontdeskProtectedRoute allowedRoles={["sales"]}>
                 <PosTerminal />
+              </FrontdeskProtectedRoute>
+            }
+          />
+          <Route
+            path="/operations"
+            element={
+              <FrontdeskProtectedRoute allowedRoles={["front_desk", "sales", "admin"]}>
+                <OperationsWorkspace />
               </FrontdeskProtectedRoute>
             }
           />

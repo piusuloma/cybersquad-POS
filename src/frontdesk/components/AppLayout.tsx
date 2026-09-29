@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   Tag,
   ShoppingCart,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,10 +55,12 @@ const frontDeskNavItems: NavItem[] = [
   { path: "/walk-in", label: "Walk In", icon: WalkInIcon },
   { path: "/drafts", label: "Draft Tickets", icon: ClipboardList, showCountBadge: true, countType: "draft_tickets" },
   { path: "/self-service", label: "Corporate / Bulk Jobs", icon: Globe, showCountBadge: true, countType: "online_bookings" },
+  { path: "/operations", label: "Operations", icon: Briefcase },
 ];
 
 const adminNavItems: NavItem[] = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/operations", label: "Operations", icon: Briefcase },
   { path: "/admin/users", label: "User Management", icon: UsersRound },
   { path: "/admin/jobs", label: "Job Management", icon: ClipboardList },
   { path: "/admin/payments", label: "Payment", icon: CreditCard },
@@ -84,6 +87,7 @@ const inventoryManagerNavItems: NavItem[] = [
 
 const posNavItems: NavItem[] = [
   { path: "/pos", label: "New Sale", icon: ShoppingCart },
+  { path: "/operations", label: "Operations", icon: Briefcase },
 ];
 
 const THEME_KEY = "cybersquad_theme";

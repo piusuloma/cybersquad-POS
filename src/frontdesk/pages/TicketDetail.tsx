@@ -28,6 +28,7 @@ import {
   TICKET_INTAKE_LABELS,
 } from "@/frontdesk/lib/store";
 import { mapBackendJobStatusToTicketStatus, mapBackendTicketToFrontend } from "@/frontdesk/lib/store";
+import RepairWarrantyPanel from "@/operations/RepairWarrantyPanel";
 import { useApi } from "@/hooks/useApi";
 import { useWS } from "@/context/WebSocketContext";
 import { getNigerianPhoneSearchVariants } from "@/utils/phoneNumber";
@@ -2826,6 +2827,8 @@ export default function TicketDetail() {
           )}
         </div>
       </div>
+
+      <RepairWarrantyPanel ticket={ticket} user={user} />
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="glass-card p-5 space-y-3">
