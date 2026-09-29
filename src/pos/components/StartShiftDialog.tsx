@@ -7,16 +7,18 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
 interface StartShiftDialogProps {
   open: boolean;
+  onOpenChange: (open: boolean) => void;
   onStart: (openingFloat: number) => Promise<void> | void;
 }
 
-export default function StartShiftDialog({ open, onStart }: StartShiftDialogProps) {
+export default function StartShiftDialog({ open, onOpenChange, onStart }: StartShiftDialogProps) {
   const [openingFloat, setOpeningFloat] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -26,24 +28,18 @@ export default function StartShiftDialog({ open, onStart }: StartShiftDialogProp
     setSubmitting(true);
     try {
       await onStart(value);
+      setOpeningFloat("");
     } finally {
       setSubmitting(false);
-      setOpeningFloat("");
     }
   };
 
   return (
-    <Dialog open={open}>
-      {/* No close/cancel affordance — a shift must be started before selling. */}
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {/* Inline style guards against .frontdesk-theme's frozen legacy stylesheet,
           whose higher-specificity ".max-w-lg" rule can silently beat plain
           "sm:max-w-*" utility classes on pages under that theme (e.g. POS). */}
-      <DialogContent
-        className="sm:max-w-sm"
-        style={{ maxWidth: "24rem" }}
-        onInteractOutside={(e) => e.preventDefault()}
-        showCloseButton={false}
-      >
+      <DialogContent className="sm:max-w-sm" style={{ maxWidth: "24rem" }}>
         <DialogHeader className="items-center text-center">
           <Wallet className="w-10 h-10 text-primary" />
           <DialogTitle>Start Your Shift</DialogTitle>
@@ -65,9 +61,14 @@ export default function StartShiftDialog({ open, onStart }: StartShiftDialogProp
           />
         </div>
 
-        <Button className="w-full" disabled={!openingFloat || submitting} onClick={handleSubmit}>
-          {submitting ? "Starting..." : "Start Shift"}
-        </Button>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={!openingFloat || submitting} onClick={handleSubmit}>
+            {submitting ? "Starting..." : "Start Shift"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

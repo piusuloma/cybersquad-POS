@@ -4,12 +4,12 @@ import SearchField from "@/frontdesk/components/SearchField";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
-import type { InventoryItem } from "@/frontdesk/lib/store";
+import { warrantyLabel, type PosProduct } from "../lib/devices";
 
 interface ProductGridProps {
-  items: InventoryItem[];
+  items: PosProduct[];
   loading: boolean;
-  onAddItem: (item: InventoryItem, quantity?: number) => void;
+  onAddItem: (item: PosProduct, quantity?: number) => void;
 }
 
 function normalize(value: string) {
@@ -115,6 +115,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                 <button
                   key={item.id}
                   type="button"
+                  disabled={outOfStock}
                   onClick={() => onAddItem(item)}
                   className={`text-left rounded-lg border p-3 transition-all min-h-[6rem] ${
                     scanFlashId === item.id
@@ -132,6 +133,8 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   </div>
                   <p className="text-sm font-medium text-foreground mt-1 line-clamp-2">{item.name}</p>
                   {item.sku && <p className="text-xs text-muted-foreground truncate">SKU: {item.sku}</p>}
+                  {item.tracking === "serial" && <p className="text-xs text-primary mt-1">IMEI / serial selection required</p>}
+                  <p className="text-xs text-muted-foreground mt-1">{warrantyLabel(item.warranty)}</p>
                   <p className="text-sm font-semibold text-primary mt-1">{formatCurrency(item.price)}</p>
                 </button>
               );

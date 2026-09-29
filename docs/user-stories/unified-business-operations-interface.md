@@ -25,6 +25,10 @@
 - Given the cashier has completed the transaction details, when they proceed to checkout, then the system creates the corresponding sales transaction through the existing Odoo backend.
 - Given a sale has been successfully processed, when the transaction is completed, then the system generates the applicable customer invoice and receipt.
 - Given the POS interface is a new frontend, when a cashier performs a sales function, then the system uses the existing Odoo functionality through API integration without creating a separate backend instance.
+- Given a customer wants to pay using more than one payment method, when the cashier checks out the sale, then the system allows the sale to be split across multiple payment methods whose amounts add up to the sale total.
+- Given a split payment is being entered, when the allocated amounts do not yet add up to the sale total, then the system blocks checkout and shows the outstanding balance still to be allocated.
+- Given a sale was paid with more than one payment method, when the receipt or sale record is viewed, then the amount charged to each payment method is itemized.
+- Given no cash shift is currently open, when a cashier attempts to charge a sale, then the system blocks the charge and prompts the cashier to start a shift first.
 
 ## 3. Admin Dashboard
 
@@ -50,3 +54,15 @@
 - Given a staff member is assigned an Admin role, when they log in, then the system provides access to the administrative dashboard and permitted management functions.
 - Given a staff member is assigned another operational role, when they log in, then the system displays only the functions permitted for that role.
 - Given a staff member's role or permissions are changed, when they next access the system, then their available functions reflect the updated permissions.
+
+## 5. Cash Shift Management
+
+**User Story:** As a cashier, I want to open and close a cash shift with an opening and closing float, so that the cash I handle during my shift can be reconciled against sales.
+
+**Acceptance Criteria:**
+
+- Given a cashier has no active shift, when they choose to start one, then the system records the opening cash float they counted and marks the shift as active.
+- Given a cashier has an active shift, when they choose to end it, then the system prompts for the counted closing float.
+- Given a shift is ended with a closing float, when the system reconciles the shift, then it compares the counted closing float against the expected cash (opening float plus cash collected during the shift, including the cash portion of any split-payment sales) and reports the variance.
+- Given a shift has just ended, when the cashier is ready to resume sales, then they can start a new shift on their own initiative rather than being forced into one immediately.
+- Given no shift is currently open, when a cashier tries to complete a sale, then the system prevents the sale and directs them to start a shift first.

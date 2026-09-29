@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import type { InventoryItem } from "@/frontdesk/lib/store";
+import type { PosProduct, SelectedDevice, DeviceLine } from "./devices";
 
-export interface PosCartLine {
+export interface PosCartLine extends DeviceLine {
   productId: string;
   name: string;
   sku?: string;
@@ -12,7 +12,7 @@ export interface PosCartLine {
 export function usePosCart() {
   const [lines, setLines] = useState<PosCartLine[]>([]);
 
-  const addItem = (item: InventoryItem, quantity = 1) => {
+  const addItem = (item: PosProduct, quantity = 1) => {
     setLines((prev) => {
       const existing = prev.find((line) => line.productId === item.id);
       if (existing) {
@@ -28,8 +28,21 @@ export function usePosCart() {
           sku: item.sku,
           unitPrice: item.price,
           quantity,
+          tracking: item.tracking,
+          warranty: item.warranty,
+          isDemo: item.isDemo,
         },
       ];
+    });
+  };
+
+  const setDevices = (item: PosProduct, devices: SelectedDevice[]) => {
+    setLines((prev) => {
+      const rest = prev.filter((line) => line.productId !== item.id);
+      if (!devices.length) return rest;
+      return [...rest, { productId: item.id, name: item.name, sku: item.sku,
+        unitPrice: item.price, quantity: devices.length, tracking: "serial",
+        warranty: item.warranty, devices, isDemo: item.isDemo }];
     });
   };
 
@@ -38,7 +51,7 @@ export function usePosCart() {
       if (quantity <= 0) {
         return prev.filter((line) => line.productId !== productId);
       }
-      return prev.map((line) => (line.productId === productId ? { ...line, quantity } : line));
+      return prev.map((line) => (line.productId === productId ? { ...line, quantity, devices: line.devices?.slice(0, quantity) } : line));
     });
   };
 
@@ -55,5 +68,5 @@ export function usePosCart() {
     [lines]
   );
 
-  return { lines, addItem, updateQuantity, removeItem, clear, restore, subtotal };
+  return { lines, addItem, setDevices, updateQuantity, removeItem, clear, restore, subtotal };
 }

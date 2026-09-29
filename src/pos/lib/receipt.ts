@@ -1,7 +1,8 @@
 import { AppSettings, PAYMENT_MODE_LABELS } from "@/frontdesk/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import cybersquadLightLogo from "@/frontdesk/assets/cybersquad black.png";
-import type { Sale } from "./store";
+import { getSalePayments, type Sale, type Refund } from "./store";
+import { deviceDetailText } from "./devices";
 
 function escapeHtml(value: string) {
   return value
@@ -12,7 +13,7 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
+export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>, title?: string) {
   if (typeof window === "undefined") return;
 
   const businessName = settings?.businessName || "Cybersquad Device Services";
@@ -22,7 +23,11 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
   const receiptFooter =
     settings?.receiptFooter || "Thank you for choosing Cybersquad. This receipt was generated electronically.";
   const logoUrl = cybersquadLightLogo;
-  const paymentModeLabel = PAYMENT_MODE_LABELS[sale.paymentMode] ?? sale.paymentMode;
+  const payments = getSalePayments(sale);
+  const isSplit = payments.length > 1;
+  const paymentModeLabel = payments
+    .map((payment) => PAYMENT_MODE_LABELS[payment.mode] ?? payment.mode)
+    .join(" + ");
 
   const popup = window.open("", "_blank", "width=960,height=720");
   if (!popup) return;
@@ -30,7 +35,7 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
   const lineRows = sale.lines
     .map(
       (line) => `<tr>
-              <td>${escapeHtml(line.name)}${line.sku ? ` <span class="muted">(${escapeHtml(line.sku)})</span>` : ""}</td>
+              <td>${escapeHtml(line.name)}${line.sku ? ` <span class="muted">(${escapeHtml(line.sku)})</span>` : ""}${deviceDetailText(line).map((text) => `<div class="muted" style="font-size:12px">${escapeHtml(text)}</div>`).join("")}</td>
               <td>${line.quantity}</td>
               <td>${escapeHtml(formatCurrency(line.unitPrice))}</td>
               <td>${escapeHtml(formatCurrency(line.unitPrice * line.quantity))}</td>
@@ -138,7 +143,7 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
       <div class="row">
         <div>
           <img src="${escapeHtml(logoUrl)}" alt="Cybersquad logo" class="brand-logo" />
-          <h1>Sales Receipt</h1>
+          <h1>${escapeHtml(title ?? (sale.lifecycle === "reserved" ? "Order / Deposit Record" : sale.isDemo ? "Sample Sales Receipt" : "Sales Receipt"))}</h1>
           <p class="muted">${escapeHtml(businessName)}</p>
           ${businessPhone ? `<p class="muted">${escapeHtml(businessPhone)}</p>` : ""}
           ${businessEmail ? `<p class="muted">${escapeHtml(businessEmail)}</p>` : ""}
@@ -147,11 +152,13 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
         <div style="text-align:right;">
           <p><strong>${escapeHtml(sale.saleNumber)}</strong></p>
           <p class="muted">Issued ${escapeHtml(new Date(sale.createdAt).toLocaleString())}</p>
+          ${sale.customer ? `<p>Customer: ${escapeHtml(sale.customer.name)} ? ${escapeHtml(sale.customer.phone)}</p>` : ""}
           <p class="muted">Cashier ${escapeHtml(sale.cashierName)}</p>
           <p class="muted">Payment: ${escapeHtml(paymentModeLabel)}</p>
         </div>
       </div>
 
+      ${sale.note ? "<p>Note: " + escapeHtml(sale.note) + "</p>" : ""}
       <div class="section">
         <table>
           <thead>
@@ -176,14 +183,23 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
       </div>
 
       ${
-        sale.paymentMode === "cash" && sale.cashTendered !== undefined
+        isSplit
+          ? payments
+              .map(
+                (payment) => `<div class="row" style="margin-top:4px;">
+        <div><p class="muted">${escapeHtml(PAYMENT_MODE_LABELS[payment.mode] ?? payment.mode)}</p></div>
+        <div>${escapeHtml(formatCurrency(payment.amount))}</div>
+      </div>`
+              )
+              .join("")
+          : payments[0]?.mode === "cash" && payments[0].cashTendered !== undefined
           ? `<div class="row" style="margin-top:8px;">
         <div><p class="muted">Cash Tendered</p></div>
-        <div>${escapeHtml(formatCurrency(sale.cashTendered))}</div>
+        <div>${escapeHtml(formatCurrency(payments[0].cashTendered))}</div>
       </div>
       <div class="row" style="margin-top:4px;">
         <div><p class="muted">Change Due</p></div>
-        <div>${escapeHtml(formatCurrency(sale.changeDue ?? 0))}</div>
+        <div>${escapeHtml(formatCurrency(payments[0].changeDue ?? 0))}</div>
       </div>`
           : ""
       }
@@ -196,4 +212,16 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>) {
 
   popup.document.write(html);
   popup.document.close();
+}
+
+
+export function printRefundReceipt(refund: Refund, original: Sale) {
+  const lines = refund.kind === "deposit" ? [{ productId: "deposit", name: "Deposit repayment", quantity: -1, unitPrice: refund.total }] :
+    refund.lines.map((entry) => ({ ...original.lines[entry.lineIndex], quantity: -entry.quantity,
+      devices: original.lines[entry.lineIndex].devices?.filter((unit) => entry.deviceIds.includes(unit.id)) }));
+  printSaleReceipt({ ...original, lines, saleNumber: "REF-" + refund.id + " / " + original.saleNumber,
+    createdAt: refund.paidAt ?? refund.createdAt, total: -refund.total, subtotal: -refund.total,
+    payments: [{ mode: refund.mode, amount: -refund.total }], paymentMode: refund.mode,
+    note: "Status: " + refund.status + ". Reason: " + refund.reason + ". Reference: " + (refund.reference ?? "Cash / pending"),
+  }, undefined, (refund.isDemo ? "Sample " : "") + (refund.status === "paid" ? "Refund Receipt" : "Refund Record ? " + refund.status));
 }

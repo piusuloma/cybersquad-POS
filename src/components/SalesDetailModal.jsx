@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { SaleRecordDetailModal } from "./SaleRecordDetailModal";
 import {
   Dialog,
   DialogContent,
@@ -24,8 +25,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { ShoppingCart, Loader2 } from "lucide-react";
-import { getSales, isWithinRange } from "../pos/lib/store";
-import { PAYMENT_MODE_LABELS } from "../frontdesk/lib/store";
+import { getSales, getSalePaymentLabel, isWithinRange } from "../pos/lib/store";
 import { formatCurrency } from "../lib/currency";
 
 // Same range set as the admin Sales Records page (src/components/SalesRecords.jsx)
@@ -40,6 +40,7 @@ const RANGE_OPTIONS = [
 ];
 
 export function SalesDetailModal({ open, onOpenChange }) {
+  const [selectedSale, setSelectedSale] = useState(null);
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(false);
   const [range, setRange] = useState("today");
@@ -69,7 +70,7 @@ export function SalesDetailModal({ open, onOpenChange }) {
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <><Dialog open={open} onOpenChange={onOpenChange}>
       {/* Inline styles, not just classNames: this dialog can render under the
           .frontdesk-theme scope (POS), whose frozen legacy stylesheet defines
           higher-specificity ".frontdesk-theme .max-w-lg" rules that silently
@@ -133,14 +134,14 @@ export function SalesDetailModal({ open, onOpenChange }) {
                 {!loading &&
                   filtered.map((sale) => (
                     <TableRow key={sale.id}>
-                      <TableCell className="font-mono text-sm font-medium">{sale.saleNumber}</TableCell>
+                      <TableCell className="font-mono text-sm font-medium"><button type="button" className="text-primary underline" onClick={() => setSelectedSale(sale)}>{sale.saleNumber}</button><span className="block text-xs">{sale.lifecycle ?? "completed"} ? {sale.customer?.name}</span>{sale.isDemo && <span className="block text-xs">Sample</span>}</TableCell>
                       <TableCell>{sale.cashierName}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {sale.lines.reduce((sum, l) => sum + l.quantity, 0)} item(s)
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
-                          {PAYMENT_MODE_LABELS[sale.paymentMode] ?? sale.paymentMode}
+                          {getSalePaymentLabel(sale)}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">{formatCurrency(sale.total)}</TableCell>
@@ -154,6 +155,6 @@ export function SalesDetailModal({ open, onOpenChange }) {
           </div>
         </ScrollArea>
       </DialogContent>
-    </Dialog>
+    </Dialog><SaleRecordDetailModal open={Boolean(selectedSale) && open} onOpenChange={(value) => !value && setSelectedSale(null)} sale={selectedSale} /></>
   );
 }

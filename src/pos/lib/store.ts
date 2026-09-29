@@ -4,20 +4,44 @@
 // until real backend-synced endpoints are available. Because this is
 // per-browser storage, sales are only visible on the device they were made on.
 import { dbGet, dbSet } from "@/frontdesk/lib/db";
-import { generateId } from "@/frontdesk/lib/store";
+import { generateId, PAYMENT_MODE_LABELS } from "@/frontdesk/lib/store";
 import type { PosCartLine } from "./cart";
+import { snapshotDeviceLines, validateDeviceLines, type SaleCustomer } from "./devices";
 
 export type SaleChannel = "in_store" | "website";
 export type SalePaymentMode = "cash" | "pos" | "bank_transfer";
 
+// One entry per payment method used on a sale. A single-method sale has
+// exactly one entry; a split sale (e.g. part cash, part POS) has 2+, whose
+// `amount`s add up to the sale total.
+export interface SalePayment {
+  recordedAt?: string;
+  shiftId?: string;
+  mode: SalePaymentMode;
+  amount: number;
+  cashTendered?: number;
+  changeDue?: number;
+}
+
 export interface Sale {
+  note?: string;
+  lifecycle?: "reserved" | "completed" | "cancelled";
+  orderCreatedAt?: string;
+  collectionDueAt?: string;
+  collectedBy?: string;
+  collectionVerified?: boolean;
   id: string;
   saleNumber: string;
   cashierName: string;
+  customer?: SaleCustomer;
+  isDemo?: boolean;
   channel: SaleChannel;
   lines: PosCartLine[];
   subtotal: number;
   total: number;
+  payments: SalePayment[];
+  // Mirrors payments[0] — kept so records saved before split payments
+  // existed, and code that only cares about the primary method, keep working.
   paymentMode: SalePaymentMode;
   cashTendered?: number;
   changeDue?: number;
@@ -32,6 +56,8 @@ export interface Sale {
 }
 
 export interface HeldSale {
+  note?: string;
+  customer?: SaleCustomer;
   id: string;
   label: string;
   lines: PosCartLine[];
@@ -47,6 +73,7 @@ export interface CashShift {
   closingFloat?: number;
   closedAt?: string;
   cashSalesTotal?: number;
+  cashRefundsTotal?: number;
   expectedCash?: number;
   variance?: number;
 }
@@ -55,7 +82,7 @@ const SALES_KEY = "pos_sales";
 const HELD_SALES_KEY = "pos_held_sales";
 const SHIFTS_KEY = "pos_shifts";
 
-async function readFromStorage<T>(key: string): Promise<T | null> {
+export async function readFromStorage<T>(key: string): Promise<T | null> {
   try {
     const value = await dbGet<T>(key);
     if (value != null) return value;
@@ -72,9 +99,11 @@ async function readFromStorage<T>(key: string): Promise<T | null> {
   }
 }
 
-async function writeToStorage<T>(key: string, value: T): Promise<void> {
+export async function writeToStorage<T>(key: string, value: T): Promise<void> {
+  let persisted = false;
   try {
     await dbSet(key, value);
+    persisted = true;
   } catch {
     // Continue with localStorage fallback if IndexedDB is unavailable.
   }
@@ -82,10 +111,12 @@ async function writeToStorage<T>(key: string, value: T): Promise<void> {
   if (typeof window !== "undefined") {
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
+      persisted = true;
     } catch {
-      // Ignore localStorage write failures in restricted environments.
+      // IndexedDB may still have saved the transaction.
     }
   }
+  if (!persisted) throw new Error("Could not save this transaction. Check browser storage and try again.");
 }
 
 function generateSaleNumber(existingSales: Sale[]): string {
@@ -100,15 +131,43 @@ export async function getSales(): Promise<Sale[]> {
   return Array.isArray(raw) ? raw : [];
 }
 
-export async function createSale(
+let localWriteQueue: Promise<unknown> = Promise.resolve();
+export function withSaleLock<T>(operation: () => Promise<T>): Promise<T> {
+  if (typeof navigator !== "undefined" && navigator.locks) {
+    return navigator.locks.request("cybersquad-pos-sale-write", operation);
+  }
+  const result = localWriteQueue.then(operation, operation);
+  localWriteQueue = result.catch(() => undefined);
+  return result;
+}
+
+export function createSale(input: Omit<Sale, "id" | "saleNumber" | "createdAt">): Promise<Sale> {
+  return withSaleLock(() => createSaleUnlocked(input));
+}
+
+async function createSaleUnlocked(
   input: Omit<Sale, "id" | "saleNumber" | "createdAt">
 ): Promise<Sale> {
   const sales = await getSales();
+  const held = await getHeldSales();
+  validateCheckout(input);
+  validateDeviceLines(input.lines, new Set([...sales.filter((sale) => sale.lifecycle !== "cancelled"), ...held].flatMap((record) =>
+    record.lines.flatMap((line) => (line.devices ?? []).map((unit) => unit.id)))));
+  if (input.lines.some((line) => line.tracking === "serial") &&
+      (!input.customer?.name.trim() || !input.customer?.phone.trim())) {
+    throw new Error("Add the customer's name and phone for this device sale.");
+  }
+  const createdAt = new Date().toISOString();
   const sale: Sale = {
     ...input,
     id: generateId(),
     saleNumber: generateSaleNumber(sales),
-    createdAt: new Date().toISOString(),
+    createdAt,
+    lines: input.lifecycle === "reserved" ? structuredClone(input.lines) : snapshotDeviceLines(input.lines, createdAt),
+    lifecycle: input.lifecycle ?? "completed",
+    orderCreatedAt: input.lifecycle === "reserved" ? createdAt : undefined,
+    payments: await stampPayments(input.payments, createdAt),
+    isDemo: input.lines.some((line) => line.isDemo),
     synced: false,
   };
 
@@ -123,7 +182,7 @@ export async function createSale(
 // these, then calls markSalesSynced() with the ids that succeeded.
 export async function getUnsyncedSales(): Promise<Sale[]> {
   const sales = await getSales();
-  return sales.filter((sale) => sale.synced !== true);
+  return sales.filter((sale) => !sale.isDemo && sale.synced !== true);
 }
 
 export async function markSalesSynced(ids: string[]): Promise<void> {
@@ -134,6 +193,32 @@ export async function markSalesSynced(ids: string[]): Promise<void> {
   await writeToStorage(SALES_KEY, updated);
 }
 
+// Sales recorded before split payments existed only carry the legacy
+// paymentMode/cashTendered/changeDue fields — synthesize a single-entry
+// payments array for those so callers can treat every sale uniformly.
+export function getSalePayments(sale: Sale): SalePayment[] {
+  if (Array.isArray(sale.payments)) return sale.payments;
+  return [
+    {
+      mode: sale.paymentMode,
+      amount: sale.total,
+      cashTendered: sale.cashTendered,
+      changeDue: sale.changeDue,
+    },
+  ];
+}
+
+export function getSaleCashAmount(sale: Sale): number {
+  return getSalePayments(sale)
+    .filter((payment) => payment.mode === "cash")
+    .reduce((sum, payment) => sum + payment.amount, 0);
+}
+
+export function getSalePaymentLabel(sale: Sale): string {
+  const payments = getSalePayments(sale);
+  return payments.map((payment) => PAYMENT_MODE_LABELS[payment.mode] ?? payment.mode).join(" + ");
+}
+
 // ===== Held sales (park a cart, resume it later) =====
 
 export async function getHeldSales(): Promise<HeldSale[]> {
@@ -141,12 +226,21 @@ export async function getHeldSales(): Promise<HeldSale[]> {
   return Array.isArray(raw) ? raw : [];
 }
 
-export async function holdSale(input: {
+export function holdSale(input: Omit<HeldSale, "id" | "heldAt">): Promise<HeldSale> {
+  return withSaleLock(() => holdSaleUnlocked(input));
+}
+
+async function holdSaleUnlocked(input: {
+  customer?: SaleCustomer;
+  note?: string;
   label: string;
   lines: PosCartLine[];
   subtotal: number;
 }): Promise<HeldSale> {
   const held = await getHeldSales();
+  const sales = await getSales();
+  validateDeviceLines(input.lines, new Set([...sales.filter((sale) => sale.lifecycle !== "cancelled"), ...held].flatMap((record) =>
+    record.lines.flatMap((line) => (line.devices ?? []).map((unit) => unit.id)))));
   const sale: HeldSale = {
     ...input,
     id: generateId(),
@@ -157,7 +251,10 @@ export async function holdSale(input: {
   return sale;
 }
 
-export async function resumeHeldSale(id: string): Promise<HeldSale | null> {
+export function resumeHeldSale(id: string): Promise<HeldSale | null> {
+  return withSaleLock(() => resumeHeldSaleUnlocked(id));
+}
+async function resumeHeldSaleUnlocked(id: string): Promise<HeldSale | null> {
   const held = await getHeldSales();
   const sale = held.find((s) => s.id === id) ?? null;
   if (sale) {
@@ -169,7 +266,10 @@ export async function resumeHeldSale(id: string): Promise<HeldSale | null> {
   return sale;
 }
 
-export async function discardHeldSale(id: string): Promise<void> {
+export function discardHeldSale(id: string): Promise<void> {
+  return withSaleLock(() => discardHeldSaleUnlocked(id));
+}
+async function discardHeldSaleUnlocked(id: string): Promise<void> {
   const held = await getHeldSales();
   await writeToStorage(
     HELD_SALES_KEY,
@@ -211,21 +311,21 @@ export async function endShift(shiftId: string, closingFloat: number): Promise<C
   const shift = shifts[index];
   const sales = await getSales();
   const closedAt = new Date().toISOString();
-  const cashSalesTotal = sales
-    .filter(
-      (sale) =>
-        sale.paymentMode === "cash" &&
-        sale.createdAt >= shift.openedAt &&
-        sale.createdAt <= closedAt
-    )
-    .reduce((sum, sale) => sum + sale.total, 0);
-  const expectedCash = shift.openingFloat + cashSalesTotal;
+  const cashSalesTotal = sales.filter((sale) => !sale.isDemo).reduce((sum, sale) => sum +
+    getSalePayments(sale).filter((payment) => payment.mode === "cash" &&
+      (payment.shiftId ? payment.shiftId === shift.id :
+        (payment.recordedAt ?? sale.createdAt) >= shift.openedAt && (payment.recordedAt ?? sale.createdAt) <= closedAt))
+      .reduce((value, payment) => value + payment.amount, 0), 0);
+  const cashRefundsTotal = (await getRefunds()).filter((refund) => !refund.isDemo && refund.status === "paid" &&
+    refund.mode === "cash" && refund.shiftId === shift.id).reduce((sum, refund) => sum + refund.total, 0);
+  const expectedCash = shift.openingFloat + cashSalesTotal - cashRefundsTotal;
 
   const updatedShift: CashShift = {
     ...shift,
     closingFloat,
     closedAt,
     cashSalesTotal,
+    cashRefundsTotal,
     expectedCash,
     variance: closingFloat - expectedCash,
   };
@@ -269,10 +369,13 @@ export function isWithinRange(createdAt: string, range: SalesSummaryRange) {
 // module — the cart/checkout write path stays POS-only.
 export async function getSalesSummary(range: SalesSummaryRange = "today") {
   const sales = await getSales();
-  const inRange = sales.filter((sale) => isWithinRange(sale.createdAt, range));
+  const inRange = sales.filter((sale) => !sale.isDemo && (!sale.lifecycle || sale.lifecycle === "completed") && isWithinRange(sale.createdAt, range));
 
   const totalSalesCount = inRange.length;
-  const totalRevenue = inRange.reduce((sum, sale) => sum + sale.total, 0);
+  const grossRevenue = inRange.reduce((sum, sale) => sum + sale.total, 0);
+  const refundTotal = (await getRefunds()).filter((refund) => !refund.isDemo && refund.status === "paid" &&
+    isWithinRange(refund.paidAt ?? refund.createdAt, range)).reduce((sum, refund) => sum + refund.total, 0);
+  const totalRevenue = grossRevenue - refundTotal;
 
   const itemTotals = new Map<string, { name: string; qty: number; revenue: number }>();
   inRange.forEach((sale) => {
@@ -297,5 +400,128 @@ export async function getSalesSummary(range: SalesSummaryRange = "today") {
     website: inRange.filter((sale) => sale.channel === "website").length,
   };
 
-  return { totalSalesCount, totalRevenue, topSellingItems, channelBreakdown };
+  return { totalSalesCount, totalRevenue, grossRevenue, refundTotal, topSellingItems, channelBreakdown };
+}
+
+// Local workflow records. Backend integration must enforce the same rules atomically.
+const money = (amount: number) => Math.round(amount * 100) / 100;
+function validateCheckout(input: Omit<Sale, "id" | "saleNumber" | "createdAt">) {
+  if (!input.lines.length) throw new Error("Add items before checkout.");
+  const total = money(input.lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0));
+  if (input.lines.some((line) => !Number.isFinite(line.unitPrice) || line.unitPrice < 0) ||
+      money(input.total) !== total || money(input.subtotal) !== total) throw new Error("Sale total does not match its items.");
+  if (input.lines.some((line) => Boolean(line.isDemo) !== Boolean(input.lines[0].isDemo))) throw new Error("Keep sample and real products in separate sales.");
+  if (input.payments.some((payment) => !Number.isFinite(payment.amount) || payment.amount <= 0)) throw new Error("Enter positive payment amounts.");
+  const paid = money(input.payments.reduce((sum, payment) => sum + payment.amount, 0));
+  if (input.lifecycle === "reserved") {
+    if (!input.customer?.name.trim() || !input.customer?.phone.trim() || !input.collectionDueAt ||
+        !Number.isFinite(Date.parse(input.collectionDueAt))) throw new Error("Customer and expected collection date are required.");
+    if (paid > total) throw new Error("Deposit cannot exceed the order total.");
+  } else if (paid !== total) throw new Error("Payments must equal the sale total.");
+}
+async function stampPayments(payments: SalePayment[], recordedAt: string) {
+  const shift = await getActiveShift();
+  return payments.map((payment) => ({ ...payment, recordedAt, shiftId: shift?.id }));
+}
+export function orderBalance(sale: Sale) {
+  return money(sale.total - getSalePayments(sale).reduce((sum, payment) => sum + payment.amount, 0));
+}
+export function addOrderPayment(saleId: string, amount: number, mode: SalePaymentMode): Promise<Sale> {
+  return withSaleLock(async () => {
+    const sales = await getSales(); const sale = sales.find((entry) => entry.id === saleId);
+    if (!sale || sale.lifecycle !== "reserved") throw new Error("This order is not awaiting collection.");
+    if (!(await getActiveShift())) throw new Error("Start a shift before recording payment.");
+    if (!Number.isFinite(amount) || amount <= 0 || money(amount) > orderBalance(sale)) throw new Error("Payment exceeds the remaining balance.");
+    sale.payments.push(...await stampPayments([{ mode, amount: money(amount) }], new Date().toISOString()));
+    await writeToStorage(SALES_KEY, sales); return sale;
+  });
+}
+export function collectOrder(saleId: string, actor: string, verified: boolean): Promise<Sale> {
+  return withSaleLock(async () => {
+    const sales = await getSales(); const sale = sales.find((entry) => entry.id === saleId);
+    if (!sale || sale.lifecycle !== "reserved" || orderBalance(sale) !== 0 || !verified) {
+      throw new Error("Verify the customer and device, and settle the full balance before collection.");
+    }
+    const now = new Date().toISOString();
+    sale.lines = snapshotDeviceLines(sale.lines, now); sale.lifecycle = "completed";
+    sale.createdAt = now; sale.collectedBy = actor; sale.collectionVerified = true;
+    await writeToStorage(SALES_KEY, sales); return sale;
+  });
+}
+export function cancelUnpaidOrder(saleId: string): Promise<void> {
+  return withSaleLock(async () => {
+    const sales = await getSales(); const sale = sales.find((entry) => entry.id === saleId);
+    if (!sale || sale.lifecycle !== "reserved") throw new Error("Order is not open.");
+    const refunded = (await getRefunds()).filter((refund) => refund.saleId === saleId && refund.status === "paid")
+      .reduce((sum, refund) => sum + refund.total, 0);
+    const paid = getSalePayments(sale).reduce((sum, payment) => sum + payment.amount, 0);
+    if (money(paid - refunded) !== 0) throw new Error("Repay the deposit before cancelling this order.");
+    sale.lifecycle = "cancelled"; await writeToStorage(SALES_KEY, sales);
+  });
+}
+export interface RefundLine { lineIndex: number; quantity: number; deviceIds: string[]; }
+export interface Refund {
+  id: string; saleId: string; saleNumber: string; lines: RefundLine[]; total: number;
+  reason: string; condition: "resellable" | "faulty" | "not_returned";
+  mode: SalePaymentMode; status: "pending" | "paid" | "cancelled"; actor: string;
+  createdAt: string; paidAt?: string; shiftId?: string; reference?: string; isDemo?: boolean;
+  kind: "return" | "deposit"; cancellationReason?: string;
+}
+export async function getRefunds(): Promise<Refund[]> { return (await readFromStorage<Refund[]>("pos_refunds")) ?? []; }
+export function refundableQuantity(sale: Sale, index: number, refunds: Refund[]) {
+  return sale.lines[index].quantity - refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled")
+    .flatMap((refund) => refund.lines).filter((line) => line.lineIndex === index)
+    .reduce((sum, line) => sum + line.quantity, 0);
+}
+export function createRefund(input: {
+  saleId: string; lines: RefundLine[]; reason: string; condition: Refund["condition"];
+  mode: SalePaymentMode; actor: string; cashPaid: boolean; depositAmount?: number;
+}): Promise<Refund> {
+  return withSaleLock(async () => {
+    const sale = (await getSales()).find((entry) => entry.id === input.saleId);
+    if (!sale || sale.lifecycle === "cancelled" || !input.reason.trim() || !input.actor.trim()) throw new Error("Choose a sale and enter the refund reason.");
+    const refunds = await getRefunds(); let total = 0; const seen = new Set<number>();
+    const kind = sale.lifecycle === "reserved" ? "deposit" : "return";
+    if (kind === "deposit") {
+      total = money(input.depositAmount ?? 0);
+      if (input.lines.length) throw new Error("Deposit refunds must not return stock.");
+    } else {
+      if (!input.lines.length) throw new Error("Select items to return.");
+      for (const line of input.lines) {
+        const original = sale.lines[line.lineIndex];
+        if (!original || seen.has(line.lineIndex) || !Number.isInteger(line.quantity) || line.quantity <= 0 ||
+            line.quantity > refundableQuantity(sale, line.lineIndex, refunds)) throw new Error("Invalid or already refunded quantity.");
+        seen.add(line.lineIndex);
+        if (original.tracking === "serial") {
+          const used = new Set(refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled").flatMap((refund) => refund.lines.flatMap((entry) => entry.deviceIds)));
+          if (line.deviceIds.length !== line.quantity || new Set(line.deviceIds).size !== line.quantity ||
+              line.deviceIds.some((id) => used.has(id) || !original.devices?.some((unit) => unit.id === id))) throw new Error("Select the exact devices from the original sale.");
+        }
+        total += original.unitPrice * line.quantity;
+      }
+    }
+    total = money(total);
+    const alreadyAllocated = refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled").reduce((sum, refund) => sum + refund.total, 0);
+    const paid = getSalePayments(sale).reduce((sum, payment) => sum + payment.amount, 0);
+    if (!Number.isFinite(total) || total <= 0 || money(total + alreadyAllocated) > money(paid)) throw new Error("Refund exceeds the amount paid.");
+    const shift = await getActiveShift();
+    if (input.mode === "cash" && (!shift || !input.cashPaid)) throw new Error("Open a shift and confirm cash was handed to the customer.");
+    const now = new Date().toISOString();
+    const refund: Refund = { id: generateId(), saleId: sale.id, saleNumber: sale.saleNumber, lines: input.lines,
+      total, reason: input.reason.trim(), condition: input.condition, mode: input.mode, actor: input.actor,
+      status: input.mode === "cash" ? "paid" : "pending", createdAt: now,
+      paidAt: input.mode === "cash" ? now : undefined, shiftId: input.mode === "cash" ? shift?.id : undefined,
+      isDemo: sale.isDemo, kind };
+    await writeToStorage("pos_refunds", [...refunds, refund]); return refund;
+  });
+}
+export function updateRefund(id: string, action: "paid" | "cancelled", reference: string): Promise<void> {
+  return withSaleLock(async () => {
+    const refunds = await getRefunds(); const refund = refunds.find((entry) => entry.id === id);
+    if (!refund || refund.status !== "pending" || !reference.trim()) throw new Error("Enter the repayment reference or cancellation reason.");
+    refund.status = action;
+    if (action === "paid") { refund.reference = reference.trim(); refund.paidAt = new Date().toISOString(); }
+    else refund.cancellationReason = reference.trim();
+    await writeToStorage("pos_refunds", refunds);
+  });
 }

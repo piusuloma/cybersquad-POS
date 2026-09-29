@@ -248,6 +248,7 @@ export function FinanceReportsTab() {
     getSales().then((sales) => {
       if (!mounted) return;
       const inRange = sales.filter((sale) => {
+        if (sale.isDemo) return false;
         const created = new Date(sale.createdAt).getTime();
         return (from === null || created >= from) && (to === null || created <= to);
       });

@@ -13,8 +13,7 @@ import {
 } from "./ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { formatCurrency } from "../frontdesk/lib/invoice";
-import { PAYMENT_MODE_LABELS } from "../frontdesk/lib/store";
-import { getSales, isWithinRange } from "../pos/lib/store";
+import { getSalePaymentLabel, getSales, isWithinRange } from "../pos/lib/store";
 import { SaleRecordDetailModal } from "./SaleRecordDetailModal";
 
 const PAGE_SIZE = 15;
@@ -84,6 +83,10 @@ export function SalesRecords({ initialFilter } = {}) {
       return (
         sale.saleNumber.toLowerCase().includes(query) ||
         sale.cashierName.toLowerCase().includes(query) ||
+        (sale.customer?.name ?? "").toLowerCase().includes(query) ||
+        (sale.customer?.phone ?? "").includes(query) ||
+        sale.lines.some((line) => line.devices?.some((unit) =>
+          [unit.serialNumber, unit.imei, unit.imei2].some((value) => value?.toLowerCase().includes(query)))) ||
         sale.lines.some((line) => line.name.toLowerCase().includes(query))
       );
     });
@@ -202,7 +205,7 @@ export function SalesRecords({ initialFilter } = {}) {
               {!loading &&
                 pageItems.map((sale) => (
                   <TableRow key={sale.id}>
-                    <TableCell className="font-mono text-sm font-medium">{sale.saleNumber}</TableCell>
+                    <TableCell className="font-mono text-sm font-medium">{sale.saleNumber}<span className="block text-xs">{sale.lifecycle ?? "completed"}</span>{sale.isDemo && <span className="block text-xs text-muted-foreground">Sample sale</span>}</TableCell>
                     <TableCell>{sale.cashierName}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
@@ -214,7 +217,7 @@ export function SalesRecords({ initialFilter } = {}) {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
-                        {PAYMENT_MODE_LABELS[sale.paymentMode] ?? sale.paymentMode}
+                        {getSalePaymentLabel(sale)}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">{formatCurrency(sale.total)}</TableCell>
