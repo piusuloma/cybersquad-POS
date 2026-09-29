@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import DeviceDetails from "./DeviceDetails";
-import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import CustomerPicker from "@/operations/CustomerPicker";
 import {
   Select,
   SelectContent,
@@ -24,6 +26,7 @@ import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { PAYMENT_MODE_LABELS } from "@/frontdesk/lib/store";
 import type { PosCartLine } from "@/pos/lib/cart";
 import type { SalePayment, SalePaymentMode } from "@/pos/lib/store";
+import type { SaleCustomer } from "@/pos/lib/devices";
 
 const PAYMENT_MODES: SalePaymentMode[] = ["cash", "pos", "bank_transfer"];
 
@@ -51,6 +54,12 @@ interface CartPanelProps {
   shiftActive: boolean;
   onSelectDevices: (productId: string) => void;
   deviceCheckoutReady: boolean;
+  customer: SaleCustomer;
+  onCustomerChange: (customer: SaleCustomer) => void;
+  note: string;
+  onNoteChange: (note: string) => void;
+  customerRequired: boolean;
+  onRefunds: () => void;
 }
 
 export default function CartPanel({
@@ -65,6 +74,12 @@ export default function CartPanel({
   shiftActive,
   onSelectDevices,
   deviceCheckoutReady,
+  customer,
+  onCustomerChange,
+  note,
+  onNoteChange,
+  customerRequired,
+  onRefunds,
 }: CartPanelProps) {
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -153,8 +168,13 @@ export default function CartPanel({
             </span>
           )}
         </div>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onRefunds}>
+            <Undo2 className="w-3.5 h-3.5 mr-1" />
+            Refunds
+          </Button>
         {lines.length > 0 && (
-          <div className="flex items-center gap-1">
+          <>
             <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onHold}>
               <PauseCircle className="w-3.5 h-3.5 mr-1" />
               Hold
@@ -168,9 +188,20 @@ export default function CartPanel({
               <Trash2 className="w-3.5 h-3.5 mr-1" />
               Clear
             </Button>
-          </div>
+          </>
         )}
+        </div>
       </div>
+
+      {lines.length > 0 && (
+        <div className="space-y-2 mb-4 border-b border-border pb-4">
+          <p className="text-sm font-medium">Customer {customerRequired ? "- Required for device purchases" : "- Optional"}</p>
+          <CustomerPicker value={customer} onChange={onCustomerChange} />
+          <Label htmlFor="sale-note">Customer note (optional)</Label>
+          <Input id="sale-note" value={note} onChange={(event) => onNoteChange(event.target.value)} />
+          {!deviceCheckoutReady && <p className="text-sm text-muted-foreground">Add a name and phone to link the device and warranty to this customer.</p>}
+        </div>
+      )}
 
       {lines.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">

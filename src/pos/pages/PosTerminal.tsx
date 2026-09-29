@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import CustomerPicker from "@/operations/CustomerPicker";
 import ReserveOrderDialog from "../components/ReserveOrderDialog";
-import { Label } from "@/components/ui/label";
 import DeviceSelectionDialog from "../components/DeviceSelectionDialog";
 import { SAMPLE_CATALOG } from "../lib/sampleCatalog";
 import { validateDeviceLines, type PosProduct, type SaleCustomer } from "../lib/devices";
 import { toast } from "sonner";
-import { History, PauseCircle, Wallet, LogOut, Undo2 } from "lucide-react";
+import { History, PauseCircle, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApi } from "@/hooks/useApi";
 import { fetchPosCatalog } from "@/pos/lib/catalog";
@@ -239,10 +236,6 @@ export default function PosTerminal() {
             <History className="w-3.5 h-3.5 mr-1.5" />
             Sale History
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowRefunds(true)}>
-            <Undo2 className="w-3.5 h-3.5 mr-1.5" />
-            Refunds
-          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowShiftHistory(true)}>
             <History className="w-3.5 h-3.5 mr-1.5" />
             Shift History
@@ -269,12 +262,6 @@ export default function PosTerminal() {
           {sampleMode ? "Back to product catalog" : "Try sample devices"}
         </Button>
       </div>
-      {cart.lines.length > 0 && <div className="glass-card p-4 space-y-3">
-        <p className="text-sm font-medium">Customer {needsCustomer ? "- Required for device purchases" : "- Optional"}</p>
-        <CustomerPicker value={customer} onChange={setCustomer} />
-        <Label htmlFor="sale-note">Customer note (optional)</Label><Input id="sale-note" value={note} onChange={(event) => setNote(event.target.value)} />
-        {!deviceCheckoutReady && <p className="text-sm text-muted-foreground">Add a name and phone to link the device and warranty to this customer.</p>}
-      </div>}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <ProductGrid items={activeCatalog} loading={!sampleMode && loading} onAddItem={handleAddItem} />
@@ -291,6 +278,12 @@ export default function PosTerminal() {
           onRemoveItem={cart.removeItem}
           onClear={clearSale}
           deviceCheckoutReady={deviceCheckoutReady}
+          customer={customer}
+          onCustomerChange={setCustomer}
+          note={note}
+          onNoteChange={setNote}
+          customerRequired={needsCustomer}
+          onRefunds={() => setShowRefunds(true)}
           onSelectDevices={(productId) => {
             const item = activeCatalog.find((product) => product.id === productId);
             if (item) void selectDevices(item);
