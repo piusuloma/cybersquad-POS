@@ -7,7 +7,7 @@ import DeviceSelectionDialog from "../components/DeviceSelectionDialog";
 import { SAMPLE_CATALOG } from "../lib/sampleCatalog";
 import { validateDeviceLines, type PosProduct, type SaleCustomer } from "../lib/devices";
 import { toast } from "sonner";
-import { History, PauseCircle, Wallet, LogOut } from "lucide-react";
+import { History, PauseCircle, Wallet, LogOut, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApi } from "@/hooks/useApi";
 import { fetchPosCatalog } from "@/pos/lib/catalog";
@@ -35,6 +35,7 @@ import EndShiftDialog from "@/pos/components/EndShiftDialog";
 import ShiftHistoryDialog from "@/pos/components/ShiftHistoryDialog";
 import HeldSalesDialog from "@/pos/components/HeldSalesDialog";
 import HoldSaleDialog from "@/pos/components/HoldSaleDialog";
+import RefundsDialog from "@/pos/components/RefundsDialog";
 import { SalesDetailModal } from "@/components/SalesDetailModal";
 
 export default function PosTerminal() {
@@ -76,7 +77,12 @@ export default function PosTerminal() {
   const [showHeldSales, setShowHeldSales] = useState(false);
   const [showHoldPrompt, setShowHoldPrompt] = useState(false);
   const [showSaleHistory, setShowSaleHistory] = useState(false);
+  const [showRefunds, setShowRefunds] = useState(false);
   const [heldRefreshKey, setHeldRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (cart.lines.length === 0) { setCustomer({ name: "", phone: "" }); setNote(""); }
+  }, [cart.lines.length]);
 
   useEffect(() => {
     let mounted = true;
@@ -233,6 +239,10 @@ export default function PosTerminal() {
             <History className="w-3.5 h-3.5 mr-1.5" />
             Sale History
           </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowRefunds(true)}>
+            <Undo2 className="w-3.5 h-3.5 mr-1.5" />
+            Refunds
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowShiftHistory(true)}>
             <History className="w-3.5 h-3.5 mr-1.5" />
             Shift History
@@ -259,12 +269,12 @@ export default function PosTerminal() {
           {sampleMode ? "Back to product catalog" : "Try sample devices"}
         </Button>
       </div>
-      <div className="glass-card p-4 space-y-3">
+      {cart.lines.length > 0 && <div className="glass-card p-4 space-y-3">
         <p className="text-sm font-medium">Customer {needsCustomer ? "- Required for device purchases" : "- Optional"}</p>
         <CustomerPicker value={customer} onChange={setCustomer} />
         <Label htmlFor="sale-note">Customer note (optional)</Label><Input id="sale-note" value={note} onChange={(event) => setNote(event.target.value)} />
         {!deviceCheckoutReady && <p className="text-sm text-muted-foreground">Add a name and phone to link the device and warranty to this customer.</p>}
-      </div>
+      </div>}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <ProductGrid items={activeCatalog} loading={!sampleMode && loading} onAddItem={handleAddItem} />
@@ -314,6 +324,7 @@ export default function PosTerminal() {
         refreshKey={heldRefreshKey}
       />
       <HoldSaleDialog open={showHoldPrompt} onOpenChange={setShowHoldPrompt} onHold={handleHold} />
+      <RefundsDialog open={showRefunds} onOpenChange={setShowRefunds} />
       <SalesDetailModal open={showSaleHistory} onOpenChange={setShowSaleHistory} />
       <SaleCompleteDialog sale={completedSale} settings={settings} onNewSale={() => setCompletedSale(null)} />
     </div>
