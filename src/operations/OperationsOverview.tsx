@@ -16,7 +16,7 @@ function BlockerRow({ item, context, refresh }: { item: Blocker; context?: Block
   const [due, setDue] = useState(context?.dueAt ?? ""); const [editing, setEditing] = useState(false); const [busy, setBusy] = useState(false);
   const age = Math.max(0, Math.floor((Date.now() - Date.parse(item.since)) / 86400000));
   return <div className="border border-border rounded-lg p-3 space-y-2">
-    <div className="flex flex-wrap justify-between gap-2"><Button variant="link" className="p-0" onClick={item.open}>{item.title}</Button><span className="text-sm">{item.state} ? {age} days</span></div>
+    <div className="flex flex-wrap justify-between gap-2"><Button variant="link" className="p-0" onClick={item.open}>{item.title}</Button><span className={age > 3 ? "text-sm font-medium text-destructive" : "text-sm"}>{item.state} ? {age} days{age > 3 ? " · Aged" : ""}</span></div>
     <p className="text-sm">Owner: {context?.owner ?? item.owner} ? Next: {context?.nextAction ?? item.action}</p>
     {context?.dueAt && <p className="text-xs">Action due {new Date(context.dueAt).toLocaleDateString()}{Date.parse(context.dueAt) < Date.now() ? " ? Overdue" : ""}</p>}
     <Button size="sm" variant="outline" onClick={() => setEditing(!editing)}>Assign / update action</Button>
@@ -103,6 +103,14 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role }: 
     </div>
     <div className="grid md:grid-cols-2 gap-4"><div className="glass-card p-4 space-y-2"><h3 className="font-medium">Salesperson performance</h3>{[...performance].map(([name, row]) => <p key={name} className="text-sm">{name}: {row.count} sales ? {formatCurrency(row.amount)}</p>)}{!performance.size && <p className="text-sm text-muted-foreground">No completed sales in this period.</p>}</div>
     <div className="glass-card p-4 space-y-2"><h3 className="font-medium">Products sold</h3>{[...products.values()].sort((a, b) => b.amount - a.amount).slice(0, 8).map((row) => <p key={row.name} className="text-sm">{row.name}: {row.quantity} ? {formatCurrency(row.amount)}</p>)}</div></div>
+    {(() => { const endOfDay = new Date(); endOfDay.setHours(23, 59, 59, 999);
+      const due = enquiries.filter((enquiry) => enquiry.status === "open" && Date.parse(enquiry.followUpAt) <= endOfDay.getTime())
+        .sort((a, b) => Date.parse(a.followUpAt) - Date.parse(b.followUpAt));
+      return <div className="glass-card p-4 space-y-2"><div className="flex justify-between"><h3 className="font-semibold">Follow-ups due today or overdue ({due.length})</h3>
+        <Button size="sm" variant="outline" onClick={onEnquiries}>Open follow-ups</Button></div>
+        {!due.length && <p className="text-sm text-muted-foreground">Nothing due today.</p>}
+        {due.slice(0, 8).map((enquiry) => <p key={enquiry.id} className="text-sm">{Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue · " : "Today · "}{enquiry.customer.name} · {enquiry.request} · {enquiry.owner} · {new Date(enquiry.followUpAt).toLocaleString()}</p>)}
+      </div>; })()}
     <div className="glass-card p-4 space-y-3"><h3 className="font-semibold">Open work and next actions</h3><p className="text-xs text-muted-foreground">Includes all open work, regardless of reporting period. Repair age is time since its latest recorded update; action due dates are explicit commitments, not inferred SLA deadlines.</p>
       <select aria-label="Filter blockers" className="border rounded p-2 bg-background" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All open work ({blockers.length})</option>{groups.map((group) => <option key={group}>{group}</option>)}</select>
       {blockers.filter((item) => filter === "all" || item.state === filter).sort((a, b) => Date.parse(a.since) - Date.parse(b.since)).map((item) => <BlockerRow key={item.id} item={item} context={state?.blockers[item.id]} refresh={load} />)}

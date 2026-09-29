@@ -38,6 +38,8 @@ export interface Sale {
   channel: SaleChannel;
   lines: PosCartLine[];
   subtotal: number;
+  // Order-level discount already taken off `subtotal` to reach `total`.
+  discount?: { amount: number; reason: string; approvedBy: string };
   total: number;
   payments: SalePayment[];
   // Mirrors payments[0] — kept so records saved before split payments
@@ -173,6 +175,9 @@ async function createSaleUnlocked(
 
   sales.push(sale);
   await writeToStorage(SALES_KEY, sales);
+  if (sale.discount && sale.discount.amount > 0) {
+    await appendAudit(sale.discount.approvedBy, "discount_applied", sale.saleNumber + " · " + sale.discount.amount.toFixed(2) + " · " + sale.discount.reason);
+  }
   return sale;
 }
 
@@ -407,9 +412,14 @@ export async function getSalesSummary(range: SalesSummaryRange = "today") {
 const money = (amount: number) => Math.round(amount * 100) / 100;
 function validateCheckout(input: Omit<Sale, "id" | "saleNumber" | "createdAt">) {
   if (!input.lines.length) throw new Error("Add items before checkout.");
-  const total = money(input.lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0));
+  const itemsTotal = money(input.lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0));
+  const discount = money(input.discount?.amount ?? 0);
+  if (discount < 0 || discount > itemsTotal || (discount > 0 && (!input.discount?.reason.trim() || !input.discount?.approvedBy.trim()))) {
+    throw new Error("Enter a valid discount amount and reason.");
+  }
+  const total = money(itemsTotal - discount);
   if (input.lines.some((line) => !Number.isFinite(line.unitPrice) || line.unitPrice < 0) ||
-      money(input.total) !== total || money(input.subtotal) !== total) throw new Error("Sale total does not match its items.");
+      money(input.total) !== total || money(input.subtotal) !== itemsTotal) throw new Error("Sale total does not match its items.");
   if (input.lines.some((line) => Boolean(line.isDemo) !== Boolean(input.lines[0].isDemo))) throw new Error("Keep sample and real products in separate sales.");
   if (input.payments.some((payment) => !Number.isFinite(payment.amount) || payment.amount <= 0)) throw new Error("Enter positive payment amounts.");
   const paid = money(input.payments.reduce((sum, payment) => sum + payment.amount, 0));
@@ -459,6 +469,19 @@ export function cancelUnpaidOrder(saleId: string): Promise<void> {
     sale.lifecycle = "cancelled"; await writeToStorage(SALES_KEY, sales);
   });
 }
+export interface AuditEntry { id: string; at: string; actor: string; action: string; detail: string; }
+export async function getAuditLog(): Promise<AuditEntry[]> { return (await readFromStorage<AuditEntry[]>("pos_audit_log")) ?? []; }
+// Call from inside withSaleLock so writes to the log are serialised with the change they describe.
+async function appendAudit(actor: string, action: string, detail: string) {
+  const log = await getAuditLog();
+  log.push({ id: generateId(), at: new Date().toISOString(), actor, action, detail });
+  await writeToStorage("pos_audit_log", log);
+}
+// Order-level discounts are shared across lines, so a returned line is worth its share of what was actually paid.
+export function refundLineValue(sale: Sale, lineIndex: number, quantity: number) {
+  const ratio = sale.subtotal > 0 ? sale.total / sale.subtotal : 1;
+  return money(sale.lines[lineIndex].unitPrice * quantity * ratio);
+}
 export interface RefundLine { lineIndex: number; quantity: number; deviceIds: string[]; }
 export interface Refund {
   id: string; saleId: string; saleNumber: string; lines: RefundLine[]; total: number;
@@ -497,12 +520,15 @@ export function createRefund(input: {
           if (line.deviceIds.length !== line.quantity || new Set(line.deviceIds).size !== line.quantity ||
               line.deviceIds.some((id) => used.has(id) || !original.devices?.some((unit) => unit.id === id))) throw new Error("Select the exact devices from the original sale.");
         }
-        total += original.unitPrice * line.quantity;
+        total += refundLineValue(sale, line.lineIndex, line.quantity);
       }
     }
     total = money(total);
     const alreadyAllocated = refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled").reduce((sum, refund) => sum + refund.total, 0);
     const paid = getSalePayments(sale).reduce((sum, payment) => sum + payment.amount, 0);
+    // Prorating a discount across lines can leave a rounding gap of a few kobo on the last return.
+    const remaining = money(paid - alreadyAllocated);
+    if (total > remaining && total - remaining <= 0.05) total = remaining;
     if (!Number.isFinite(total) || total <= 0 || money(total + alreadyAllocated) > money(paid)) throw new Error("Refund exceeds the amount paid.");
     const shift = await getActiveShift();
     if (input.mode === "cash" && (!shift || !input.cashPaid)) throw new Error("Open a shift and confirm cash was handed to the customer.");
@@ -512,7 +538,9 @@ export function createRefund(input: {
       status: input.mode === "cash" ? "paid" : "pending", createdAt: now,
       paidAt: input.mode === "cash" ? now : undefined, shiftId: input.mode === "cash" ? shift?.id : undefined,
       isDemo: sale.isDemo, kind };
-    await writeToStorage("pos_refunds", [...refunds, refund]); return refund;
+    await writeToStorage("pos_refunds", [...refunds, refund]);
+    await appendAudit(input.actor, "refund_recorded", sale.saleNumber + " · " + refund.kind + " · " + total.toFixed(2) + " · " + refund.status + " · " + refund.reason);
+    return refund;
   });
 }
 export function updateRefund(id: string, action: "paid" | "cancelled", reference: string): Promise<void> {
@@ -523,5 +551,6 @@ export function updateRefund(id: string, action: "paid" | "cancelled", reference
     if (action === "paid") { refund.reference = reference.trim(); refund.paidAt = new Date().toISOString(); }
     else refund.cancellationReason = reference.trim();
     await writeToStorage("pos_refunds", refunds);
+    await appendAudit(refund.actor, "refund_" + action, refund.saleNumber + " · " + refund.total.toFixed(2) + " · " + reference.trim());
   });
 }

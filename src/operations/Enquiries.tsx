@@ -6,16 +6,23 @@ import { getAuth } from "@/frontdesk/lib/store";
 import { getSales, type Sale } from "@/pos/lib/store";
 import type { SaleCustomer } from "@/pos/lib/devices";
 import CustomerPicker from "./CustomerPicker";
-import { getBusiness, saveEnquiry, closeEnquiry, rescheduleEnquiry, sameCustomer, type Enquiry, type DirectoryCustomer } from "./business";
+import { getBusiness, saveEnquiry, closeEnquiry, rescheduleEnquiry, logEnquiryContact, sameCustomer, type EnquiryContact, type Enquiry, type DirectoryCustomer } from "./business";
 function EnquiryCard({ enquiry, sales, refresh }: { enquiry: Enquiry; sales: Sale[]; refresh: () => void }) {
   const [outcome, setOutcome] = useState(""); const [saleId, setSaleId] = useState(""); const [busy, setBusy] = useState(false);
+  const [channel, setChannel] = useState<EnquiryContact["channel"]>("call"); const [contactNote, setContactNote] = useState("");
   const [owner, setOwner] = useState(enquiry.owner); const [due, setDue] = useState(enquiry.followUpAt.slice(0, 16));
   const run = async (action: () => Promise<unknown>) => { setBusy(true); try { await action(); refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Could not update enquiry."); } finally { setBusy(false); } };
   return <article className="border border-border rounded-lg p-4 space-y-2">
     <p className="font-medium">{enquiry.customer.name} ? {enquiry.customer.phone}</p><p>{enquiry.request}</p>
     <p className="text-sm">{enquiry.status} ? {enquiry.owner} ? Follow up {new Date(enquiry.followUpAt).toLocaleString()}
       {enquiry.status === "open" && Date.parse(enquiry.followUpAt) < Date.now() ? " ? Overdue" : ""}</p>
+    {enquiry.contacts?.length ? <ul className="text-sm space-y-1 border-l-2 border-border pl-3">{enquiry.contacts.map((entry, index) =>
+      <li key={index}>{new Date(entry.at).toLocaleString()} · {entry.channel} · {entry.by}: {entry.note}</li>)}</ul> : null}
     {enquiry.status === "open" ? <div className="space-y-2">
+      <div className="flex flex-wrap gap-2"><select aria-label="Contact channel" className="border rounded p-2 bg-background" value={channel} onChange={(event) => setChannel(event.target.value as EnquiryContact["channel"])}>
+        {["call", "whatsapp", "sms", "email", "visit"].map((entry) => <option key={entry} value={entry}>{entry}</option>)}</select>
+        <Input aria-label="Contact note" className="flex-1 min-w-48" placeholder="What was said / agreed" value={contactNote} onChange={(event) => setContactNote(event.target.value)} />
+        <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(async () => { await logEnquiryContact(enquiry.id, owner, channel, contactNote); setContactNote(""); })}>Log contact</Button></div>
       <div className="flex flex-wrap gap-2"><Input aria-label="Follow-up owner" value={owner} onChange={(event) => setOwner(event.target.value)} /><Input aria-label="Next follow-up" type="datetime-local" value={due} onChange={(event) => setDue(event.target.value)} />
         <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(() => rescheduleEnquiry(enquiry.id, due, owner))}>Update follow-up</Button></div>
       <Input aria-label="Enquiry outcome or lost reason" placeholder="Outcome / lost reason" value={outcome} onChange={(event) => setOutcome(event.target.value)} />

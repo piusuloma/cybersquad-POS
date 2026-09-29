@@ -72,7 +72,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
         />
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <ScanBarcode className="w-3.5 h-3.5" />
-          <span>Scan a barcode or type a SKU and press Enter to add instantly.</span>
+          <span>Scan a barcode or type a SKU and press Enter to add instantly. Shortcuts: F2 search · F4 refunds · F7 hold.</span>
         </div>
 
         {categories.length > 2 && (
@@ -136,6 +136,11 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   {item.tracking === "serial" && <p className="text-xs text-primary mt-1">IMEI / serial selection required</p>}
                   <p className="text-xs text-muted-foreground mt-1">{warrantyLabel(item.warranty)}</p>
                   <p className="text-sm font-semibold text-primary mt-1">{formatCurrency(item.price)}</p>
+                  {!outOfStock && (
+                    <p className={`text-xs mt-1 ${item.quantity - item.locked <= 3 ? "text-amber-600" : "text-muted-foreground"}`}>
+                      {item.quantity - item.locked <= 3 ? "Low stock: " : "In stock: "}{item.quantity - item.locked}
+                    </p>
+                  )}
                 </button>
               );
             })}

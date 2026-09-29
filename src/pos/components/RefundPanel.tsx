@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getAuth } from "@/frontdesk/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
-import { createRefund, getRefunds, refundableQuantity, updateRefund, getSalePayments, type Sale, type Refund, type RefundLine, type SalePaymentMode } from "../lib/store";
+import { createRefund, getRefunds, refundableQuantity, refundLineValue, updateRefund, getSalePayments, type Sale, type Refund, type RefundLine, type SalePaymentMode } from "../lib/store";
 import { printRefundReceipt } from "../lib/receipt";
 
 export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged?: () => void }) {
@@ -24,7 +24,7 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
   const deposit = sale.lifecycle === "reserved";
   const availableMoney = getSalePayments(sale).reduce((sum, payment) => sum + payment.amount, 0) -
     related.filter((refund) => refund.status !== "cancelled").reduce((sum, refund) => sum + refund.total, 0);
-  const total = deposit ? Number(depositAmount) || 0 : selection.reduce((sum, line) => sum + sale.lines[line.lineIndex].unitPrice * line.quantity, 0);
+  const total = deposit ? Number(depositAmount) || 0 : selection.reduce((sum, line) => sum + refundLineValue(sale, line.lineIndex, line.quantity), 0);
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true); try { await action(); await refresh(); onChanged?.(); } catch (error) { toast.error(error instanceof Error ? error.message : "Refund action failed."); } finally { setBusy(false); }
   };

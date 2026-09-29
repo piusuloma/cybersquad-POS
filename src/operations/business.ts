@@ -3,8 +3,10 @@ import { activateWarranty, deviceIdentifiers, type SaleCustomer, type WarrantySn
 import { getTickets, type Ticket } from "@/frontdesk/lib/store";
 
 export interface DirectoryCustomer extends SaleCustomer { id: string; email?: string; }
+export interface EnquiryContact { at: string; by: string; channel: "call" | "whatsapp" | "sms" | "email" | "visit"; note: string; }
 export interface Enquiry {
   id: string; customer: DirectoryCustomer; request: string; owner: string; followUpAt: string;
+  contacts?: EnquiryContact[];
   status: "open" | "converted" | "lost"; outcome?: string; saleId?: string; createdAt: string; updatedAt: string;
 }
 export interface WarrantyRecord {
@@ -80,6 +82,16 @@ export async function closeEnquiry(id: string, status: "converted" | "lost", out
     const enquiry = state.enquiries.find((entry) => entry.id === id);
     if (!enquiry || enquiry.status !== "open") throw new Error("Enquiry is already closed.");
     Object.assign(enquiry, { status, outcome, saleId, updatedAt: new Date().toISOString() });
+  });
+}
+export function logEnquiryContact(id: string, by: string, channel: EnquiryContact["channel"], note: string) {
+  if (!by.trim() || !note.trim()) return Promise.reject(new Error("Enter who made the contact and what was said."));
+  return change((state) => {
+    const enquiry = state.enquiries.find((entry) => entry.id === id);
+    if (!enquiry || enquiry.status !== "open") throw new Error("Enquiry is not open.");
+    const at = new Date().toISOString();
+    enquiry.contacts = [...(enquiry.contacts ?? []), { at, by: by.trim(), channel, note: note.trim() }];
+    enquiry.updatedAt = at;
   });
 }
 export function rescheduleEnquiry(id: string, followUpAt: string, owner: string) {

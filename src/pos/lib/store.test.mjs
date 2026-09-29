@@ -53,3 +53,18 @@ test("failed persistence cannot produce a successful sale", async () => {
   }
   assert.equal((await store.getSales()).length, 1);
 });
+test("order discount reduces the total and refunds are prorated and audited", async () => {
+  const cable = { productId: "cable", name: "Cable", quantity: 2, unitPrice: 100 };
+  const discounted = { cashierName: "Test", channel: "in_store", lines: [cable], subtotal: 200, total: 180,
+    discount: { amount: 20, reason: "Loyal customer", approvedBy: "Admin" }, payments: [{ mode: "bank_transfer", amount: 180 }], paymentMode: "bank_transfer" };
+  await assert.rejects(store.createSale({ ...discounted, total: 200 }), /does not match/);
+  await assert.rejects(store.createSale({ ...discounted, discount: { amount: 20, reason: "", approvedBy: "Admin" } }), /discount/i);
+  const sale = await store.createSale(discounted);
+  assert.equal(sale.total, 180);
+  assert.equal(store.refundLineValue(sale, 0, 1), 90);
+  const refund = await store.createRefund({ saleId: sale.id, lines: [{ lineIndex: 0, quantity: 2, deviceIds: [] }], reason: "Faulty",
+    condition: "faulty", mode: "bank_transfer", actor: "Admin", cashPaid: false });
+  assert.equal(refund.total, 180);
+  const log = await store.getAuditLog();
+  assert.deepEqual(log.map((entry) => entry.action).slice(-2), ["discount_applied", "refund_recorded"]);
+});

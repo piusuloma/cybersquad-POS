@@ -89,6 +89,12 @@ export function SaleRecordDetailModal({ open, onOpenChange, sale: inputSale }) {
             </Table>
 
             <div className="space-y-1 border-t border-border pt-3">
+              {sale.discount?.amount > 0 && (
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Subtotal {formatCurrency(sale.subtotal)} · Discount ({sale.discount.reason})</span>
+                  <span>-{formatCurrency(sale.discount.amount)}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-sm font-semibold">
                 <span>Total</span>
                 <span>{formatCurrency(sale.total)}</span>

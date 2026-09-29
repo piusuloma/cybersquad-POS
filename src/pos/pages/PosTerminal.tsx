@@ -35,6 +35,8 @@ import HoldSaleDialog from "@/pos/components/HoldSaleDialog";
 import RefundsDialog from "@/pos/components/RefundsDialog";
 import { SalesDetailModal } from "@/components/SalesDetailModal";
 
+const DISCOUNT_LIMIT_PERCENT = 10;
+
 export default function PosTerminal() {
   const { api } = useApi();
   const cart = usePosCart();
@@ -49,7 +51,9 @@ export default function PosTerminal() {
   const activeCatalog = sampleMode ? SAMPLE_CATALOG : catalog;
   const needsCustomer = cart.lines.some((line) => line.tracking === "serial");
   const deviceCheckoutReady = !needsCustomer || Boolean(customer.name.trim() && customer.phone.trim());
-  const clearSale = () => { cart.clear(); setNote(""); setCustomer({ name: "", phone: "" }); };
+  const [discount, setDiscount] = useState<{ amount: number; reason: string } | null>(null);
+  const clearSale = () => { cart.clear(); setNote(""); setCustomer({ name: "", phone: "" }); setDiscount(null); };
+  const payable = Math.max(0, cart.subtotal - (discount?.amount ?? 0));
   const selectDevices = async (item: PosProduct) => {
     try {
       const [sales, held] = await Promise.all([getSales(), getHeldSales()]);
@@ -76,6 +80,18 @@ export default function PosTerminal() {
   const [showSaleHistory, setShowSaleHistory] = useState(false);
   const [showRefunds, setShowRefunds] = useState(false);
   const [heldRefreshKey, setHeldRefreshKey] = useState(0);
+
+  useEffect(() => { setDiscount(null); }, [cart.subtotal]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "F2") { event.preventDefault(); document.querySelector<HTMLInputElement>('input[placeholder^="Search by name"]')?.focus(); }
+      else if (event.key === "F4") { event.preventDefault(); setShowRefunds(true); }
+      else if (event.key === "F7" && cart.lines.length > 0) { event.preventDefault(); setShowHoldPrompt(true); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [cart.lines.length]);
 
   useEffect(() => {
     if (cart.lines.length === 0) { setCustomer({ name: "", phone: "" }); setNote(""); }
@@ -167,7 +183,7 @@ export default function PosTerminal() {
     }
 
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
-    if (Math.round(totalPaid) !== Math.round(cart.subtotal)) return;
+    if (Math.round(totalPaid) !== Math.round(payable)) return;
 
     setCharging(true);
     try {
@@ -180,7 +196,8 @@ export default function PosTerminal() {
         channel: "in_store",
         lines: cart.lines,
         subtotal: cart.subtotal,
-        total: cart.subtotal,
+        total: payable,
+        ...(discount ? { discount: { ...discount, approvedBy: user?.name || "Cashier" } } : {}),
         payments,
         paymentMode: primary.mode,
         ...(payments.length === 1 && primary.mode === "cash"
@@ -204,7 +221,9 @@ export default function PosTerminal() {
       if (!shift && amount > 0) throw new Error("Start a shift before receiving a deposit.");
       await createSale({ cashierName: user?.name || "Cashier", channel: "in_store",
         customer, note, lifecycle: "reserved", collectionDueAt: dueAt, lines: cart.lines,
-        subtotal: cart.subtotal, total: cart.subtotal, payments: amount > 0 ? [{ mode, amount }] : [], paymentMode: mode });
+        subtotal: cart.subtotal, total: payable,
+        ...(discount ? { discount: { ...discount, approvedBy: user?.name || "Cashier" } } : {}),
+        payments: amount > 0 ? [{ mode, amount }] : [], paymentMode: mode });
       setShowReserve(false); clearSale(); toast.success("Order reserved. Open Sale History to record payment or collection.");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not reserve order."); }
     finally { setCharging(false); }
@@ -269,7 +288,16 @@ export default function PosTerminal() {
 
         <CartPanel
           lines={cart.lines}
-          subtotal={cart.subtotal}
+          subtotal={payable}
+          itemsTotal={cart.subtotal}
+          discount={discount}
+          discountLimitPercent={user?.role === "admin" ? null : DISCOUNT_LIMIT_PERCENT}
+          onApplyDiscount={(amount, reason) => {
+            if (!(amount > 0) || amount > cart.subtotal) return "Discount must be more than 0 and no more than the subtotal.";
+            if (user?.role !== "admin" && amount > cart.subtotal * DISCOUNT_LIMIT_PERCENT / 100) return "This discount needs an admin account.";
+            setDiscount({ amount: Math.round(amount * 100) / 100, reason });
+          }}
+          onRemoveDiscount={() => setDiscount(null)}
           onUpdateQuantity={(id, quantity) => {
             const product = activeCatalog.find((item) => item.id === id);
             if (!product || quantity > product.quantity - product.locked) { toast.error("Requested quantity is not available."); return; }
@@ -297,7 +325,7 @@ export default function PosTerminal() {
       </div>
 
       {cart.lines.length > 0 && <Button variant="outline" disabled={charging || !customer.name.trim() || !customer.phone.trim()} onClick={() => setShowReserve(true)}>Reserve for collection</Button>}
-      {showReserve && <ReserveOrderDialog total={cart.subtotal} busy={charging} onClose={() => setShowReserve(false)} onSave={reserveOrder} />}
+      {showReserve && <ReserveOrderDialog total={payable} busy={charging} onClose={() => setShowReserve(false)} onSave={reserveOrder} />}
       {deviceProduct && <DeviceSelectionDialog key={deviceProduct.id} product={deviceProduct}
         selected={cart.lines.find((line) => line.productId === deviceProduct.id)?.devices ?? []}
         unavailable={unavailableUnits} onClose={() => setDeviceProduct(null)}

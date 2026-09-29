@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DeviceDetails from "./DeviceDetails";
-import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2 } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2, BadgePercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +60,11 @@ interface CartPanelProps {
   onNoteChange: (note: string) => void;
   customerRequired: boolean;
   onRefunds: () => void;
+  itemsTotal: number;
+  discount: { amount: number; reason: string } | null;
+  discountLimitPercent: number | null;
+  onApplyDiscount: (amount: number, reason: string) => string | undefined;
+  onRemoveDiscount: () => void;
 }
 
 export default function CartPanel({
@@ -80,8 +85,25 @@ export default function CartPanel({
   onNoteChange,
   customerRequired,
   onRefunds,
+  itemsTotal,
+  discount,
+  discountLimitPercent,
+  onApplyDiscount,
+  onRemoveDiscount,
 }: CartPanelProps) {
   const [confirmClear, setConfirmClear] = useState(false);
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const [discountKind, setDiscountKind] = useState<"percent" | "amount">("percent");
+  const [discountValue, setDiscountValue] = useState("");
+  const [discountReason, setDiscountReason] = useState("");
+  const [discountError, setDiscountError] = useState("");
+  const submitDiscount = () => {
+    const value = Number(discountValue);
+    const amount = discountKind === "percent" ? Math.round(itemsTotal * value) / 100 : value;
+    const error = !(value > 0) ? "Enter a discount." : !discountReason.trim() ? "Enter a reason." : onApplyDiscount(amount, discountReason.trim());
+    setDiscountError(error ?? "");
+    if (!error) { setDiscountOpen(false); setDiscountValue(""); setDiscountReason(""); }
+  };
 
   // Single-payment path (the common case): one method covers the whole sale.
   const [paymentMode, setPaymentMode] = useState<SalePaymentMode>("cash");
@@ -226,7 +248,7 @@ export default function CartPanel({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-9 w-9"
                   aria-label={`Decrease quantity of ${line.name}`}
                   disabled={line.tracking === "serial"}
                   onClick={() => onUpdateQuantity(line.productId, line.quantity - 1)}
@@ -243,12 +265,12 @@ export default function CartPanel({
                     const value = Math.max(1, Math.floor(Number(e.target.value) || 1));
                     onUpdateQuantity(line.productId, value);
                   }}
-                  className="w-14 h-7 text-center px-1"
+                  className="w-14 h-9 text-center px-1"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-9 w-9"
                   aria-label={`Increase quantity of ${line.name}`}
                   disabled={line.tracking === "serial"}
                   onClick={() => onUpdateQuantity(line.productId, line.quantity + 1)}
@@ -271,6 +293,30 @@ export default function CartPanel({
       )}
 
       <div className="border-t border-border pt-4 space-y-3 mt-auto">
+        {lines.length > 0 && (discount ? (
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatCurrency(itemsTotal)}</span></div>
+            <div className="flex justify-between items-center">
+              <span>Discount ({discount.reason})</span>
+              <span className="flex items-center gap-1">-{formatCurrency(discount.amount)}
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Remove discount" onClick={onRemoveDiscount}><X className="h-3 w-3" /></Button></span>
+            </div>
+          </div>
+        ) : discountOpen ? (
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <div className="flex gap-2">
+              <select aria-label="Discount type" className="border rounded p-2 bg-background" value={discountKind} onChange={(event) => setDiscountKind(event.target.value as "percent" | "amount")}>
+                <option value="percent">%</option><option value="amount">Amount</option></select>
+              <Input aria-label="Discount value" type="number" min={0} step="0.01" value={discountValue} onChange={(event) => setDiscountValue(event.target.value)} />
+            </div>
+            <Input aria-label="Discount reason" placeholder="Reason (required)" value={discountReason} onChange={(event) => setDiscountReason(event.target.value)} />
+            {discountLimitPercent !== null && <p className="text-xs text-muted-foreground">Discounts above {discountLimitPercent}% need an admin account.</p>}
+            {discountError && <p className="text-xs text-destructive" role="alert">{discountError}</p>}
+            <div className="flex gap-2"><Button size="sm" onClick={submitDiscount}>Apply</Button><Button size="sm" variant="outline" onClick={() => { setDiscountOpen(false); setDiscountError(""); }}>Cancel</Button></div>
+          </div>
+        ) : (
+          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setDiscountOpen(true)}><BadgePercent className="w-3.5 h-3.5 mr-1" />Add discount</Button>
+        ))}
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Total</span>
           <span className="font-semibold text-lg text-foreground">{formatCurrency(subtotal)}</span>

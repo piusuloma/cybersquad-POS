@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
-import { getRefunds, getSales, type Refund, type Sale } from "../lib/store";
+import { getAuditLog, getRefunds, getSales, type AuditEntry, type Refund, type Sale } from "../lib/store";
 import { printRefundReceipt } from "../lib/receipt";
 import RefundPanel from "./RefundPanel";
 
@@ -15,12 +15,13 @@ const STATUS_LABEL: Record<Refund["status"], string> = { pending: "Awaiting repa
 export default function RefundsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [sales, setSales] = useState<Sale[]>([]);
   const [refunds, setRefunds] = useState<Refund[]>([]);
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [tab, setTab] = useState("history");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const load = () => Promise.all([getSales(), getRefunds()])
-    .then(([saleList, refundList]) => { setSales(saleList); setRefunds(refundList); })
+  const load = () => Promise.all([getSales(), getRefunds(), getAuditLog()])
+    .then(([saleList, refundList, log]) => { setSales(saleList); setRefunds(refundList); setAudit(log); })
     .catch(() => toast.error("Could not load sales and refunds."));
 
   useEffect(() => { if (open) void load(); else { setSelectedId(null); setQuery(""); setTab("history"); } }, [open]);
@@ -46,7 +47,7 @@ export default function RefundsDialog({ open, onOpenChange }: { open: boolean; o
         <DialogDescription>Review refund history or find a sale to return items or repay a deposit.</DialogDescription>
       </DialogHeader>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList><TabsTrigger value="history">Refund history</TabsTrigger><TabsTrigger value="new">New refund</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="history">Refund history</TabsTrigger><TabsTrigger value="new">New refund</TabsTrigger><TabsTrigger value="audit">Audit log</TabsTrigger></TabsList>
         <TabsContent value="history" className="space-y-2">
           {!history.length && <p className="text-sm text-muted-foreground">No refunds recorded.</p>}
           {history.map((refund) => {
@@ -63,6 +64,14 @@ export default function RefundsDialog({ open, onOpenChange }: { open: boolean; o
               </div>
             </div>;
           })}
+        </TabsContent>
+        <TabsContent value="audit" className="space-y-2">
+          <p className="text-xs text-muted-foreground">Refunds, repayments and discounts, newest first.</p>
+          {!audit.length && <p className="text-sm text-muted-foreground">Nothing recorded yet.</p>}
+          {[...audit].reverse().map((entry) => <div key={entry.id} className="border border-border rounded-lg p-3 text-sm">
+            <p className="font-medium">{entry.action.replaceAll("_", " ")} · {entry.actor}</p>
+            <p>{entry.detail}</p><p className="text-xs text-muted-foreground">{new Date(entry.at).toLocaleString()}</p>
+          </div>)}
         </TabsContent>
         <TabsContent value="new" className="space-y-3">
           {selected ? <>

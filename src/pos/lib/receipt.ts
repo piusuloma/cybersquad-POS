@@ -175,6 +175,10 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>, ti
         </table>
       </div>
 
+      ${sale.discount && sale.discount.amount > 0 ? `<div class="section row">
+        <div><p class="muted">Subtotal ${escapeHtml(formatCurrency(sale.subtotal))} · Discount (${escapeHtml(sale.discount.reason)})</p></div>
+        <div>-${escapeHtml(formatCurrency(sale.discount.amount))}</div>
+      </div>` : ""}
       <div class="section row">
         <div>
           <p class="muted">Total</p>
