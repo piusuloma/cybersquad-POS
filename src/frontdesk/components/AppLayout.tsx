@@ -83,7 +83,6 @@ const qaNavItems: NavItem[] = [
 
 const inventoryManagerNavItems: NavItem[] = [
   { path: "/inventory", label: "Inventory", icon: Package },
-  { path: "/operations", label: "Sourcing & transfers", icon: Briefcase },
 ];
 
 const posNavItems: NavItem[] = [

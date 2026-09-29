@@ -163,7 +163,7 @@ export default function App() {
           <Route
             path="/operations"
             element={
-              <FrontdeskProtectedRoute allowedRoles={["front_desk", "sales", "admin", "inventory_manager"]}>
+              <FrontdeskProtectedRoute allowedRoles={["front_desk", "sales", "admin"]}>
                 <OperationsWorkspace />
               </FrontdeskProtectedRoute>
             }
