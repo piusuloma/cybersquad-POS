@@ -216,7 +216,7 @@ export default function CartPanel({
         <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="w-3.5 h-3.5 mr-1" />Refund</Button>
         <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="w-3.5 h-3.5 mr-1" />Hold</Button>
         <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="w-3.5 h-3.5 mr-1" />Discount</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="w-3.5 h-3.5 mr-1" />Order</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="w-3.5 h-3.5 mr-1" />Reserve</Button>
         <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="w-3.5 h-3.5 mr-1" />Clear sale</Button>
       </div>
 

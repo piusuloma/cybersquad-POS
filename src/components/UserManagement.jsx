@@ -139,7 +139,7 @@ function PaginationBar({
 	);
 }
 
-export function UserManagement() {
+export function UserManagement({ initialTab = "technicians", hideTabs = false } = {}) {
 	const { api } = useApi();
 
 	// ✅ SEPARATE search queries for each tab to prevent interference
@@ -472,17 +472,17 @@ export function UserManagement() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1>User Management</h1>
+				<h1>{hideTabs ? (initialTab === "customers" ? "Customer Management" : "Technician Management") : "User Management"}</h1>
 				<p className="text-muted-foreground">
-					Manage technicians and customers
+					{hideTabs ? (initialTab === "customers" ? "Manage customer accounts" : "Manage technician accounts") : "Manage technicians and customers"}
 				</p>
 			</div>
 
-			<Tabs defaultValue="technicians" className="space-y-4">
-				<TabsList>
+			<Tabs defaultValue={initialTab} className="space-y-4">
+				{!hideTabs && <TabsList>
 					<TabsTrigger value="technicians">Technicians</TabsTrigger>
 					<TabsTrigger value="customers">Customers</TabsTrigger>
-				</TabsList>
+				</TabsList>}
 
 				{/* TECHNICIANS */}
 				<TabsContent value="technicians" className="space-y-4">

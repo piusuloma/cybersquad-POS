@@ -6,7 +6,6 @@ import { getAuth, type Ticket } from "@/frontdesk/lib/store";
 import { getSales, orderBalance, type Sale } from "@/pos/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { SaleRecordDetailModal } from "@/components/SaleRecordDetailModal";
-import CustomerDirectory from "./CustomerDirectory";
 import Enquiries from "./Enquiries";
 import WarrantyLookup from "./WarrantyLookup";
 import OperationsOverview from "./OperationsOverview";
@@ -29,17 +28,25 @@ export default function OperationsWorkspace({ admin = false, onOpenRepair, initi
   const navigate = useNavigate(); const [role, setRole] = useState(admin ? "admin" : ""); const [tab, setTab] = useState(initialTab ?? "overview");
   useEffect(() => { if (!admin) getAuth().then((user) => { setRole(user?.role ?? ""); }); }, [admin]);
   const openRepair = onOpenRepair ?? ((ticket: Ticket) => navigate("/ticket/" + encodeURIComponent(ticket.id)));
-  const salesAccess = role === "sales" || role === "admin";
+  const followUpAccess = role === "front_desk" || role === "sales" || role === "admin";
+  const orderAccess = role === "sales" || role === "admin";
+  const fallbackTab = hideOverview ? (followUpAccess ? "enquiries" : "warranty") : "overview";
+  const availableTabs = new Set([
+    ...(!hideOverview ? ["overview"] : []), "warranty",
+    ...(followUpAccess ? ["enquiries"] : []), ...(orderAccess ? ["orders"] : []),
+    ...extraTabs.map((entry) => entry.value),
+  ]);
+  useEffect(() => { if (!availableTabs.has(tab)) setTab(fallbackTab); }, [tab, fallbackTab, availableTabs]);
   return <div className="space-y-5">
-    <div><h1 className="text-2xl font-bold">Business operations</h1><p className="text-sm text-muted-foreground">Customers, after-sales support and work needing attention.</p></div>
+    <div><h1 className="text-2xl font-bold">Business operations</h1><p className="text-sm text-muted-foreground">Follow-ups, orders, warranty lookup and work needing attention.</p></div>
     <Tabs value={tab} onValueChange={setTab}>
       <TabsList className="flex flex-wrap h-auto justify-start gap-1">{!hideOverview && <TabsTrigger value="overview">{role === "admin" ? "Overview" : "My work"}</TabsTrigger>}
-        <TabsTrigger value="customers">{admin ? "Sales contacts" : "Customers"}</TabsTrigger>
-        {salesAccess && <><TabsTrigger value="enquiries">Follow-ups</TabsTrigger><TabsTrigger value="orders">Orders & collection</TabsTrigger></>}
+        {followUpAccess && <TabsTrigger value="enquiries">Follow-ups</TabsTrigger>}
+        {orderAccess && <TabsTrigger value="orders">Orders & collection</TabsTrigger>}
         <TabsTrigger value="warranty">Warranty lookup</TabsTrigger>{extraTabs.map((tab) => <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>)}</TabsList>
-      {!hideOverview && <TabsContent value="overview"><OperationsOverview role={role} onOpenRepair={openRepair} onEnquiries={() => setTab(salesAccess ? "enquiries" : "customers")} /></TabsContent>}
-      <TabsContent value="customers"><CustomerDirectory onOpenRepair={openRepair} /></TabsContent>
-      {salesAccess && <><TabsContent value="enquiries"><Enquiries /></TabsContent><TabsContent value="orders"><Orders /></TabsContent></>}
+      {!hideOverview && <TabsContent value="overview"><OperationsOverview role={role} onOpenRepair={openRepair} onEnquiries={() => setTab(followUpAccess ? "enquiries" : "overview")} /></TabsContent>}
+      {followUpAccess && <TabsContent value="enquiries"><Enquiries /></TabsContent>}
+      {orderAccess && <TabsContent value="orders"><Orders /></TabsContent>}
       <TabsContent value="warranty"><WarrantyLookup onSelect={role === "front_desk" ? (record) => navigate("/new-ticket?intakeType=warranty&warrantyId=" + encodeURIComponent(record.id)) : undefined} /></TabsContent>
       {extraTabs.map((tab) => <TabsContent key={tab.value} value={tab.value}>{tab.content}</TabsContent>)}
     </Tabs>

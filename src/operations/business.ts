@@ -32,20 +32,29 @@ export function normalizePhone(phone: string) {
   const digits = phone.replace(/\D/g, "");
   return digits.length === 11 && digits.startsWith("0") ? "234" + digits.slice(1) : digits;
 }
+function customerKeys(customer?: Partial<SaleCustomer>) {
+  if (!customer) return [];
+  const phone = customer.phone ? normalizePhone(customer.phone) : "";
+  const email = customer.email?.trim().toLowerCase() ?? "";
+  return [phone, email, customer.id ?? ""].filter(Boolean);
+}
 export function sameCustomer(a?: SaleCustomer, b?: SaleCustomer) {
-  return Boolean(a && b && ((a.id && b.id && a.id === b.id) ||
-    (a.phone && b.phone && normalizePhone(a.phone) === normalizePhone(b.phone))));
+  const aKeys = new Set(customerKeys(a));
+  return customerKeys(b).some((key) => aKeys.has(key));
 }
 export async function getCustomerDirectory(): Promise<DirectoryCustomer[]> {
   const [state, sales, tickets] = await Promise.all([getBusiness(), getSales(), getTickets()]);
-  const byPhone = new Map<string, DirectoryCustomer>();
+  const byKey = new Map<string, DirectoryCustomer>();
   for (const customer of [...tickets.map((ticket) => ticket.customer),
     ...sales.filter((sale) => !sale.isDemo).flatMap((sale) => sale.customer ? [sale.customer] : []), ...state.customers]) {
-    const key = normalizePhone(customer.phone) || customer.email?.trim().toLowerCase() || customer.id;
-    if (!key) continue;
-    byPhone.set(key, { ...byPhone.get(key), ...customer, id: customer.id ?? "contact-" + key });
+    const keys = customerKeys(customer);
+    const existing = keys.map((key) => byKey.get(key)).find(Boolean);
+    const primaryKey = keys[0];
+    if (!primaryKey) continue;
+    const merged = { ...existing, ...customer, id: existing?.id ?? customer.id ?? "contact-" + primaryKey } as DirectoryCustomer;
+    keys.forEach((key) => byKey.set(key, merged));
   }
-  return [...byPhone.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return [...new Map([...byKey.values()].map((customer) => [customer.id, customer])).values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 export async function saveCustomer(input: SaleCustomer): Promise<DirectoryCustomer> {
   const name = input.name.trim(); const phone = normalizePhone(input.phone); const email = input.email?.trim().toLowerCase() ?? "";

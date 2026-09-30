@@ -155,7 +155,7 @@ export default function App() {
           <Route
             path="/pos"
             element={
-              <FrontdeskProtectedRoute allowedRoles={["sales"]}>
+              <FrontdeskProtectedRoute allowedRoles={["sales", "admin"]}>
                 <PosTerminal />
               </FrontdeskProtectedRoute>
             }

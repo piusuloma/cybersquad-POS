@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import OperationsWorkspace from "../operations/OperationsWorkspace";
 import OperationsOverview from "../operations/OperationsOverview";
+import { ShiftHistoryTable } from "../pos/components/ShiftHistoryDialog";
 import { SectionTabs } from "./SectionTabs";
 import { useNavigate } from "react-router-dom";
 import { DashboardOverview } from "./DashboardOverview";
@@ -80,7 +81,7 @@ export function DashboardLayout({ onLogout }) {
 	const navigate = useNavigate();
 	const [activeView, setActiveView] = useState("overview");
 	// The tab open inside each multi-screen section; dashboard cards set these to land on the right screen.
-	const [sectionTabs, setSectionTabs] = useState({ sales: "records", repairs: "jobs", finance: "payments", people: "users" });
+	const [sectionTabs, setSectionTabs] = useState({ sales: "records", repairs: "jobs", finance: "payments", people: "technicians" });
 	const openSection = (section, tab) => {
 		setSectionTabs((current) => ({ ...current, [section]: tab }));
 		setActiveView(section);
@@ -188,6 +189,15 @@ export function DashboardLayout({ onLogout }) {
 								label: "Sales records",
 								content: <SalesRecords initialFilter={salesInitialFilter} />,
 							},
+							{
+								value: "shift-history",
+								label: "Shift history",
+								content: (
+									<div className="glass-card p-4">
+										<ShiftHistoryTable showVariance />
+									</div>
+								),
+							},
 						]}
 					/>
 				);
@@ -218,7 +228,8 @@ export function DashboardLayout({ onLogout }) {
 					<SectionTabs
 						{...tabState("people")}
 						tabs={[
-							{ value: "users", label: "Technicians & customers", content: <UserManagement /> },
+							{ value: "technicians", label: "Technicians", content: <UserManagement initialTab="technicians" hideTabs /> },
+							{ value: "customers", label: "Customers", content: <UserManagement initialTab="customers" hideTabs /> },
 							{ value: "admins", label: "Admins & roles", show: isSuperUser, content: <AdminManagement /> },
 							{ value: "stores", label: "Stores", show: isSuperUser, content: <StoreManagement /> },
 						]}

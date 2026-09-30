@@ -345,8 +345,9 @@ export default function PosTerminal() {
         shift={shift}
         onOpenChange={setShowEndShift}
         onEnded={() => setShift(null)}
+        showVariance={user?.role === "admin"}
       />
-      <ShiftHistoryDialog open={showShiftHistory} onOpenChange={setShowShiftHistory} />
+      <ShiftHistoryDialog open={showShiftHistory} onOpenChange={setShowShiftHistory} showVariance={user?.role === "admin"} />
       <HeldSalesDialog
         open={showHeldSales}
         onOpenChange={setShowHeldSales}
