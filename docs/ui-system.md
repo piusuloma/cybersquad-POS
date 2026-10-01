@@ -6,7 +6,7 @@ The rules every screen follows. Tokens live in `src/styles/globals.css`.
 - Use Tailwind steps that are multiples of 8px: `2` (8), `4` (16), `6` (24), `8` (32), `10` (40), `12` (48).
 - `1` (4px) is allowed only for tight icon-to-label gaps. Avoid `1.5`, `2.5`, `3`, `3.5`, `5` and `7`.
 - Rhythm: 16px between related items, 24px between sections, 24px card padding, 32px page padding.
-- Heights: controls 32 / 40 / 48px. Icons 16px inline, 24px in headers, 32px in empty states.
+- Heights: controls 36 (compact) / 40 (default) / 48 (large). Buttons, inputs, selects and toggles share them. 36 is the one half-step allowed. Icons 16px inline, 24px in headers, 32px in empty states.
 
 ## Type
 - One family, Plus Jakarta Sans, for the whole app. Weights 400, 500, 600.
