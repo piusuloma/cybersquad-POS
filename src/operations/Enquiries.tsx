@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { AlarmClock, PhoneOff } from "lucide-react";
+import { AlarmClock, BellRing, CheckCircle2, ListChecks, PhoneOff, Plus, XCircle, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getAuth } from "@/frontdesk/lib/store";
 import { getSales, type Sale } from "@/pos/lib/store";
 import type { SaleCustomer } from "@/pos/lib/devices";
@@ -54,30 +55,73 @@ function EnquiryCard({ enquiry, sales, refresh }: { enquiry: Enquiry; sales: Sal
     </div>}
   </article>;
 }
+type FilterKey = "open" | "converted" | "lost" | "all";
+const FILTERS: { key: FilterKey; label: string; hint: string; icon: LucideIcon }[] = [
+  { key: "open", label: "Open follow-ups", hint: "Still chasing the customer", icon: BellRing },
+  { key: "converted", label: "Sale completed", hint: "Customer bought", icon: CheckCircle2 },
+  { key: "lost", label: "Closed - no sale", hint: "Customer did not proceed", icon: XCircle },
+  { key: "all", label: "All follow-ups", hint: "Everything recorded", icon: ListChecks },
+];
+const EMPTY_MESSAGE: Record<FilterKey, string> = {
+  open: "No open follow-ups. Log one when a customer shows real buying interest.",
+  converted: "No follow-ups have ended in a sale yet.",
+  lost: "No follow-ups have been closed without a sale.",
+  all: "No follow-ups recorded yet.",
+};
+
 export default function Enquiries() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]); const [sales, setSales] = useState<Sale[]>([]);
   const [customer, setCustomer] = useState<SaleCustomer>(); const [request, setRequest] = useState("");
   const [owner, setOwner] = useState(""); const [due, setDue] = useState(""); const [busy, setBusy] = useState(false);
-  const [filter, setFilter] = useState("open");
+  const [filter, setFilter] = useState<FilterKey>("open"); const [logging, setLogging] = useState(false);
   const load = () => Promise.all([getBusiness(), getSales()]).then(([state, orders]) => { setEnquiries(state.enquiries); setSales(orders); }).catch(() => toast.error("Could not load enquiries."));
   useEffect(() => { void load(); getAuth().then((user) => setOwner(user?.name ?? "")); }, []);
-  const visible = enquiries.filter((enquiry) => filter === "all" || enquiry.status === filter);
-  return <div className="space-y-4">
-    <form className="glass-card p-4 space-y-4" onSubmit={async (event) => {
-      event.preventDefault(); if (!customer?.id) { toast.error("Select or save a customer first."); return; } setBusy(true);
-      try { await saveEnquiry({ customer: customer as DirectoryCustomer, request, owner, followUpAt: due }); setRequest(""); setDue(""); await load(); toast.success("Follow-up saved."); }
-      catch (error) { toast.error(error instanceof Error ? error.message : "Could not save enquiry."); } finally { setBusy(false); }
-    }}>
-      <p className="font-medium">Meaningful customer enquiry</p><CustomerPicker value={customer} onChange={setCustomer} />
-      <label className="block text-sm">Product / customer request<Input required value={request} onChange={(event) => setRequest(event.target.value)} /></label>
-      <div className="grid sm:grid-cols-2 gap-4"><label className="text-sm">Owner<Input required value={owner} onChange={(event) => setOwner(event.target.value)} /></label>
-      <label className="text-sm">Follow-up date<Input required type="datetime-local" value={due} onChange={(event) => setDue(event.target.value)} /></label></div>
-      <Button disabled={busy} type="submit">Save follow-up</Button>
-    </form>
-    <div className="flex flex-wrap items-center gap-2 text-sm"><span>Show</span><select className="border rounded p-2 bg-background" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="open">Open follow-ups</option><option value="converted">Sale completed</option><option value="lost">Closed - no sale</option><option value="all">All follow-ups</option></select>
-      <span className="text-muted-foreground">{visible.length} shown</span></div>
-    {visible.sort((a, b) => Date.parse(a.followUpAt) - Date.parse(b.followUpAt)).map((enquiry) => <EnquiryCard key={enquiry.id} enquiry={enquiry} sales={sales} refresh={load} />)}
-    {!enquiries.length && <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground"><PhoneOff className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />No enquiries recorded.</div>}
-    {enquiries.length > 0 && !visible.length && <p className="text-muted-foreground">No follow-ups match this view.</p>}
+  const counts: Record<FilterKey, number> = {
+    open: enquiries.filter((entry) => entry.status === "open").length,
+    converted: enquiries.filter((entry) => entry.status === "converted").length,
+    lost: enquiries.filter((entry) => entry.status === "lost").length,
+    all: enquiries.length,
+  };
+  const overdue = enquiries.filter((entry) => entry.status === "open" && Date.parse(entry.followUpAt) < Date.now()).length;
+  const visible = enquiries.filter((entry) => filter === "all" || entry.status === filter).sort((a, b) => Date.parse(a.followUpAt) - Date.parse(b.followUpAt));
+  return <div className="space-y-6">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div><h2 className="text-lg font-semibold">Follow-ups</h2><p className="text-sm text-muted-foreground">Track customers who showed real buying interest until they buy or decide not to.</p></div>
+      <Button onClick={() => setLogging(true)}><Plus className="h-4 w-4" aria-hidden="true" />Log follow-up</Button>
+    </div>
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 motion-stagger" role="group" aria-label="Filter follow-ups">
+      {FILTERS.map(({ key, label, hint, icon: Icon }) => {
+        const active = filter === key;
+        return <button key={key} type="button" aria-pressed={active} onClick={() => setFilter(key)}
+          className={"press lift rounded-lg border p-4 text-left space-y-2 " + (active ? "border-primary bg-primary/5 ring-2 ring-primary/30" : "border-border bg-card hover:border-primary/50")}>
+          <span className="flex items-center justify-between"><Icon className={"h-4 w-4 " + (active ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
+            <span className="text-2xl font-semibold">{counts[key]}</span></span>
+          <span className="block text-sm font-medium">{label}</span>
+          <span className="block text-xs text-muted-foreground">{key === "open" && overdue > 0 ? <span className="font-medium text-destructive">{overdue} overdue</span> : hint}</span>
+        </button>;
+      })}
+    </div>
+    <div className="space-y-4 motion-stagger">
+      {visible.map((enquiry) => <EnquiryCard key={enquiry.id} enquiry={enquiry} sales={sales} refresh={load} />)}
+    </div>
+    {!visible.length && <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground"><PhoneOff className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />{EMPTY_MESSAGE[filter]}</div>}
+    <Dialog open={logging} onOpenChange={setLogging}>
+      <DialogContent style={{ maxWidth: "36rem", maxHeight: "85vh", overflowY: "auto" }}>
+        <DialogHeader><DialogTitle>Log follow-up</DialogTitle><DialogDescription>Record a customer with real buying interest and when to follow up.</DialogDescription></DialogHeader>
+        <form className="space-y-4" onSubmit={async (event) => {
+          event.preventDefault(); if (!customer?.id) { toast.error("Select or save a customer first."); return; } setBusy(true);
+          try { await saveEnquiry({ customer: customer as DirectoryCustomer, request, owner, followUpAt: due }); setRequest(""); setDue(""); setCustomer(undefined); setLogging(false); setFilter("open"); await load(); toast.success("Follow-up logged."); }
+          catch (error) { toast.error(error instanceof Error ? error.message : "Could not save follow-up."); } finally { setBusy(false); }
+        }}>
+          <CustomerPicker value={customer} onChange={setCustomer} />
+          <label className="block space-y-2 text-sm">Product / customer request<Input required value={request} onChange={(event) => setRequest(event.target.value)} /></label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="space-y-2 text-sm">Owner<Input required value={owner} onChange={(event) => setOwner(event.target.value)} /></label>
+            <label className="space-y-2 text-sm">Follow-up date<Input required type="datetime-local" value={due} onChange={(event) => setDue(event.target.value)} /></label>
+          </div>
+          <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setLogging(false)}>Cancel</Button><Button disabled={busy} type="submit">{busy ? "Saving..." : "Save follow-up"}</Button></div>
+        </form>
+      </DialogContent>
+    </Dialog>
   </div>;
 }

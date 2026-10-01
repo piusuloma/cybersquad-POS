@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
   Card,
@@ -23,11 +23,9 @@ import {
   Filter,
   Download,
   MoreVertical,
-  XCircle,
   Eye,
   ChevronLeft,
   ChevronRight,
-  Layers,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -121,6 +119,9 @@ function PaginationBar({
   );
 }
 
+// The Completed tab already covers completed jobs, so Job Management leaves that card off the stage strip.
+const HIDDEN_STATUS_CARDS = ["completed"];
+
 export function JobManagement({ initialFilter } = {}) {
   const { api } = useApi();
   // Was declared and never wired to anything — no input rendered it, no
@@ -207,29 +208,6 @@ export function JobManagement({ initialFilter } = {}) {
     next: null,
     previous: null,
   });
-  const repairStatusExtraBuckets = useMemo(
-    () => [
-      {
-        key: "active_all",
-        label: "Active Jobs (All)",
-        icon: Layers,
-        color: "text-cyan-600",
-        bgColor: "bg-cyan-50",
-        status: ACTIVE_STATUSES.join(","),
-        tab: "active",
-      },
-      {
-        key: "cancelled",
-        label: "Cancelled",
-        icon: XCircle,
-        color: "text-error",
-        bgColor: "bg-error/10",
-        status: CANCELLED_STATUSES.join(","),
-        tab: "cancelled",
-      },
-    ],
-    [],
-  );
 
   // Fetch Pending Offers with filters
   const fetchPendingJobs = async () => {
@@ -877,13 +855,13 @@ export function JobManagement({ initialFilter } = {}) {
         <div>
           <h2 className="text-base font-semibold">Repair Status</h2>
           <p className="text-sm text-muted-foreground">
-            Select a card to apply its matching status filter.
+            Click a stage to filter active jobs. Use the tabs below for completed and cancelled jobs.
           </p>
         </div>
         <RepairStatusCards
           onSelect={applyStatusFilter}
-          extraBuckets={repairStatusExtraBuckets}
-          gridClassName="grid-cols-2 md:grid-cols-4 lg:grid-cols-8"
+          excludeKeys={HIDDEN_STATUS_CARDS}
+          gridClassName="grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
         />
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

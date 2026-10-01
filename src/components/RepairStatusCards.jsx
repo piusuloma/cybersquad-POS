@@ -36,10 +36,13 @@ const REPAIR_STATUS_BUCKETS = [
 // that don't pass any (the Dashboard) get the same array reference on every
 // render, instead of a new `[]` each time re-triggering the fetch effect.
 const NO_EXTRA_BUCKETS = [];
+const NO_EXCLUDED_KEYS = [];
 
 // Rendered on both the Dashboard (inside RepairPerformance.jsx) and Job
 // Management, so the same six cards, counts, and click targets show up
 // wherever repair status is surfaced. `onSelect` receives { tab, status }.
+//
+// `excludeKeys` hides built-in cards a page already covers another way (pass a stable array).
 //
 // `extraBuckets` lets a page append its own cards (same shape) fetched and
 // rendered the same way — e.g. Job Management adds "Active Jobs (All)" and
@@ -47,12 +50,12 @@ const NO_EXTRA_BUCKETS = [];
 // per-tab total cards did, without keeping a second, separately-fetched card
 // row around just for that. Pass a stable (e.g. useMemo'd) array — a fresh
 // literal on every render will re-trigger the count fetch each time.
-export function RepairStatusCards({ onSelect, extraBuckets = NO_EXTRA_BUCKETS, gridClassName }) {
+export function RepairStatusCards({ onSelect, extraBuckets = NO_EXTRA_BUCKETS, excludeKeys = NO_EXCLUDED_KEYS, gridClassName }) {
   const { api } = useApi();
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const buckets = [...REPAIR_STATUS_BUCKETS, ...extraBuckets];
+  const buckets = [...REPAIR_STATUS_BUCKETS.filter((bucket) => !excludeKeys.includes(bucket.key)), ...extraBuckets];
 
   useEffect(() => {
     let mounted = true;
@@ -80,7 +83,7 @@ export function RepairStatusCards({ onSelect, extraBuckets = NO_EXTRA_BUCKETS, g
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [extraBuckets]);
+  }, [extraBuckets, excludeKeys]);
 
   if (loading) {
     return (
