@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Ticket, User } from "@/frontdesk/lib/store";
+import { userHasRole } from "@/auth/roleUtils";
 import { getBusiness, getWarrantyRecords, recordRepairCoverage, warrantyStatus, type WarrantyRecord } from "./business";
 
 export default function RepairWarrantyPanel({ ticket, user }: { ticket: Ticket; user: User | null }) {
@@ -13,7 +14,7 @@ export default function RepairWarrantyPanel({ ticket, user }: { ticket: Ticket; 
   useEffect(() => { Promise.all([getBusiness(), getWarrantyRecords()]).then(([state, records]) => {
     setLinked(state.warrantyLinks[ticket.id]); setIssued(records.find((record) => record.source === "repair" && record.sourceId === ticket.id));
   }).catch(() => toast.error("Could not load repair coverage.")); }, [ticket.id]);
-  const canRecord = ["admin", "qa"].includes(user?.role ?? "") && ["completed", "delivered", "closed"].includes(ticket.status);
+  const canRecord = userHasRole(user, "admin", "qa") && ["completed", "delivered", "closed"].includes(ticket.status);
   return <section className="glass-card p-4 space-y-3">
     <h2 className="font-semibold">Warranty records</h2>
     {linked ? <div className="text-sm space-y-1"><p>Original {linked.source}: {linked.reference} · {linked.serial}</p>

@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getAuth, getOnlineBookings, getTickets, setAuth, User } from "@/frontdesk/lib/store";
+import { userHasRole } from "@/auth/roleUtils";
 import { useApi } from "@/hooks/useApi";
 import {
   LayoutDashboard,
@@ -105,40 +106,47 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [pendingDraftTickets, setPendingDraftTickets] = useState(0);
   const [pendingQaReviews, setPendingQaReviews] = useState(0);
   const activeLogo = isDark ? cybersquadLogo : cybersquadLightLogo;
-  const baseNavItems =
-    user?.role === "engineer"
-      ? engineerNavItems
-      : user?.role === "qa"
-      ? qaNavItems
-      : user?.role === "inventory_manager"
-      ? inventoryManagerNavItems
-      : user?.role === "sales"
-      ? posNavItems
-      : user?.role === "admin"
-      ? adminNavItems
-      : frontDeskNavItems;
+  // A user can hold several roles (for example front desk plus sales/POS); the sidebar combines the pages of each.
+  const heldRoles = user?.roles?.length ? user.roles : user?.role ? [user.role] : [];
+  const navByRole: Record<string, NavItem[]> = {
+    front_desk: frontDeskNavItems,
+    engineer: engineerNavItems,
+    qa: qaNavItems,
+    inventory_manager: inventoryManagerNavItems,
+    sales: posNavItems,
+    admin: adminNavItems,
+  };
+  const baseNavItems = (() => {
+    const ordered = user?.role ? [user.role, ...heldRoles.filter((role) => role !== user.role)] : heldRoles;
+    const seen = new Set<string>();
+    const items: NavItem[] = [];
+    for (const role of ordered.length ? ordered : ["front_desk"]) {
+      for (const item of navByRole[role] ?? []) {
+        if (!seen.has(item.path)) { seen.add(item.path); items.push(item); }
+      }
+    }
+    return items;
+  })();
 
   const canSeeDeviceCategories =
-    (user?.role === "front_desk" || user?.role === "qa" || user?.role === "inventory_manager") &&
+    userHasRole(user, "front_desk", "qa", "inventory_manager") &&
     hasPrivilege("privilege_lead_engineer_management");
 
   const navItems = canSeeDeviceCategories
     ? [...baseNavItems, { path: "/device-categories", label: "Device Categories", icon: Tag } as NavItem]
     : baseNavItems;
-  const roleLabel =
-    user?.role === "front_desk"
-      ? "Front Desk"
-      : user?.role === "engineer"
-      ? "Technician"
-      : user?.role === "qa"
-      ? "QA Desk"
-      : user?.role === "inventory_manager"
-      ? "Inventory Manager"
-      : user?.role === "sales"
-      ? "Sales / Cashier"
-      : user?.role === "admin"
-      ? "Admin"
-      : "";
+  const ROLE_LABELS: Record<string, string> = {
+    front_desk: "Front Desk",
+    engineer: "Technician",
+    qa: "QA Desk",
+    inventory_manager: "Inventory Manager",
+    sales: "Sales / Cashier",
+    admin: "Admin",
+  };
+  const roleLabel = (user?.role ? [user.role, ...heldRoles.filter((role) => role !== user.role)] : heldRoles)
+    .map((role) => ROLE_LABELS[role] ?? "")
+    .filter(Boolean)
+    .join(" + ");
 
   useEffect(() => {
     let mounted = true;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { getLandingPath } from "../auth/roleUtils";
+import { getLandingPath, userHasRole } from "../auth/roleUtils";
 import AppLayout from "./components/AppLayout";
 import { getAuth } from "./lib/store";
 import { WebSocketProvider } from "../context/WebSocketContext";
@@ -52,7 +52,7 @@ export default function FrontdeskProtectedRoute({ allowedRoles, children }) {
     return <Navigate to="/admin" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && !userHasRole(user, ...allowedRoles)) {
     return <Navigate to={getLandingPath(user.role)} replace />;
   }
 

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getAuth } from "@/frontdesk/lib/store";
+import { userHasRole } from "@/auth/roleUtils";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { createRefund, getRefunds, refundableQuantity, refundLineValue, updateRefund, decideRefund, getSalePayments, REFUND_APPROVAL_LIMIT, type Sale, type Refund, type RefundLine, type SalePaymentMode } from "../lib/store";
 import { printRefundReceipt } from "../lib/receipt";
@@ -18,7 +19,7 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
   const [depositAmount, setDepositAmount] = useState("");
   const refresh = () => getRefunds().then(setRefunds);
   useEffect(() => { refresh().catch(() => toast.error("Could not load refunds."));
-    getAuth().then((user) => { setActor(user?.name ?? ""); setRole(user?.role ?? ""); setAllowed(user?.role === "sales" || user?.role === "admin"); });
+    getAuth().then((user) => { setActor(user?.name ?? ""); setRole(userHasRole(user, "admin") ? "admin" : user?.role ?? ""); setAllowed(userHasRole(user, "sales", "admin")); });
   }, [sale.id]);
   const related = refunds.filter((refund) => refund.saleId === sale.id);
   const deposit = sale.lifecycle === "reserved";

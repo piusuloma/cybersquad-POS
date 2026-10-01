@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getAuth } from "@/frontdesk/lib/store";
+import { userHasRole } from "@/auth/roleUtils";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { addOrderPayment, collectOrder, cancelUnpaidOrder, orderBalance, type Sale, type SalePaymentMode } from "../lib/store";
 
@@ -10,7 +11,7 @@ export default function OrderActions({ sale: initial, onChanged }: { sale: Sale;
   const [sale, setSale] = useState(initial); const [amount, setAmount] = useState(""); const [mode, setMode] = useState<SalePaymentMode>("cash");
   const [verified, setVerified] = useState(false); const [busy, setBusy] = useState(false); const [actor, setActor] = useState("");
   const [allowed, setAllowed] = useState(false);
-  useEffect(() => { setSale(initial); getAuth().then((user) => { setActor(user?.name ?? ""); setAllowed(user?.role === "sales" || user?.role === "admin"); }); }, [initial]);
+  useEffect(() => { setSale(initial); getAuth().then((user) => { setActor(user?.name ?? ""); setAllowed(userHasRole(user, "sales", "admin")); }); }, [initial]);
   if (sale.lifecycle !== "reserved") return null;
   const run = async (action: () => Promise<unknown>) => { setBusy(true); try { await action(); onChanged(); } catch (error) { toast.error(error instanceof Error ? error.message : "Order action failed."); } finally { setBusy(false); } };
   return <section className="rounded-lg border border-border p-3 space-y-3">

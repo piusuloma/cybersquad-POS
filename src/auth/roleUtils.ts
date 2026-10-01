@@ -57,7 +57,8 @@ function normalizeRoleCandidate(candidate: unknown): AppRole | null {
   return null;
 }
 
-export function resolveAppRoleFromAuthPayload(payload: any): AppRole | null {
+// Every recognised role the account holds, in the order the backend lists them, without duplicates.
+export function resolveAppRolesFromAuthPayload(payload: any): AppRole[] {
   const rolesArr = Array.isArray(payload?.roles) ? payload.roles : [];
   const adminRolesArr = Array.isArray(payload?.admin_roles) ? payload.admin_roles : [];
   const roleCandidates = [
@@ -67,19 +68,36 @@ export function resolveAppRoleFromAuthPayload(payload: any): AppRole | null {
     payload?.role,
   ];
 
+  const roles: AppRole[] = [];
   for (const candidate of roleCandidates) {
     const resolvedRole = normalizeRoleCandidate(candidate);
-
-    if (resolvedRole) {
-      return resolvedRole;
+    if (resolvedRole && !roles.includes(resolvedRole)) {
+      roles.push(resolvedRole);
     }
   }
 
-  if (payload?.user?.is_superuser || payload?.user?.is_staff) {
-    return "admin";
+  if (roles.length === 0 && (payload?.user?.is_superuser || payload?.user?.is_staff)) {
+    roles.push("admin");
   }
 
-  return null;
+  return roles;
+}
+
+// The account's main role: it sets the landing page and drives the repair screens, which are written for one role.
+// Sales is an add-on role (a front desk or QA user can also be given POS), so it is main only when it is the only one.
+export function resolveAppRoleFromAuthPayload(payload: any): AppRole | null {
+  const roles = resolveAppRolesFromAuthPayload(payload);
+  return roles.find((role) => role !== "sales") ?? roles[0] ?? null;
+}
+
+// True when the user holds any of the wanted roles, as the main role or an additional one.
+export function userHasRole(
+  user: { role?: AppRole | null; roles?: readonly AppRole[] | null } | null | undefined,
+  ...wanted: AppRole[]
+): boolean {
+  if (!user) return false;
+  const held = user.roles?.length ? user.roles : user.role ? [user.role] : [];
+  return wanted.some((role) => held.includes(role));
 }
 
 export function getLandingPath(role: AppRole | null | undefined, fallbackPath = "/"): string {

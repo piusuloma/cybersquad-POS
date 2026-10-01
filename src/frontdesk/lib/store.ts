@@ -1,4 +1,4 @@
-import { resolveAppRoleFromAuthPayload, type AppRole } from "@/auth/roleUtils";
+import { resolveAppRoleFromAuthPayload, resolveAppRolesFromAuthPayload, type AppRole } from "@/auth/roleUtils";
 import { dbDelete, dbGet, dbSet, migrateFromLocalStorage } from "@/frontdesk/lib/db";
 import {
   getDeviceCategoryLabel,
@@ -11,6 +11,8 @@ export interface User {
   id: string;
   name: string;
   role: UserRole;
+  // Every role the account holds; `role` is the main one. Absent on locally created accounts.
+  roles?: UserRole[];
   email: string;
   storeLocation?: string;
 }
@@ -1401,6 +1403,7 @@ export async function getAuth(): Promise<User | null> {
       name: payload.user?.username || payload.user?.email || "Unknown User",
       email: payload.user?.email || "",
       role: mappedRole,
+      roles: resolveAppRolesFromAuthPayload(payload),
       ...(storeLocation ? { storeLocation } : {}),
     };
   } catch (err) {

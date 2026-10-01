@@ -199,7 +199,7 @@ export function DashboardLayout({ onLogout }) {
 						<div className="space-y-3">
 							<h2 className="text-base font-semibold text-foreground">Needs attention</h2>
 							<OperationsOverview
-								role="admin"
+								roles={["admin"]}
 								attentionOnly
 								onOpenRepair={openRepair}
 								onEnquiries={() => openSection("sales", "enquiries")}

@@ -1,3 +1,4 @@
+import { userHasRole, type AppRole } from "@/auth/roleUtils";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,11 +52,12 @@ export interface ExtraTab { value: string; label: string; content: ReactNode; }
 export default function OperationsWorkspace({ admin = false, onOpenRepair, initialTab, extraTabs = [], hideOverview = false, hideHeader = false }: {
   admin?: boolean; onOpenRepair?: (ticket: Ticket) => void; initialTab?: string; extraTabs?: ExtraTab[]; hideOverview?: boolean; hideHeader?: boolean;
 }) {
-  const navigate = useNavigate(); const [role, setRole] = useState(admin ? "admin" : ""); const [tab, setTab] = useState(initialTab ?? (hideOverview ? "records" : "overview"));
-  useEffect(() => { if (!admin) getAuth().then((user) => { setRole(user?.role ?? ""); }); }, [admin]);
+  const navigate = useNavigate(); const [roles, setRoles] = useState<AppRole[]>(admin ? ["admin"] : []); const [tab, setTab] = useState(initialTab ?? (hideOverview ? "records" : "overview"));
+  useEffect(() => { if (!admin) getAuth().then((user) => { setRoles(user?.roles?.length ? user.roles : user?.role ? [user.role] : []); }); }, [admin]);
   const openRepair = onOpenRepair ?? ((ticket: Ticket) => navigate("/ticket/" + encodeURIComponent(ticket.id)));
-  const followUpAccess = role === "front_desk" || role === "sales" || role === "admin";
-  const orderAccess = role === "sales" || role === "admin";
+  const isAdmin = roles.includes("admin");
+  const followUpAccess = userHasRole({ roles }, "front_desk", "sales", "admin");
+  const orderAccess = userHasRole({ roles }, "sales", "admin");
   const fallbackTab = hideOverview ? (extraTabs[0]?.value ?? (followUpAccess ? "enquiries" : orderAccess ? "orders" : "warranty")) : "overview";
   const availableTabs = useMemo(() => new Set([
     ...extraTabs.map((entry) => entry.value),
@@ -79,7 +81,7 @@ export default function OperationsWorkspace({ admin = false, onOpenRepair, initi
       <Card>
         <CardContent className="p-2">
           <TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-transparent p-0">
-            {!hideOverview && <TabsTrigger value="overview">{role === "admin" ? "Overview" : "My work"}</TabsTrigger>}
+            {!hideOverview && <TabsTrigger value="overview">{isAdmin ? "Overview" : "My work"}</TabsTrigger>}
             {extraTabs.map((tab) => <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>)}
             {followUpAccess && <TabsTrigger value="enquiries">Follow-ups</TabsTrigger>}
             {orderAccess && <TabsTrigger value="orders">Orders & collection</TabsTrigger>}
@@ -87,10 +89,10 @@ export default function OperationsWorkspace({ admin = false, onOpenRepair, initi
           </TabsList>
         </CardContent>
       </Card>
-      {!hideOverview && <TabsContent value="overview" className="mt-0"><OperationsOverview role={role} onOpenRepair={openRepair} onEnquiries={() => setTab(followUpAccess ? "enquiries" : "overview")} /></TabsContent>}
+      {!hideOverview && <TabsContent value="overview" className="mt-0"><OperationsOverview roles={roles} onOpenRepair={openRepair} onEnquiries={() => setTab(followUpAccess ? "enquiries" : "overview")} /></TabsContent>}
       {followUpAccess && <TabsContent value="enquiries" className="mt-0"><Enquiries /></TabsContent>}
       {orderAccess && <TabsContent value="orders" className="mt-0"><Orders /></TabsContent>}
-      <TabsContent value="warranty" className="mt-0"><WarrantyLookup onSelect={role === "front_desk" ? (record) => navigate("/new-ticket?intakeType=warranty&warrantyId=" + encodeURIComponent(record.id)) : undefined} /></TabsContent>
+      <TabsContent value="warranty" className="mt-0"><WarrantyLookup onSelect={roles.includes("front_desk") ? (record) => navigate("/new-ticket?intakeType=warranty&warrantyId=" + encodeURIComponent(record.id)) : undefined} /></TabsContent>
       {extraTabs.map((tab) => <TabsContent key={tab.value} value={tab.value} className="mt-0">{tab.content}</TabsContent>)}
     </Tabs>
   </div>;

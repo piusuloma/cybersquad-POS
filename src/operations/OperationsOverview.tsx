@@ -27,8 +27,8 @@ function BlockerRow({ item, context, refresh }: { item: Blocker; context?: Block
       <Input aria-label="Action due date" type="date" value={due} onChange={(event) => setDue(event.target.value)} /><Button disabled={busy} type="submit" size="sm">Save action</Button></form>}
   </div>;
 }
-export default function OperationsOverview({ onOpenRepair, onEnquiries, role, attentionOnly = false }: {
-  onOpenRepair: (ticket: Ticket) => void; onEnquiries: () => void; role: string; attentionOnly?: boolean;
+export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, attentionOnly = false }: {
+  onOpenRepair: (ticket: Ticket) => void; onEnquiries: () => void; roles: string[]; attentionOnly?: boolean;
 }) {
   const { api } = useApi();
   const [sales, setSales] = useState<Sale[]>([]); const [refunds, setRefunds] = useState<Refund[]>([]);
@@ -36,14 +36,14 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role, at
   const [period, setPeriod] = useState("today"); const [selected, setSelected] = useState<Sale | null>(null);
   const [filter, setFilter] = useState("all"); const [loadedAt, setLoadedAt] = useState(""); const [repairSource, setRepairSource] = useState("Saved repair records");
   const [loading, setLoading] = useState(false); const [userName, setUserName] = useState("");
-  const management = role === "admin";
+  const management = roles.includes("admin"); const isFrontDesk = roles.includes("front_desk");
   useEffect(() => { getAuth().then((user) => setUserName(user?.name ?? "")); }, []);
   const load = async () => {
     setLoading(true);
     try {
       const [orders, returns, repairs, context] = await Promise.all([getSales(), getRefunds(), getTickets(), getBusiness()]);
       setSales(orders); setRefunds(returns); setTickets(repairs); setState(context);
-      if (role === "admin" || role === "front_desk") {
+      if (management || isFrontDesk) {
         try {
           const response = await api.get("/jobs/admin/bookings/", { params: { page_size: 1000 } });
           if (response.data?.success && Array.isArray(response.data.result)) {
@@ -57,7 +57,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role, at
       setLoadedAt(new Date().toLocaleTimeString());
     } catch { toast.error("Could not load operational records."); } finally { setLoading(false); }
   };
-  useEffect(() => { void load(); }, [role]);
+  useEffect(() => { void load(); }, [management, isFrontDesk]);
   const [from, to] = periodBounds(period);
   const inPeriod = (date: string) => Date.parse(date) >= from && Date.parse(date) <= to;
   const completed = sales.filter((sale) => !sale.isDemo && (!sale.lifecycle || sale.lifecycle === "completed") && inPeriod(sale.createdAt));
@@ -82,7 +82,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, role, at
       owner: refund.approval?.status === "required" ? "Admin" : refund.actor, action: refund.approval?.status === "required" ? "Approve or reject refund" : "Complete repayment and record reference", since: refund.createdAt, open: () => setSelected(sales.find((sale) => sale.id === refund.saleId) ?? null) })),
   ];
   const ownerOf = (item: Blocker) => state?.blockers[item.id]?.owner ?? item.owner;
-  const visible = management ? blockers : blockers.filter((item) => ownerOf(item) === userName || (role === "front_desk" && ownerOf(item) === "Front desk"));
+  const visible = management ? blockers : blockers.filter((item) => ownerOf(item) === userName || (isFrontDesk && ownerOf(item) === "Front desk"));
   const groups = [...new Set(visible.map((item) => item.state))];
   const performance = new Map<string, { count: number; amount: number }>();
   completed.forEach((sale) => { const row = performance.get(sale.cashierName) ?? { count: 0, amount: 0 }; row.count++; row.amount += sale.total; performance.set(sale.cashierName, row); });
