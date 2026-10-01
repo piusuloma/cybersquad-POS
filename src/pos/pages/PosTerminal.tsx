@@ -30,7 +30,6 @@ import CartPanel from "@/pos/components/CartPanel";
 import SaleCompleteDialog from "@/pos/components/SaleCompleteDialog";
 import StartShiftDialog from "@/pos/components/StartShiftDialog";
 import EndShiftDialog from "@/pos/components/EndShiftDialog";
-import ShiftHistoryDialog from "@/pos/components/ShiftHistoryDialog";
 import HeldSalesDialog from "@/pos/components/HeldSalesDialog";
 import HoldSaleDialog from "@/pos/components/HoldSaleDialog";
 import RefundsDialog from "@/pos/components/RefundsDialog";
@@ -75,7 +74,6 @@ export default function PosTerminal() {
   const [shiftLoading, setShiftLoading] = useState(true);
   const [showStartShift, setShowStartShift] = useState(false);
   const [showEndShift, setShowEndShift] = useState(false);
-  const [showShiftHistory, setShowShiftHistory] = useState(false);
   const [showHeldSales, setShowHeldSales] = useState(false);
   const [showHoldPrompt, setShowHoldPrompt] = useState(false);
   const [showSaleHistory, setShowSaleHistory] = useState(false);
@@ -257,10 +255,6 @@ export default function PosTerminal() {
             <History className="w-3.5 h-3.5 mr-1.5" />
             Sale History
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowShiftHistory(true)}>
-            <History className="w-3.5 h-3.5 mr-1.5" />
-            Shift History
-          </Button>
           {shift ? (
             <Button variant="outline" size="sm" onClick={() => setShowEndShift(true)}>
               <LogOut className="w-3.5 h-3.5 mr-1.5" />
@@ -347,7 +341,6 @@ export default function PosTerminal() {
         onEnded={() => setShift(null)}
         showVariance={user?.role === "admin"}
       />
-      <ShiftHistoryDialog open={showShiftHistory} onOpenChange={setShowShiftHistory} showVariance={user?.role === "admin"} />
       <HeldSalesDialog
         open={showHeldSales}
         onOpenChange={setShowHeldSales}

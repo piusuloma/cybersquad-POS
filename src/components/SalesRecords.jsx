@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Search, Loader2, ChevronLeft, ChevronRight, Eye, Wallet, ShoppingCart, Store, Globe2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { formatCurrency } from "../frontdesk/lib/invoice";
 import { getSalePaymentLabel, getSales, isWithinRange } from "../pos/lib/store";
 import { SaleRecordDetailModal } from "./SaleRecordDetailModal";
+import { StatCard } from "./ui/stat-card";
 
 const PAGE_SIZE = 15;
 
@@ -94,6 +95,10 @@ export function SalesRecords({ initialFilter } = {}) {
 
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const filteredRevenue = filtered.reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
+  const inStoreCount = filtered.filter((sale) => sale.channel !== "website").length;
+  const websiteCount = filtered.filter((sale) => sale.channel === "website").length;
+  const reservedCount = filtered.filter((sale) => sale.lifecycle === "reserved").length;
 
   const openSale = (sale) => {
     setSelectedSale(sale);
@@ -106,7 +111,40 @@ export function SalesRecords({ initialFilter } = {}) {
         <h1>Sales</h1>
         <p className="text-muted-foreground">This device — not yet synced to a shared backend.</p>
       </div>
-
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Filtered Revenue"
+          value={formatCurrency(filteredRevenue)}
+          note={DATE_OPTIONS.find((o) => o.value === dateScope)?.label || "All Dates"}
+          icon={Wallet}
+          color="text-teal-600"
+          bgColor="bg-teal-50"
+        />
+        <StatCard
+          title="Sales Count"
+          value={filtered.length}
+          note={`${pageItems.length} shown on this page`}
+          icon={ShoppingCart}
+          color="text-sky-600"
+          bgColor="bg-sky-50"
+        />
+        <StatCard
+          title="In-Store Sales"
+          value={inStoreCount}
+          note={channel === "website" ? "Hidden by channel filter" : "Current filter"}
+          icon={Store}
+          color="text-blue-600"
+          bgColor="bg-blue-50"
+        />
+        <StatCard
+          title="Website / Reserved"
+          value={`${websiteCount} / ${reservedCount}`}
+          note="Website sales / reserved orders"
+          icon={Globe2}
+          color="text-purple-600"
+          bgColor="bg-purple-50"
+        />
+      </div>
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

@@ -45,6 +45,7 @@ import { SLAManagement } from "./SLAManagement";
 import { ServiceManagement } from "./ServiceManagement";
 import { NotificationsCenter } from "./NotificationsCenter";
 import { Button } from "./ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { NotificationModal } from "./NotificationModal";
 import { Badge } from "./ui/badge";
 import { useApi } from "../hooks/useApi";
@@ -55,6 +56,36 @@ import { LiveTracking } from "./LiveTracking";
 import { useWS } from "../context/WebSocketContext";
 import Logo from "../components/figma/public/images/cybersquad black.png";
 
+const sectionHeaders = {
+	overview: {
+		title: "Overview",
+		description: "Platform performance, repair status, sales movement, and work that needs attention.",
+	},
+	sales: {
+		title: "Sales & Operations",
+		description: "Sales records, follow-ups, reserved orders, warranty lookup, and shift history.",
+	},
+	repairs: {
+		title: "Repairs",
+		description: "Manage repair jobs, live tracking, SLA performance, and service setup.",
+	},
+	finance: {
+		title: "Finance",
+		description: "Review payments, payouts, disputes, vouchers, and finance reports.",
+	},
+	people: {
+		title: "People & Access",
+		description: "Manage technicians, customers, admins, roles, stores, and permissions.",
+	},
+	notifications: {
+		title: "Messaging Center",
+		description: "Send platform messages and review notification history.",
+	},
+	settings: {
+		title: "Settings",
+		description: "Configure commissions, payouts, walk-in repair rules, notifications, and platform defaults.",
+	},
+};
 const menuItems = [
 	{ id: "overview", label: "Overview", icon: LayoutDashboard },
 	{ id: "sales", label: "Sales & Operations", icon: ShoppingCart },
@@ -182,6 +213,7 @@ export function DashboardLayout({ onLogout }) {
 						key={sectionTabs.sales}
 						admin
 						hideOverview
+						hideHeader
 						initialTab={sectionTabs.sales}
 						extraTabs={[
 							{
@@ -324,7 +356,15 @@ export function DashboardLayout({ onLogout }) {
 							</Button>
 						</div>
 					</div>
-					<div className="p-6">{renderContent()}</div>
+					<div className="space-y-6 p-6">
+						<Card>
+							<CardHeader>
+								<CardTitle>{sectionHeaders[activeView]?.title || "Dashboard"}</CardTitle>
+								<CardDescription>{sectionHeaders[activeView]?.description}</CardDescription>
+							</CardHeader>
+						</Card>
+						{renderContent()}
+					</div>
 				</main>
 			</div>
 			<NotificationModal

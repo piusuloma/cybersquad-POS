@@ -19,6 +19,9 @@ import {
 	TableRow,
 } from "./ui/table";
 import {
+	Users,
+	UserCheck,
+	UserRoundCheck,
 	Search,
 	Filter,
 	Download,
@@ -57,6 +60,7 @@ import { Label } from "./ui/label";
 import { useApi } from "../hooks/useApi";
 import { getCustomerDirectory, normalizePhone } from "../operations/business";
 import { exportRowsAsPdfReport } from "../lib/printReport";
+import { StatCard } from "./ui/stat-card";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -349,6 +353,20 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 		});
 	}, [customersList, localExtras, customerSearchQuery]);
 
+	const technicianSummary = {
+		total: techPagination?.count ?? technicians.length,
+		shown: filteredTechnicians.length,
+		verified: filteredTechnicians.filter((tech) => tech.is_verified || tech.status === "verified").length,
+		suspended: filteredTechnicians.filter((tech) => tech.status === "suspended" || tech.is_active === false).length,
+	};
+
+	const customerSummary = {
+		total: (customerPagination?.count ?? customersList.length) + localExtras.length,
+		shown: filteredCustomers.length,
+		active: filteredCustomers.filter((customer) => customer.is_active !== false).length,
+		local: filteredCustomers.filter((customer) => customer.__local).length,
+	};
+
 	// Handle export for customers
 	const handleCustomerExport = (format) => {
 		const data = filteredCustomers.map((customer) => ({
@@ -508,7 +526,40 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 					{hideTabs ? (initialTab === "customers" ? "Manage customer accounts" : "Manage technician accounts") : "Manage technicians and customers"}
 				</p>
 			</div>
-
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<StatCard
+					title="Technicians"
+					value={technicianSummary.total}
+					note={`${technicianSummary.shown} shown`}
+					icon={Users}
+					color="text-blue-600"
+					bgColor="bg-blue-50"
+				/>
+				<StatCard
+					title="Verified Technicians"
+					value={technicianSummary.verified}
+					note={`${technicianSummary.suspended} suspended in view`}
+					icon={UserRoundCheck}
+					color="text-emerald-600"
+					bgColor="bg-emerald-50"
+				/>
+				<StatCard
+					title="Customers"
+					value={customerSummary.total}
+					note={`${customerSummary.shown} shown`}
+					icon={UserCheck}
+					color="text-purple-600"
+					bgColor="bg-purple-50"
+				/>
+				<StatCard
+					title="Active Customers"
+					value={customerSummary.active}
+					note={`${customerSummary.local} local contacts in view`}
+					icon={CheckCircle}
+					color="text-teal-600"
+					bgColor="bg-teal-50"
+				/>
+			</div>
 			<Tabs defaultValue={initialTab} className="space-y-4">
 				{!hideTabs && <TabsList>
 					<TabsTrigger value="technicians">Technicians</TabsTrigger>

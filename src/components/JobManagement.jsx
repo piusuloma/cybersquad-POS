@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
   Card,
@@ -40,7 +40,6 @@ import {
 import { JobDetailsModal } from "./JobDetailsModal";
 import { FilterModal } from "./FilterModal";
 import { RepairStatusCards } from "./RepairStatusCards";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   Select,
   SelectContent,
@@ -132,37 +131,11 @@ export function JobManagement({ initialFilter } = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [showFilterPopover, setShowFilterPopover] = useState(false);
   // Which tab is showing — controlled so a Dashboard card click can jump
   // straight to the right one (see the initialFilter effect below).
   const [activeTab, setActiveTab] = useState(initialFilter?.tab || "pending");
 
-  // Stable reference — passed to RepairStatusCards' extraBuckets, which
-  // re-fetches whenever this array changes identity.
-  const repairStatusExtraBuckets = useMemo(
-    () => [
-      {
-        key: "active_total",
-        label: "Active Jobs (All)",
-        icon: Layers,
-        color: "text-cyan-600",
-        bgColor: "bg-cyan-50",
-        status: ACTIVE_STATUSES.join(","),
-        tab: "active",
-      },
-      {
-        key: "cancelled",
-        label: "Cancelled",
-        icon: XCircle,
-        color: "text-error",
-        bgColor: "bg-error/10",
-        status: CANCELLED_STATUSES.join(","),
-        tab: "cancelled",
-      },
-    ],
-    [],
-  );
+  const requestVersions = useRef({ pending: 0, active: 0, completed: 0, cancelled: 0 });
 
   // Filter states for each tab
   const [pendingFilters, setPendingFilters] = useState({});
@@ -234,9 +207,33 @@ export function JobManagement({ initialFilter } = {}) {
     next: null,
     previous: null,
   });
+  const repairStatusExtraBuckets = useMemo(
+    () => [
+      {
+        key: "active_all",
+        label: "Active Jobs (All)",
+        icon: Layers,
+        color: "text-cyan-600",
+        bgColor: "bg-cyan-50",
+        status: ACTIVE_STATUSES.join(","),
+        tab: "active",
+      },
+      {
+        key: "cancelled",
+        label: "Cancelled",
+        icon: XCircle,
+        color: "text-error",
+        bgColor: "bg-error/10",
+        status: CANCELLED_STATUSES.join(","),
+        tab: "cancelled",
+      },
+    ],
+    [],
+  );
 
   // Fetch Pending Offers with filters
   const fetchPendingJobs = async () => {
+    const requestVersion = ++requestVersions.current.pending;
     setPendingLoading(true);
     setPendingError(null);
 
@@ -287,18 +284,21 @@ export function JobManagement({ initialFilter } = {}) {
 
       const res = await api.get(url);
       const data = res?.data || {};
+      if (requestVersion !== requestVersions.current.pending) return;
       setPendingJobs(Array.isArray(data.result) ? data.result : []);
       setPendingPagination(data.pagination || {});
     } catch (e) {
+      if (requestVersion !== requestVersions.current.pending) return;
       setPendingError("Failed to load pending jobs");
       console.error("Error fetching pending jobs:", e);
     } finally {
-      setPendingLoading(false);
+      if (requestVersion === requestVersions.current.pending) setPendingLoading(false);
     }
   };
 
   // Fetch Active Jobs with filters
   const fetchActiveJobs = async () => {
+    const requestVersion = ++requestVersions.current.active;
     setActiveLoading(true);
     setActiveError(null);
 
@@ -346,18 +346,21 @@ export function JobManagement({ initialFilter } = {}) {
 
       const res = await api.get(url);
       const data = res?.data || {};
+      if (requestVersion !== requestVersions.current.active) return;
       setActiveJobs(Array.isArray(data.result) ? data.result : []);
       setActivePagination(data.pagination || {});
     } catch (e) {
+      if (requestVersion !== requestVersions.current.active) return;
       setActiveError("Failed to load active jobs");
       console.error("Error fetching active jobs:", e);
     } finally {
-      setActiveLoading(false);
+      if (requestVersion === requestVersions.current.active) setActiveLoading(false);
     }
   };
 
   // Fetch Completed Jobs with filters
   const fetchCompletedJobs = async () => {
+    const requestVersion = ++requestVersions.current.completed;
     setCompletedLoading(true);
     setCompletedError(null);
 
@@ -408,18 +411,21 @@ export function JobManagement({ initialFilter } = {}) {
 
       const res = await api.get(url);
       const data = res?.data || {};
+      if (requestVersion !== requestVersions.current.completed) return;
       setCompletedJobs(Array.isArray(data.result) ? data.result : []);
       setCompletedPagination(data.pagination || {});
     } catch (e) {
+      if (requestVersion !== requestVersions.current.completed) return;
       setCompletedError("Failed to load completed jobs");
       console.error("Error fetching completed jobs:", e);
     } finally {
-      setCompletedLoading(false);
+      if (requestVersion === requestVersions.current.completed) setCompletedLoading(false);
     }
   };
 
   // Fetch Cancelled Jobs with filters
   const fetchCancelledJobs = async () => {
+    const requestVersion = ++requestVersions.current.cancelled;
     setCancelledLoading(true);
     setCancelledError(null);
 
@@ -470,13 +476,15 @@ export function JobManagement({ initialFilter } = {}) {
 
       const res = await api.get(url);
       const data = res?.data || {};
+      if (requestVersion !== requestVersions.current.cancelled) return;
       setCancelledJobs(Array.isArray(data.result) ? data.result : []);
       setCancelledPagination(data.pagination || {});
     } catch (e) {
+      if (requestVersion !== requestVersions.current.cancelled) return;
       setCancelledError("Failed to load cancelled jobs");
       console.error("Error fetching cancelled jobs:", e);
     } finally {
-      setCancelledLoading(false);
+      if (requestVersion === requestVersions.current.cancelled) setCancelledLoading(false);
     }
   };
 
@@ -510,9 +518,8 @@ export function JobManagement({ initialFilter } = {}) {
     setCancelledPage(1);
   };
 
-  // Jump to a tab and scope it to a given status filter — used both for a
-  // filter handed in from the Dashboard's Repair Status cards (via the effect
-  // below) and for the same cards rendered directly on this page.
+  // Jump to a tab and scope it to a given status
+  // filter handed in from the Dashboard's Repair Status cards.
   const applyStatusFilter = ({ tab, status }) => {
     if (!tab) return;
 
@@ -866,21 +873,19 @@ export function JobManagement({ initialFilter } = {}) {
         </div>
       </div>
 
-      {/* Merged with the old Pending/Active/Completed/Cancelled total cards —
-          same tab totals, plus the same granular breakdown the Dashboard
-          shows, in one row instead of two. "Active Jobs (All)" and
-          "Cancelled" are fetched independently of the active tab filter, so
-          they always show the true tab total even after drilling into a
-          narrower status via one of the other cards. */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold">Repair Status</h2>
+        <div>
+          <h2 className="text-base font-semibold">Repair Status</h2>
+          <p className="text-sm text-muted-foreground">
+            Select a card to apply its matching status filter.
+          </p>
+        </div>
         <RepairStatusCards
           onSelect={applyStatusFilter}
-          gridClassName="grid-cols-2 md:grid-cols-4 xl:grid-cols-8"
           extraBuckets={repairStatusExtraBuckets}
+          gridClassName="grid-cols-2 md:grid-cols-4 lg:grid-cols-8"
         />
       </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="pending">Pending Offers</TabsTrigger>
