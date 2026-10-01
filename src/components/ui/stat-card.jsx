@@ -15,8 +15,8 @@ export function StatCard({ title, value, change, note, icon: Icon, color = "text
         onClick ? "hover:border-primary/30 hover:bg-secondary/30" : ""
       }`}
     >
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="line-clamp-2 min-h-8 text-xs font-medium leading-4 text-muted-foreground">{title}</p>
             <p className="mt-2 truncate text-2xl font-semibold tracking-tight text-foreground">
