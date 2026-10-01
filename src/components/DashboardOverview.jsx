@@ -344,12 +344,8 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 		<div className="space-y-8">
 			<div className="flex flex-col gap-4 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/30 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-6">
 				<div>
-					<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-						{todayLabel}
-					</p>
-					<h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-						Dashboard Overview
-					</h1>
+					<p className="text-base font-semibold text-foreground">{todayLabel}</p>
+					<p className="text-sm text-muted-foreground">Figures below follow the time range you choose.</p>
 				</div>
 
 				<Select value={filter} onValueChange={setFilter}>

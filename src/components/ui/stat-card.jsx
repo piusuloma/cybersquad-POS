@@ -15,11 +15,11 @@ export function StatCard({ title, value, change, note, icon: Icon, color = "text
         onClick ? "hover:border-primary/30 hover:bg-secondary/30" : ""
       }`}
     >
-      <CardContent className="p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="truncate text-xs font-medium text-muted-foreground">{title}</p>
-            <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight text-foreground">
+            <p className="line-clamp-2 min-h-8 text-xs font-medium leading-4 text-muted-foreground">{title}</p>
+            <p className="mt-2 truncate text-2xl font-semibold tracking-tight text-foreground">
               {value ?? "—"}
             </p>
           </div>
@@ -29,7 +29,7 @@ export function StatCard({ title, value, change, note, icon: Icon, color = "text
         </div>
 
         {(change || note) && (
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             {change && (
               <span
                 className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-medium ${
