@@ -250,53 +250,78 @@
  */
 @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    /* Type scale. Sizes step 24 / 20 / 18 / 16 and every line height sits on the 4px baseline (32, 28, 28, 24),
+       so stacked text keeps the same vertical rhythm as the 8pt spacing. Headings are semibold, body copy regular. */
     h1 {
       font-size: var(--text-2xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      line-height: 2rem;
     }
 
     h2 {
       font-size: var(--text-xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      line-height: 1.75rem;
     }
 
     h3 {
       font-size: var(--text-lg);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      line-height: 1.75rem;
     }
 
     h4 {
       font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      line-height: 1.5rem;
     }
 
     p {
       font-size: var(--text-base);
       font-weight: var(--font-weight-normal);
-      line-height: 1.5;
+      line-height: 1.5rem;
     }
 
+    /* Labels and buttons use the 14px control size so they match inputs and table text. */
     label {
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.25rem;
     }
 
     button {
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.25rem;
     }
 
     input {
       font-size: var(--text-base);
       font-weight: var(--font-weight-normal);
-      line-height: 1.5;
+      line-height: 1.5rem;
     }
+  }
+}
+
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Numbers line up in columns and totals. */
+  table, [data-slot="table"], .tabular-nums-all {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -316,6 +341,12 @@ html {
    --------------------------------------------------------------------------- */
 :root {
   --space-unit: 8px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-fast: 150ms;
   --motion-base: 240ms;
