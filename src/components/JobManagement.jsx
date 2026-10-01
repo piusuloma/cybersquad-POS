@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Tabs, TabsContent } from "./ui/tabs";
 import {
   Card,
   CardContent,
@@ -121,9 +121,34 @@ function PaginationBar({
 
 // The Completed tab already covers completed jobs, so Job Management leaves that card off the stage strip.
 const HIDDEN_STATUS_CARDS = ["completed"];
+// Whole-list views that have no stage card: every active job, completed jobs and cancelled jobs.
+const BROADER_JOB_LISTS = [
+  { tab: "active", label: "All active", statuses: ACTIVE_STATUSES },
+  { tab: "completed", label: "Completed", statuses: COMPLETED_STATUSES },
+  { tab: "cancelled", label: "Cancelled", statuses: CANCELLED_STATUSES },
+];
 
 export function JobManagement({ initialFilter } = {}) {
   const { api } = useApi();
+  const [listCounts, setListCounts] = useState({});
+  useEffect(() => {
+    let mounted = true;
+    Promise.all(
+      BROADER_JOB_LISTS.map((list) =>
+        api
+          .get("/jobs/admin/bookings/", { params: { status: list.statuses.join(","), page_size: 1 } })
+          .then((res) => res?.data?.pagination?.count ?? 0)
+          .catch(() => null),
+      ),
+    ).then((values) => {
+      if (!mounted) return;
+      setListCounts(Object.fromEntries(BROADER_JOB_LISTS.map((list, i) => [list.tab, values[i]])));
+    });
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Was declared and never wired to anything — no input rendered it, no
   // fetch read it, so this page (unlike Sales/Payments/Payouts) had no
   // free-text search at all. One search box, applied across all four tabs'
@@ -855,7 +880,7 @@ export function JobManagement({ initialFilter } = {}) {
         <div>
           <h2 className="text-base font-semibold">Repair Status</h2>
           <p className="text-sm text-muted-foreground">
-            Click a stage to filter active jobs. Use the tabs below for completed and cancelled jobs.
+            Click a stage to filter jobs, or open a full list below.
           </p>
         </div>
         <RepairStatusCards
@@ -863,14 +888,23 @@ export function JobManagement({ initialFilter } = {}) {
           excludeKeys={HIDDEN_STATUS_CARDS}
           gridClassName="grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
         />
+        <div className="flex flex-wrap items-center gap-4 text-sm" role="group" aria-label="Job lists">
+          {BROADER_JOB_LISTS.map((list) => (
+            <button
+              key={list.tab}
+              type="button"
+              onClick={() => applyStatusFilter({ tab: list.tab, status: "all" })}
+              className={`press underline-offset-4 hover:underline ${
+                activeTab === list.tab ? "font-semibold text-primary" : "text-muted-foreground"
+              }`}
+            >
+              {list.label}
+              {listCounts[list.tab] !== undefined && listCounts[list.tab] !== null ? ` (${listCounts[list.tab]})` : ""}
+            </button>
+          ))}
+        </div>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">Pending Offers</TabsTrigger>
-          <TabsTrigger value="active">Active Jobs</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
-        </TabsList>
 
         <TabsContent value="pending">
           <Card>
