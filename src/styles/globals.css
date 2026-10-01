@@ -399,3 +399,24 @@ html {
 
 /* One stroke weight for every lucide icon so icons read as a single set. */
 svg.lucide { stroke-width: 1.75; }
+
+/* ---------------------------------------------------------------------------
+   Login page layout. Plain CSS with its own class names because the frozen frontdesk stylesheet
+   sets display and direction utilities at a higher specificity than responsive Tailwind classes.
+   The image always shows: a banner above the form on small screens, a half-width panel from 1024px.
+   --------------------------------------------------------------------------- */
+.login-shell { min-height: 100vh; display: flex; flex-direction: column; background: var(--background); }
+.login-hero { position: relative; display: flex; align-items: flex-end; justify-content: center; height: 240px; overflow: hidden; background: var(--muted); }
+.login-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.login-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / 0.6), transparent 60%); }
+.login-tagline { display: none; position: relative; z-index: 1; margin: 0; max-width: 448px; padding: 24px; text-align: center; color: #fff; font-size: 14px; line-height: 20px; }
+.login-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px 24px; }
+@media (min-width: 640px) { .login-hero { height: 320px; } }
+@media (min-width: 1024px) {
+  .login-shell { flex-direction: row; }
+  .login-hero { width: 50%; height: auto; }
+  .login-hero img { object-position: center; }
+  .login-tagline { display: block; font-size: 16px; line-height: 24px; }
+  .login-tagline { padding: 48px; }
+  .login-panel { padding: 48px; }
+}

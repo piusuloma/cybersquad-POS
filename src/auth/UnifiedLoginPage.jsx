@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { ForgotPasswordModal } from "../components/ForgotPasswordModal";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -24,6 +24,7 @@ export default function UnifiedLoginPage() {
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isDark, setIsDark] = useState(() =>
     document.documentElement.classList.contains("dark"),
@@ -139,28 +140,21 @@ export default function UnifiedLoginPage() {
 
   return (
     <>
-      <div className="frontdesk-theme min-h-screen flex">
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-end justify-center bg-muted">
-          <img
-            src={loginBackground}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          <div className="relative z-10 p-12 max-w-md text-center">
-            <p className="text-base text-white leading-normal">
-              Streamline your device repair workflow. From intake to quality check,
-              manage every ticket, part, and customer in one place.
-            </p>
-          </div>
+      <div className="frontdesk-theme login-shell">
+        <div className="login-hero">
+          <img src={loginBackground} alt="" aria-hidden="true" />
+          <p className="login-tagline">
+            Streamline your device repair workflow. From intake to quality check,
+            manage every ticket, part, and customer in one place.
+          </p>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="w-full max-w-sm animate-fade-in">
+        <div className="login-panel">
+          <div className="w-full max-w-sm motion-rise">
             <div className="mb-8">
               <img src={activeLogo} alt="Cybersquad" className="h-6 w-auto mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-1">Welcome back</h2>
-              <p className="text-muted-foreground">Sign in to your account</p>
+              <h1 className="text-2xl font-semibold text-foreground mb-2">Welcome back</h1>
+              <p className="text-sm text-muted-foreground">Sign in to your account</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6" onChange={() => setError("")}>
@@ -169,6 +163,7 @@ export default function UnifiedLoginPage() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="username"
                   placeholder="admin@cybersquad.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -178,14 +173,25 @@ export default function UnifiedLoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-secondary border-border"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="********"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-secondary border-border pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="press absolute inset-y-0 right-2 my-auto flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                  </button>
+                </div>
                 <div className="text-right">
                   <Button
                     type="button"
@@ -198,11 +204,17 @@ export default function UnifiedLoginPage() {
                 </div>
               </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && (
+                <p role="alert" className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                  <AlertCircle className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {error}
+                </p>
+              )}
 
               <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
                 {loading ? "Signing in..." : "Sign In"}
-                {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
+                {!loading && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
               </Button>
             </form>
           </div>
