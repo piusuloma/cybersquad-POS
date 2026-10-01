@@ -55,6 +55,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { useApi } from "../hooks/useApi";
+import { getCustomerDirectory, normalizePhone } from "../operations/business";
 import { exportRowsAsPdfReport } from "../lib/printReport";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -180,6 +181,8 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 
 	// ✅ CUSTOMER pagination + data + LOADING STATE
 	const [customersList, setCustomersList] = useState([]);
+	// Contacts saved from POS sales and repairs on this device; they have no backend account.
+	const [localContacts, setLocalContacts] = useState([]);
 	const [customerLoading, setCustomerLoading] = useState(false);
 	const [customerPage, setCustomerPage] = useState(1);
 	const [customerPageSize, setCustomerPageSize] = useState(10);
@@ -243,6 +246,9 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 	// ✅ Fetch customers with API-based filtering
 	const fetchCustomers = async () => {
 		setCustomerLoading(true);
+		getCustomerDirectory()
+			.then(setLocalContacts)
+			.catch(() => setLocalContacts([]));
 		try {
 			const params = new URLSearchParams({
 				page: customerPage,
@@ -304,21 +310,44 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 		});
 	}, [technicians, techSearchQuery]);
 
-	const filteredCustomers = useMemo(() => {
-		if (!customerSearchQuery) return customersList;
+	const localExtras = useMemo(() => {
+		// Backend rows come one page at a time, so local contacts are listed once, on the first page of the unfiltered list.
+		if (customerPage !== 1 || customerStatusFilter !== "all" || customerProfileCompleteOnly) return [];
+		const phones = new Set(customersList.map((customer) => normalizePhone(customer?.phone_number || "")).filter(Boolean));
+		const emails = new Set(customersList.map((customer) => (customer?.email || "").trim().toLowerCase()).filter(Boolean));
+		return localContacts
+			.filter((contact) => !phones.has(normalizePhone(contact.phone || "")) && !(contact.email && emails.has(contact.email.trim().toLowerCase())))
+			.map((contact) => ({
+				id: `local-${contact.id}`,
+				first_name: contact.name,
+				last_name: "",
+				email: contact.email || "",
+				phone_number: contact.phone || "",
+				is_active: true,
+				__local: true,
+			}));
+	}, [customersList, localContacts, customerPage, customerStatusFilter, customerProfileCompleteOnly]);
 
-		return customersList.filter((customer) => {
+	const filteredCustomers = useMemo(() => {
+		const all = [...customersList, ...localExtras];
+		if (!customerSearchQuery) return all;
+
+		const query = customerSearchQuery.toLowerCase();
+		const digits = customerSearchQuery.replace(/\D/g, "");
+		return all.filter((customer) => {
 			const name = `${customer?.first_name || ""} ${customer?.last_name || ""}`
 				.trim()
 				.toLowerCase();
 			const email = (customer?.email || "").toLowerCase();
+			const phone = normalizePhone(customer?.phone_number || "");
 
 			return (
-				name.includes(customerSearchQuery.toLowerCase()) ||
-				email.includes(customerSearchQuery.toLowerCase())
+				name.includes(query) ||
+				email.includes(query) ||
+				Boolean(digits && phone.includes(normalizePhone(digits)))
 			);
 		});
-	}, [customersList, customerSearchQuery]);
+	}, [customersList, localExtras, customerSearchQuery]);
 
 	// Handle export for customers
 	const handleCustomerExport = (format) => {
@@ -328,7 +357,9 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 				: customer?.profile?.full_name || "-",
 			Email: customer?.email || "-",
 			Phone: customer?.phone_number || "-",
-			Status: !customer?.is_active
+			Status: customer?.__local
+				? "POS contact"
+				: !customer?.is_active
 				? "Suspended"
 				: customer?.is_email_verified
 					? "Active"
@@ -936,6 +967,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 									<TableRow>
 										<TableHead>Name</TableHead>
 										<TableHead>Email</TableHead>
+										<TableHead>Phone</TableHead>
 										<TableHead>Status</TableHead>
 										<TableHead>Jobs Posted</TableHead>
 										<TableHead>Total Spent</TableHead>
@@ -947,7 +979,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 									{/* ✅ Show loading state */}
 									{customerLoading ? (
 										<TableRow>
-											<TableCell colSpan={6} className="text-center py-10">
+											<TableCell colSpan={7} className="text-center py-10">
 												<div className="flex items-center justify-center gap-2">
 													<Loader2 className="h-4 w-4 animate-spin" />
 													<span className="text-muted-foreground">
@@ -959,7 +991,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 									) : filteredCustomers.length === 0 ? (
 										<TableRow>
 											<TableCell
-												colSpan={6}
+												colSpan={7}
 												className="text-center text-muted-foreground py-10"
 											>
 												No customers found.
@@ -984,9 +1016,12 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 													<TableCell className="text-muted-foreground">
 														{email}
 													</TableCell>
+													<TableCell className="text-muted-foreground">{customer?.phone_number || "-"}</TableCell>
 
 													<TableCell>
-														{!customer?.is_active ? (
+														{customer?.__local ? (
+														<Badge variant="outline">POS contact</Badge>
+													) : !customer?.is_active ? (
 															<Badge
 																variant="destructive"
 																className="bg-error text-white"
@@ -1012,6 +1047,13 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 													</TableCell>
 
 													<TableCell>
+
+														{customer?.__local ? (
+
+															<span className="text-xs text-muted-foreground">Saved on this device only</span>
+
+														) : (
+
 														<DropdownMenu>
 															<DropdownMenuTrigger asChild>
 																<Button variant="ghost" size="icon">
@@ -1044,6 +1086,8 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 																</DropdownMenuItem>
 															</DropdownMenuContent>
 														</DropdownMenu>
+
+														)}
 													</TableCell>
 												</TableRow>
 											);
