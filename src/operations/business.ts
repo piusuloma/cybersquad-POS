@@ -131,7 +131,7 @@ export function warrantyStatus(record: WarrantyRecord, now = Date.now()) {
   if (record.returned) return "Returned";
   if (!record.coverage.durationMonths) return "No warranty";
   if (now < Date.parse(record.coverage.startsAt)) return "Not started";
-  return now < Date.parse(record.coverage.expiresAt) ? "Within period ? assess fault" : "Expired";
+  return now < Date.parse(record.coverage.expiresAt) ? "Within period · assess fault" : "Expired";
 }
 export function linkWarranty(ticketId: string, record: WarrantyRecord) {
   return change((state) => { state.warrantyLinks[ticketId] = structuredClone(record); });

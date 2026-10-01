@@ -3,7 +3,6 @@ import DeviceDetails from "./DeviceDetails";
 import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2, BadgePercent, Delete, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import CustomerPicker from "@/operations/CustomerPicker";
 import {
   Select,
@@ -213,22 +212,12 @@ export default function CartPanel({
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="h-4 w-4 mr-1" />Refund</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="h-4 w-4 mr-1" />Hold</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="h-4 w-4 mr-1" />Discount</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="h-4 w-4 mr-1" />Reserve</Button>
-        <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="h-4 w-4 mr-1" />Clear sale</Button>
+        <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="h-4 w-4" />Refund</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="h-4 w-4" />Hold</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="h-4 w-4" />Discount</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="h-4 w-4" />Reserve</Button>
+        <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="h-4 w-4" />Clear sale</Button>
       </div>
-
-      {lines.length > 0 && (
-        <div className="space-y-2 mb-4 border-b border-border pb-4">
-          <p className="text-sm font-medium">Customer {customerRequired ? "- Required for device purchases" : "- Optional"}</p>
-          <CustomerPicker value={customer} onChange={onCustomerChange} />
-          <Label htmlFor="sale-note">Customer note (optional)</Label>
-          <Input id="sale-note" value={note} onChange={(event) => onNoteChange(event.target.value)} />
-          {!deviceCheckoutReady && <p className="text-sm text-muted-foreground">Add a name and phone to link the device and warranty to this customer.</p>}
-        </div>
-      )}
 
       {lines.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
@@ -298,15 +287,26 @@ export default function CartPanel({
       )}
 
       {lines.length > 0 && (
-        <div className="grid grid-cols-4 gap-1 mb-4" role="group" aria-label="Keypad">
+        <div className="mb-4 space-y-2 border-t border-border pt-4">
+          <p className="text-sm font-medium">
+            Customer <span className="font-normal text-muted-foreground">{customerRequired ? "· required for device purchases" : "· optional"}</span>
+          </p>
+          <CustomerPicker value={customer} onChange={onCustomerChange} />
+          <Input aria-label="Customer note" placeholder="Customer note (optional)" value={note} onChange={(event) => onNoteChange(event.target.value)} />
+          {!deviceCheckoutReady && <p className="text-xs text-muted-foreground">Add a name and phone to link the device and warranty to this customer.</p>}
+        </div>
+      )}
+
+      {lines.length > 0 && (
+        <div className="grid grid-cols-4 gap-2 mb-4" role="group" aria-label="Keypad">
           {["1", "2", "3", "qty", "4", "5", "6", "disc", "7", "8", "9", "price", "clear", "0", ".", "back"].map((key) => {
             const mode = key === "qty" || key === "disc" || key === "price";
             if (mode) {
               const label = key === "qty" ? "Qty" : key === "disc" ? "% Disc" : "Price";
-              return <Button key={key} type="button" size="sm" variant={keyMode === key ? "default" : "outline"} className="h-12" disabled={key === "price" && !onSetPrice}
+              return <Button key={key} type="button" size="sm" variant={keyMode === key ? "default" : "outline"} className="h-10" disabled={key === "price" && !onSetPrice}
                 title={key === "price" && !onSetPrice ? "Price changes need an admin account" : undefined} onClick={() => changeKeyMode(key as "qty" | "disc" | "price")}>{label}</Button>;
             }
-            return <Button key={key} type="button" size="sm" variant="outline" className="h-12 text-base" aria-label={key === "back" ? "Backspace" : key === "clear" ? "Clear entry" : key}
+            return <Button key={key} type="button" size="sm" variant="outline" className="h-10 text-base" aria-label={key === "back" ? "Backspace" : key === "clear" ? "Clear entry" : key}
               onClick={() => pressKey(key)}>{key === "back" ? <Delete className="w-4 h-4" /> : key === "clear" ? "C" : key}</Button>;
           })}
           <p className="col-span-4 text-xs text-muted-foreground">{keyMode === "qty" ? "Type a quantity for the highlighted item." : keyMode === "price" ? "Type a new unit price for the highlighted item." : "Type a % discount, then confirm it below."}</p>

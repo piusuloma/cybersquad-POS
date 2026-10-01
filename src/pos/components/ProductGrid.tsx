@@ -108,7 +108,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
             <p className="text-xs text-muted-foreground">Try a different search term or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 motion-stagger">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-4 motion-stagger">
             {filtered.map((item) => {
               const outOfStock = item.quantity - item.locked <= 0;
               return (

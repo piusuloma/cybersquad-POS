@@ -58,7 +58,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
             remote.forEach((ticket: Ticket) => merged.set(ticket.id, ticket)); setTickets([...merged.values()]);
             setRepairSource(Number(response.data.pagination?.count ?? remote.length) > remote.length ? "Repair snapshot (first 1,000 records; full history awaits reporting API)" : "Current backend repair snapshot");
           }
-        } catch { setRepairSource("Saved repair records ? backend unavailable"); }
+        } catch { setRepairSource("Saved repair records · backend unavailable"); }
       }
       setLoadedAt(new Date().toLocaleTimeString());
     } catch { toast.error("Could not load operational records."); } finally { setLoading(false); }
@@ -84,7 +84,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
     ...enquiries.filter((enquiry) => enquiry.status === "open").map((enquiry) => ({ id: "enquiry:" + enquiry.id, title: enquiry.customer.name + " · " + enquiry.request,
       state: Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue follow-up" : "Follow-up", owner: enquiry.owner, action: "Contact customer",
       since: enquiry.createdAt, open: onEnquiries })),
-    ...refunds.filter((refund) => !refund.isDemo && refund.status === "pending").map((refund) => ({ id: "refund:" + refund.id, title: "Refund ? " + refund.saleNumber, state: refund.approval?.status === "required" ? "Refund awaiting approval" : "Repayment pending",
+    ...refunds.filter((refund) => !refund.isDemo && refund.status === "pending").map((refund) => ({ id: "refund:" + refund.id, title: "Refund · " + refund.saleNumber, state: refund.approval?.status === "required" ? "Refund awaiting approval" : "Repayment pending",
       owner: refund.approval?.status === "required" ? "Admin" : refund.actor, action: refund.approval?.status === "required" ? "Approve or reject refund" : "Complete repayment and record reference", since: refund.createdAt, open: () => setSelected(sales.find((sale) => sale.id === refund.saleId) ?? null) })),
   ];
   const ownerOf = (item: Blocker) => state?.blockers[item.id]?.owner ?? item.owner;

@@ -227,5 +227,5 @@ export function printRefundReceipt(refund: Refund, original: Sale) {
     createdAt: refund.paidAt ?? refund.createdAt, total: -refund.total, subtotal: -refund.total,
     payments: [{ mode: refund.mode, amount: -refund.total }], paymentMode: refund.mode,
     note: "Status: " + refund.status + ". Reason: " + refund.reason + ". Reference: " + (refund.reference ?? "Cash / pending"),
-  }, undefined, (refund.isDemo ? "Sample " : "") + (refund.status === "paid" ? "Refund Receipt" : "Refund Record ? " + refund.status));
+  }, undefined, (refund.isDemo ? "Sample " : "") + (refund.status === "paid" ? "Refund Receipt" : "Refund Record · " + refund.status));
 }

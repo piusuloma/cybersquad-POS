@@ -43,8 +43,8 @@ export function deviceIdentifiers(unit: SerializedUnit): string[] {
 export function warrantyLabel(policy?: WarrantyPolicy): string {
   if (!policy) return "Warranty not configured";
   if (policy.durationMonths === 0) return "No warranty";
-  if (policy.startsOn === "fixed") return policy.type + " ? Expires " + (policy.expiresAt?.slice(0, 10) ?? "not configured");
-  return policy.type + " ? " + policy.durationMonths + " months from purchase";
+  if (policy.startsOn === "fixed") return policy.type + " · Expires " + (policy.expiresAt?.slice(0, 10) ?? "not configured");
+  return policy.type + " · " + policy.durationMonths + " months from purchase";
 }
 export function activateWarranty(policy: WarrantyPolicy | undefined, soldAt: string): WarrantySnapshot | undefined {
   if (!policy) return undefined;
@@ -96,7 +96,7 @@ export function deviceDetailText(line: DeviceLine): string[] {
   const details = (line.devices ?? []).flatMap((unit) => {
     const policy = unit.coverage ?? unit.warranty ?? line.coverage ?? line.warranty;
     return [
-      "Serial: " + unit.serialNumber + (unit.imei ? " ? IMEI: " + unit.imei : "") + (unit.imei2 ? " ? IMEI 2: " + unit.imei2 : ""),
+      "Serial: " + unit.serialNumber + (unit.imei ? " · IMEI: " + unit.imei : "") + (unit.imei2 ? " · IMEI 2: " + unit.imei2 : ""),
       unit.coverage ? coverageText(unit.coverage) : warrantyLabel(policy),
       ...(policy?.terms ? ["Terms: " + policy.terms] : []),
     ];

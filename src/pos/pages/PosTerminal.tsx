@@ -4,7 +4,7 @@ import DeviceSelectionDialog from "../components/DeviceSelectionDialog";
 import { SAMPLE_CATALOG } from "../lib/sampleCatalog";
 import { validateDeviceLines, type PosProduct, type SaleCustomer } from "../lib/devices";
 import { toast } from "sonner";
-import { History, PauseCircle, Wallet, LogOut } from "lucide-react";
+import { FlaskConical, History, PauseCircle, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApi } from "@/hooks/useApi";
 import { fetchPosCatalog } from "@/pos/lib/catalog";
@@ -233,7 +233,7 @@ export default function PosTerminal() {
     <div className="space-y-4">
       <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-sm">
-          <Wallet className="w-4 h-4 text-primary" />
+          <Wallet className="h-4 w-4 text-primary" />
           {shiftLoading ? (
             <span className="text-muted-foreground">Checking shift status...</span>
           ) : shift ? (
@@ -248,22 +248,26 @@ export default function PosTerminal() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowHeldSales(true)}>
-            <PauseCircle className="h-4 w-4 mr-2" />
+            <PauseCircle className="h-4 w-4" />
             Held Sales
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowSaleHistory(true)}>
-            <History className="h-4 w-4 mr-2" />
+            <History className="h-4 w-4" />
             Sale History
+          </Button>
+          <Button variant="outline" size="sm" disabled={cart.lines.length > 0} onClick={() => setSampleMode(!sampleMode)}>
+            <FlaskConical className="h-4 w-4" aria-hidden="true" />
+            {sampleMode ? "Back to catalog" : "Sample devices"}
           </Button>
           {shift ? (
             <Button variant="outline" size="sm" onClick={() => setShowEndShift(true)}>
-              <LogOut className="h-4 w-4 mr-2" />
+              <LogOut className="h-4 w-4" />
               End Shift
             </Button>
           ) : (
             !shiftLoading && (
               <Button size="sm" onClick={() => setShowStartShift(true)}>
-                <Wallet className="h-4 w-4 mr-2" />
+                <Wallet className="h-4 w-4" />
                 Start Shift
               </Button>
             )
@@ -271,12 +275,12 @@ export default function PosTerminal() {
         </div>
       </div>
 
-      <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">{sampleMode ? "Sample catalog - fictional devices and warranty terms. Sample sales are excluded from revenue and cash totals." : "Product catalog"}</p>
-        <Button variant="outline" size="sm" disabled={cart.lines.length > 0} onClick={() => setSampleMode(!sampleMode)}>
-          {sampleMode ? "Back to product catalog" : "Try sample devices"}
-        </Button>
-      </div>
+      {sampleMode && (
+        <p className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-4 text-sm text-foreground" role="status">
+          <FlaskConical className="h-4 w-4 shrink-0" aria-hidden="true" />
+          Sample catalog: fictional devices and warranty terms. Sample sales are excluded from revenue and cash totals.
+        </p>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 lg:order-2">
           <ProductGrid items={activeCatalog} loading={!sampleMode && loading} onAddItem={handleAddItem} />
