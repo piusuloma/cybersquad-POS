@@ -48,7 +48,7 @@ function PaginationBar({
   onPageSizeChange,
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4 border-t">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4 border-t">
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -181,13 +181,13 @@ export function CustomerPaymentsModal({ open, onOpenChange, customer }) {
     switch (status) {
       case "succeeded":
       case "completed":
-        return <CheckCircle className="w-3 h-3 mr-1" />;
+        return <CheckCircle className="h-4 w-4 mr-1" />;
       case "failed":
       case "refunded":
-        return <XCircle className="w-3 h-3 mr-1" />;
+        return <XCircle className="h-4 w-4 mr-1" />;
       case "initiated":
       case "pending":
-        return <Clock className="w-3 h-3 mr-1" />;
+        return <Clock className="h-4 w-4 mr-1" />;
       default:
         return null;
     }

@@ -332,7 +332,7 @@ export function AddWalkinTechnicianModal({ open, onClose, onCreated }) {
             />
           </div>
 
-          {/* <div className="p-3 bg-purple-50 rounded-lg text-sm text-purple-900">
+          {/* <div className="p-4 bg-purple-50 rounded-lg text-sm text-purple-900">
             The technician will receive an email with their login credentials and setup instructions.
           </div> */}
 

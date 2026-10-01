@@ -29,11 +29,11 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true); try { await action(); await refresh(); onChanged?.(); } catch (error) { toast.error(error instanceof Error ? error.message : "Refund action failed."); } finally { setBusy(false); }
   };
-  return <section className="space-y-3 border-t border-border pt-4">
+  return <section className="space-y-4 border-t border-border pt-4">
     <div className="flex justify-between items-center"><h3 className="font-semibold">Refunds</h3>
       {allowed && sale.lifecycle !== "cancelled" && availableMoney > 0 && <Button size="sm" variant="outline" onClick={() => setEditing(!editing)}>{editing ? "Close form" : deposit ? "Refund deposit" : "Return / refund"}</Button>}
     </div>
-    {editing && <form className="space-y-3 rounded-lg border border-border p-3" onSubmit={(event) => {
+    {editing && <form className="space-y-4 rounded-lg border border-border p-4" onSubmit={(event) => {
       event.preventDefault(); void run(async () => {
         await createRefund({ saleId: sale.id, lines: deposit ? [] : selection, reason, condition: deposit ? "not_returned" : condition, mode, actor, actorRole: role, cashPaid, depositAmount: Number(depositAmount) });
         setEditing(false); setSelection([]); setReason(""); setCashPaid(false);
@@ -66,7 +66,7 @@ export default function RefundPanel({ sale, onChanged }: { sale: Sale; onChanged
       <p className="font-medium">Refund amount: {formatCurrency(total)}</p><Button disabled={busy || total <= 0} type="submit">{busy ? "Saving..." : "Record refund"}</Button>
     </form>}
     {!related.length && <p className="text-sm text-muted-foreground">No refunds recorded.</p>}
-    {related.map((refund) => <div key={refund.id} className="rounded-lg border border-border p-3 space-y-2 text-sm">
+    {related.map((refund) => <div key={refund.id} className="rounded-lg border border-border p-4 space-y-2 text-sm">
       <p className="font-medium">{formatCurrency(refund.total)} · {refund.status} · {refund.mode.replaceAll("_", " ")}</p>
       <p>{refund.reason} · {refund.actor}</p><p className="text-muted-foreground">Stock disposition: {refund.condition.replaceAll("_", " ")}. Inventory release is separate.</p>
       {refund.reference && <p>Repayment reference: {refund.reference}</p>}

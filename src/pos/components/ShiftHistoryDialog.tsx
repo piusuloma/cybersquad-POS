@@ -125,7 +125,7 @@ export default function ShiftHistoryDialog({ open, onOpenChange, showVariance = 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[85vh]" style={{ maxWidth: "56rem", maxHeight: "85vh" }}>
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <History className="w-5 h-5 text-muted-foreground" />
             <div>
               <DialogTitle>Shift History</DialogTitle>

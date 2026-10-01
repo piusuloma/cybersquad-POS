@@ -872,7 +872,7 @@ export default function Inventory() {
       </div>
 
       <div className="grid xl:grid-cols-2 gap-4">
-        <div className="glass-card p-4 space-y-3">
+        <div className="glass-card p-4 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Low Stock Alerts</h3>
             <span className="text-xs text-muted-foreground">{stockSummary.outOfStockParts} out of stock</span>
@@ -882,7 +882,7 @@ export default function Inventory() {
           ) : (
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {lowStockItems.map((item) => (
-                <div key={`low-stock-${item.id}`} className="rounded-md border border-border bg-secondary/30 p-3">
+                <div key={`low-stock-${item.id}`} className="rounded-md border border-border bg-secondary/30 p-4">
                   <p className="text-sm font-medium text-foreground">{item.name}</p>
                   <p className="text-xs text-muted-foreground">{item.category}</p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -894,7 +894,7 @@ export default function Inventory() {
           )}
         </div>
 
-        <div className="glass-card p-4 space-y-3">
+        <div className="glass-card p-4 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Recent Parts Activity</h3>
             <span className="text-xs text-muted-foreground">{recentActivities.length} items</span>
@@ -904,7 +904,7 @@ export default function Inventory() {
           ) : (
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                 {recentActivities.map((activity) => (
-                <div key={`${activity.type}-${activity.ticketId}-${activity.partId}-${activity.at}`} className="rounded-md border border-border bg-secondary/30 p-3 space-y-1">
+                <div key={`${activity.type}-${activity.ticketId}-${activity.partId}-${activity.at}`} className="rounded-md border border-border bg-secondary/30 p-4 space-y-1">
                   <p className="text-sm font-medium text-foreground">{activity.partName}</p>
                   <p className="text-xs text-muted-foreground">
                     {activity.type === "requested"
@@ -943,7 +943,7 @@ export default function Inventory() {
                 return (
                   <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Package className="w-4 h-4 text-primary" />
                         </div>
@@ -951,7 +951,7 @@ export default function Inventory() {
                           <Input
                             value={item.name}
                             onChange={(event) => updateItem(item.id, "name", event.target.value)}
-                            className="h-9 bg-secondary border-border min-w-[220px]"
+                            className="h-10 bg-secondary border-border min-w-[220px]"
                           />
                         ) : (
                           <span className="font-medium text-foreground text-sm">{item.name}</span>
@@ -963,7 +963,7 @@ export default function Inventory() {
                         <Input
                           value={item.category}
                           onChange={(event) => updateItem(item.id, "category", event.target.value)}
-                          className="h-9 bg-secondary border-border min-w-[140px]"
+                          className="h-10 bg-secondary border-border min-w-[140px]"
                         />
                       ) : (
                         item.category
@@ -978,7 +978,7 @@ export default function Inventory() {
                           onChange={(event) =>
                             updateItem(item.id, "quantity", Math.max(0, Number(event.target.value) || 0))
                           }
-                          className="h-9 bg-secondary border-border text-right min-w-[90px]"
+                          className="h-10 bg-secondary border-border text-right min-w-[90px]"
                         />
                       ) : (
                         <span className="text-foreground">{item.quantity}</span>
@@ -1002,7 +1002,7 @@ export default function Inventory() {
                           onChange={(event) =>
                             updateItem(item.id, "price", Math.max(0, Number(event.target.value) || 0))
                           }
-                          className="h-9 bg-secondary border-border text-right min-w-[120px]"
+                          className="h-10 bg-secondary border-border text-right min-w-[120px]"
                         />
                       ) : (
                         `₦${item.price.toLocaleString()}`
@@ -1023,14 +1023,14 @@ export default function Inventory() {
             Track requested parts, defective returns, and parts released to engineers.
           </p>
           {debugError && (
-              <div className="mt-2 p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
+              <div className="mt-2 p-4 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
                   Debug API Warning: {debugError}
               </div>
           )}
         </div>
 
         <div className="grid xl:grid-cols-3 gap-4">
-          <div className="glass-card p-4 space-y-3">
+          <div className="glass-card p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">Repair Parts Requested</h3>
               <span className="text-xs text-muted-foreground">{requestedParts.length}</span>
@@ -1040,7 +1040,7 @@ export default function Inventory() {
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {requestedParts.map((entry) => (
-                  <div key={`${entry.ticketId}-${entry.partId}-requested`} className="rounded-md border border-border bg-secondary/30 p-3 space-y-1">
+                  <div key={`${entry.ticketId}-${entry.partId}-requested`} className="rounded-md border border-border bg-secondary/30 p-4 space-y-1">
                     <p className="text-sm font-medium text-foreground">{entry.partName}</p>
                     <p className="text-xs text-muted-foreground">Job: {entry.jobId}</p>
                     <p className="text-xs text-muted-foreground">Customer: {entry.customerName}</p>
@@ -1099,7 +1099,7 @@ export default function Inventory() {
             )}
           </div>
 
-          <div className="glass-card p-4 space-y-3">
+          <div className="glass-card p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">Parts Released To Engineers</h3>
               <span className="text-xs text-muted-foreground">{releasedParts.length}</span>
@@ -1109,7 +1109,7 @@ export default function Inventory() {
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {releasedParts.map((entry) => (
-                  <div key={`${entry.ticketId}-${entry.partId}-released`} className="rounded-md border border-border bg-secondary/30 p-3 space-y-1">
+                  <div key={`${entry.ticketId}-${entry.partId}-released`} className="rounded-md border border-border bg-secondary/30 p-4 space-y-1">
                     <p className="text-sm font-medium text-foreground">{entry.partName}</p>
                     <p className="text-xs text-muted-foreground">Job: {entry.jobId}</p>
                     <p className="text-xs text-muted-foreground">Engineer: {entry.engineerName}</p>
@@ -1125,7 +1125,7 @@ export default function Inventory() {
             )}
           </div>
 
-          <div className="glass-card p-4 space-y-3">
+          <div className="glass-card p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">Defective Part Returns</h3>
               <span className="text-xs text-muted-foreground">{defectiveReturns.length}</span>
@@ -1135,7 +1135,7 @@ export default function Inventory() {
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {defectiveReturns.map((entry) => (
-                  <div key={`${entry.ticketId}-${entry.partId}-defective`} className="rounded-md border border-destructive/30 bg-destructive/10 p-3 space-y-1">
+                  <div key={`${entry.ticketId}-${entry.partId}-defective`} className="rounded-md border border-destructive/30 bg-destructive/10 p-4 space-y-1">
                     <p className="text-sm font-medium text-foreground">{entry.partName}</p>
                     <p className="text-xs text-muted-foreground">Job: {entry.jobId}</p>
                     <p className="text-xs text-muted-foreground">Engineer: {entry.engineerName}</p>

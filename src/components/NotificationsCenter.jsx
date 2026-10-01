@@ -56,7 +56,7 @@ function PaginationBar({
 	onPageSizeChange,
 }) {
 	return (
-		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
+		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
 			<div className="flex items-center gap-2">
 				<Button
 					variant="outline"
@@ -228,8 +228,8 @@ export function NotificationsCenter() {
 
 	const getTypeIcon = (eventType) => {
 		const t = String(eventType || "").toUpperCase();
-		if (t === "ALERT") return <Bell className="w-3 h-3 mr-1" />;
-		return <MessageSquare className="w-3 h-3 mr-1" />; // ACTIVITY + anything else
+		if (t === "ALERT") return <Bell className="h-4 w-4 mr-1" />;
+		return <MessageSquare className="h-4 w-4 mr-1" />; // ACTIVITY + anything else
 	};
 
 	const getPriorityBadgeVariant = (priority) => {
@@ -311,11 +311,11 @@ export function NotificationsCenter() {
 							<div className="space-y-6">
 								<div className="space-y-2">
 									<Label>Delivery Channels</Label>
-									<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+									<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 										{channelOptions.map(({ value, label, icon: Icon }) => (
 											<div
 												key={value}
-												className={`flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition-colors ${
+												className={`flex items-center space-x-2 p-4 border rounded-lg cursor-pointer transition-colors ${
 													channels.includes(value)
 														? "bg-primary/10 border-primary"
 														: "hover:bg-muted/50"

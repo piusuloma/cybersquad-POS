@@ -273,7 +273,7 @@ export function SalesRecords({ initialFilter } = {}) {
           </Table>
 
           {filtered.length > 0 && (
-            <div className="flex items-center justify-between gap-3 pt-4">
+            <div className="flex items-center justify-between gap-4 pt-4">
               <Button variant="outline" size="icon" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>

@@ -209,7 +209,7 @@ export function AddAdminModal({ open, onClose, roles = [], onCreated }) {
             </p>
           </div>
 
-          <div className="p-3 bg-purple-50 rounded-lg text-sm text-purple-900">
+          <div className="p-4 bg-purple-50 rounded-lg text-sm text-purple-900">
             The admin will receive an email with their login credentials and setup instructions.
           </div>
 

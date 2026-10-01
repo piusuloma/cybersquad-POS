@@ -115,7 +115,7 @@ const chartAxisTick = { fill: "var(--muted-foreground)", fontSize: 12 };
 function SectionHeading({ icon: Icon, title, description, actionLabel, onAction }) {
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2">
-			<div className="flex items-center gap-2.5">
+			<div className="flex items-center gap-2">
 				{Icon && (
 					<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
 						<Icon className="h-4 w-4 text-primary" />
@@ -135,7 +135,7 @@ function SectionHeading({ icon: Icon, title, description, actionLabel, onAction 
 					className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
 				>
 					{actionLabel}
-					<ArrowRight className="w-3.5 h-3.5" />
+					<ArrowRight className="h-4 w-4" />
 				</button>
 			)}
 		</div>
@@ -341,8 +341,8 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 	};
 
 	return (
-		<div className="space-y-7">
-			<div className="flex flex-col gap-4 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/30 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+		<div className="space-y-8">
+			<div className="flex flex-col gap-4 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/30 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-6">
 				<div>
 					<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
 						{todayLabel}
@@ -368,7 +368,7 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 			</div>
 
 			{/* Sales */}
-			<div className="space-y-3">
+			<div className="space-y-4">
 				<SectionHeading
 					icon={Wallet}
 					title="Sales"
@@ -468,7 +468,7 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 			</div>
 
 			{/* Repair Performance — repair status snapshot + SLA risk, separate from sales */}
-			<div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm sm:p-6">
+			<div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm sm:p-6">
 				<RepairPerformance onViewSLA={onViewSLA} onViewJobs={onViewJobs} />
 			</div>
 
@@ -680,11 +680,11 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 										<p>No recent activity</p>
 									</div>
 								) : (
-									<div className="space-y-3 max-h-[280px] overflow-y-auto">
+									<div className="space-y-4 max-h-[280px] overflow-y-auto">
 										{recentActivity.slice(0, 5).map((activity) => (
 											<div
 												key={activity.id}
-												className="flex items-start gap-3 pb-3 border-b last:border-0"
+												className="flex items-start gap-4 pb-4 border-b last:border-0"
 											>
 												<div
 													className={`w-2 h-2 mt-2 rounded-full ${
@@ -754,14 +754,14 @@ export function DashboardOverview({ onViewSales, onViewSLA, onViewJobs }) {
 							<p>No system alerts</p>
 						</div>
 					) : (
-						<div className="space-y-3">
+						<div className="space-y-4">
 							{alerts.map((alert) => (
 								<div
 									key={alert.id}
-									className="flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:bg-secondary/40"
+									className="flex items-center gap-4 rounded-lg border border-border/60 p-4 transition-colors hover:bg-secondary/40"
 								>
 									<span
-										className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+										className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
 											alert.priority === "HIGH"
 												? "bg-error/10"
 												: alert.priority === "MEDIUM"

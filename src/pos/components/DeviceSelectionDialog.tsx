@@ -38,7 +38,7 @@ export default function DeviceSelectionDialog({ product, selected, unavailable, 
           setError(""); setQuery("");
         }} />
       <div className="space-y-2">
-        {matches.map((unit) => <label key={unit.id} className="flex gap-3 rounded-lg border border-border p-3">
+        {matches.map((unit) => <label key={unit.id} className="flex gap-4 rounded-lg border border-border p-4">
           <input type="checkbox" checked={ids.includes(unit.id)} disabled={!available(unit)}
             onChange={() => toggle(unit.id)} aria-label={"Select " + unit.serialNumber} />
           <span className="min-w-0 text-sm break-words">

@@ -111,7 +111,7 @@ export function PayoutDetailsModal({ open, onClose, payout }) {
 
 						{/* Main details */}
 						<div className="space-y-4">
-							<div className="flex items-start gap-3">
+							<div className="flex items-start gap-4">
 								<User className="w-5 h-5 text-muted-foreground mt-0.5" />
 								<div className="flex-1">
 									<p className="text-sm text-muted-foreground">Technician</p>
@@ -119,7 +119,7 @@ export function PayoutDetailsModal({ open, onClose, payout }) {
 								</div>
 							</div>
 
-							<div className="flex items-start gap-3">
+							<div className="flex items-start gap-4">
 								<p className="w-5 h-5 text-muted-foreground mt-0.5 flex justify-center">
 									₦
 								</p>
@@ -131,7 +131,7 @@ export function PayoutDetailsModal({ open, onClose, payout }) {
 								</div>
 							</div>
 
-							<div className="flex items-start gap-3">
+							<div className="flex items-start gap-4">
 								<Briefcase className="w-5 h-5 text-muted-foreground mt-0.5" />
 								<div className="flex-1">
 									<p className="text-sm text-muted-foreground">
@@ -143,7 +143,7 @@ export function PayoutDetailsModal({ open, onClose, payout }) {
 								</div>
 							</div>
 
-							<div className="flex items-start gap-3">
+							<div className="flex items-start gap-4">
 								<Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
 								<div className="flex-1">
 									<p className="text-sm text-muted-foreground">

@@ -240,17 +240,17 @@ export function ForgotPasswordModal({ open, onOpenChange }) {
             </div>
             
             {/* Verification Code Section */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="otp" className="text-sm">Verification Code</Label>
               <div className="flex justify-center">
                 <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                   <InputOTPGroup>
-                    <InputOTPSlot index={0} className="h-9 w-9" />
-                    <InputOTPSlot index={1} className="h-9 w-9" />
-                    <InputOTPSlot index={2} className="h-9 w-9" />
-                    <InputOTPSlot index={3} className="h-9 w-9" />
-                    <InputOTPSlot index={4} className="h-9 w-9" />
-                    <InputOTPSlot index={5} className="h-9 w-9" />
+                    <InputOTPSlot index={0} className="h-10 w-10" />
+                    <InputOTPSlot index={1} className="h-10 w-10" />
+                    <InputOTPSlot index={2} className="h-10 w-10" />
+                    <InputOTPSlot index={3} className="h-10 w-10" />
+                    <InputOTPSlot index={4} className="h-10 w-10" />
+                    <InputOTPSlot index={5} className="h-10 w-10" />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
@@ -276,7 +276,7 @@ export function ForgotPasswordModal({ open, onOpenChange }) {
             </div>
 
             {/* Password Section */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="new-password" className="text-sm">New Password</Label>
               <Input
                 id="new-password"
@@ -284,12 +284,12 @@ export function ForgotPasswordModal({ open, onOpenChange }) {
                 placeholder="Enter new password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="h-9"
+                className="h-10"
                 required
               />
               <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="confirm-password" className="text-sm">Confirm Password</Label>
               <Input
                 id="confirm-password"
@@ -297,7 +297,7 @@ export function ForgotPasswordModal({ open, onOpenChange }) {
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-9"
+                className="h-10"
                 required
               />
             </div>
@@ -305,7 +305,7 @@ export function ForgotPasswordModal({ open, onOpenChange }) {
             {error && <p className="text-sm text-error">{error}</p>}
             {notice && <p className="text-sm text-emerald-600">{notice}</p>}
             
-            <Button type="submit" className="w-full h-9" disabled={isLoading}>
+            <Button type="submit" className="w-full h-10" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

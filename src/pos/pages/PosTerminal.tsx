@@ -231,7 +231,7 @@ export default function PosTerminal() {
 
   return (
     <div className="space-y-4">
-      <div className="glass-card p-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-sm">
           <Wallet className="w-4 h-4 text-primary" />
           {shiftLoading ? (
@@ -248,22 +248,22 @@ export default function PosTerminal() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowHeldSales(true)}>
-            <PauseCircle className="w-3.5 h-3.5 mr-1.5" />
+            <PauseCircle className="h-4 w-4 mr-2" />
             Held Sales
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowSaleHistory(true)}>
-            <History className="w-3.5 h-3.5 mr-1.5" />
+            <History className="h-4 w-4 mr-2" />
             Sale History
           </Button>
           {shift ? (
             <Button variant="outline" size="sm" onClick={() => setShowEndShift(true)}>
-              <LogOut className="w-3.5 h-3.5 mr-1.5" />
+              <LogOut className="h-4 w-4 mr-2" />
               End Shift
             </Button>
           ) : (
             !shiftLoading && (
               <Button size="sm" onClick={() => setShowStartShift(true)}>
-                <Wallet className="w-3.5 h-3.5 mr-1.5" />
+                <Wallet className="h-4 w-4 mr-2" />
                 Start Shift
               </Button>
             )
@@ -271,7 +271,7 @@ export default function PosTerminal() {
         </div>
       </div>
 
-      <div className="glass-card p-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">{sampleMode ? "Sample catalog - fictional devices and warranty terms. Sample sales are excluded from revenue and cash totals." : "Product catalog"}</p>
         <Button variant="outline" size="sm" disabled={cart.lines.length > 0} onClick={() => setSampleMode(!sampleMode)}>
           {sampleMode ? "Back to product catalog" : "Try sample devices"}

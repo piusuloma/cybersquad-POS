@@ -14,7 +14,7 @@ export default function OrderActions({ sale: initial, onChanged }: { sale: Sale;
   useEffect(() => { setSale(initial); getAuth().then((user) => { setActor(user?.name ?? ""); setAllowed(userHasRole(user, "sales", "admin")); }); }, [initial]);
   if (sale.lifecycle !== "reserved") return null;
   const run = async (action: () => Promise<unknown>) => { setBusy(true); try { await action(); onChanged(); } catch (error) { toast.error(error instanceof Error ? error.message : "Order action failed."); } finally { setBusy(false); } };
-  return <section className="rounded-lg border border-border p-3 space-y-3">
+  return <section className="rounded-lg border border-border p-4 space-y-4">
     <p className="font-medium">Awaiting collection ? Balance {formatCurrency(orderBalance(sale))}</p>
     <p className="text-sm">Expected collection: {sale.collectionDueAt ? new Date(sale.collectionDueAt).toLocaleString() : "Not set"}</p>
     {allowed && <>

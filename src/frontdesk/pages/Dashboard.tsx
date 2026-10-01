@@ -230,8 +230,8 @@ export default function Dashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="glass-card p-5">
-            <div className="flex items-center justify-between mb-3">
+          <div key={stat.label} className="glass-card p-6">
+            <div className="flex items-center justify-between mb-4">
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <p className="text-3xl font-bold text-foreground">{stat.value}</p>
@@ -242,7 +242,7 @@ export default function Dashboard() {
 
       <div className="glass-card overflow-hidden">
         <div className="px-6 py-4 border-b border-border space-y-2">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold text-foreground">Draft Tickets</h3>
               <p className="text-sm text-muted-foreground">
@@ -251,7 +251,7 @@ export default function Dashboard() {
             </div>
             <Link
               to="/drafts"
-              className="inline-flex items-center gap-1 px-3 h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="inline-flex items-center gap-1 px-4 h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             >
               Open Drafts
             </Link>
@@ -268,7 +268,7 @@ export default function Dashboard() {
             {recentDraftTickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                className="px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="space-y-1 min-w-0">
                   <p className="font-mono text-sm font-semibold text-primary">{ticket.jobId}</p>
@@ -277,7 +277,7 @@ export default function Dashboard() {
                     {ticket.device.make} {ticket.device.model} | {PAYMENT_MODE_LABELS[ticket.diagnosisPaymentMode]}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-4 sm:gap-4">
                   <StatusBadge status={ticket.status} />
                   <Link
                     to={`/ticket/${ticket.id}`}
@@ -294,8 +294,8 @@ export default function Dashboard() {
 
       {/* Recent Tickets */}
       <div className="glass-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-border space-y-3">
-          <div className="flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-b border-border space-y-4">
+          <div className="flex items-center justify-between gap-4">
             <h3 className="font-semibold text-foreground">
               {isSearching ? "Search Results" : "Recent Tickets"}
             </h3>
@@ -303,9 +303,9 @@ export default function Dashboard() {
               {canViewAllTickets && (
                 <Link
                   to="/tickets"
-                  className="inline-flex items-center gap-1 px-3 h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  className="inline-flex items-center gap-1 px-4 h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
-                  <Search className="w-3.5 h-3.5" />
+                  <Search className="h-4 w-4" />
                   Search
                 </Link>
               )}
@@ -313,7 +313,7 @@ export default function Dashboard() {
                 to={intakePath}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                {intakeLabel} <ArrowRight className="w-3 h-3" />
+                {intakeLabel} <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -353,13 +353,13 @@ export default function Dashboard() {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground uppercase tracking-wider">
-                  <th className="px-6 py-3">Job ID</th>
-                  <th className="px-6 py-3">Customer</th>
-                  <th className="px-6 py-3">Device</th>
-                  <th className="px-6 py-3">Technician Update</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3">Date</th>
-                  <th className="px-6 py-3"></th>
+                  <th className="px-6 py-4">Job ID</th>
+                  <th className="px-6 py-4">Customer</th>
+                  <th className="px-6 py-4">Device</th>
+                  <th className="px-6 py-4">Technician Update</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Date</th>
+                  <th className="px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -422,7 +422,7 @@ export default function Dashboard() {
         )}
 
         {showPagination && (
-          <div className="px-6 py-3 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
+          <div className="px-6 py-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
             <span>
               Showing {pageStart}–{pageEnd} of {pagination!.count}
             </span>
@@ -431,9 +431,9 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={!pagination!.hasPrev || loadingTickets}
-                className="inline-flex items-center gap-1 px-3 h-8 rounded-md border border-border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:text-foreground hover:bg-secondary transition-colors"
+                className="inline-flex items-center gap-1 px-4 h-8 rounded-md border border-border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:text-foreground hover:bg-secondary transition-colors"
               >
-                <ChevronLeft className="w-3.5 h-3.5" /> Prev
+                <ChevronLeft className="h-4 w-4" /> Prev
               </button>
               <span className="text-xs">
                 Page {pagination!.page} of {pagination!.pages}
@@ -442,9 +442,9 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={!pagination!.hasNext || loadingTickets}
-                className="inline-flex items-center gap-1 px-3 h-8 rounded-md border border-border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:text-foreground hover:bg-secondary transition-colors"
+                className="inline-flex items-center gap-1 px-4 h-8 rounded-md border border-border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:text-foreground hover:bg-secondary transition-colors"
               >
-                Next <ChevronRight className="w-3.5 h-3.5" />
+                Next <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>

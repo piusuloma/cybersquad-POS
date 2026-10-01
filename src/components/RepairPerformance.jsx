@@ -30,7 +30,7 @@ export function RepairPerformance({ onViewSLA, onViewJobs }) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Wrench className="w-4 h-4 text-primary" />
@@ -56,7 +56,7 @@ export function RepairPerformance({ onViewSLA, onViewJobs }) {
             className="flex items-center gap-1 text-sm text-primary hover:underline"
           >
             View SLA Management
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="h-4 w-4" />
           </button>
         )}
       </div>

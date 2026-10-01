@@ -75,7 +75,7 @@ function PaginationBar({
   onPageSizeChange,
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -950,7 +950,7 @@ export function PaymentFinance() {
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <p className="text-sm">
                 <span className="text-base">₦</span> Total Revenue (All-Time)
@@ -976,7 +976,7 @@ export function PaymentFinance() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-blue-600" />
               Payments Today
@@ -993,7 +993,7 @@ export function PaymentFinance() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-purple-600" />
               Pending Payouts
@@ -1010,7 +1010,7 @@ export function PaymentFinance() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-orange-600" />
               Commission Earned
@@ -1086,7 +1086,7 @@ export function PaymentFinance() {
 
             <CardContent>
               {/* Keep the payment flow info box like old UI */}
-              <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <p className="text-sm text-purple-900">
                   <strong>Payment Flow:</strong> Customer may pay
                   shipping/service fees. Status changes include{" "}

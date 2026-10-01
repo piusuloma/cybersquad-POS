@@ -128,7 +128,7 @@ export default function Receipt() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Ticket
         </Button>
-        <div className="glass-card p-8 text-center space-y-3">
+        <div className="glass-card p-8 text-center space-y-4">
           <p className="text-lg font-semibold text-foreground">Receipt not ready</p>
           <p className="text-sm text-muted-foreground">
             Complete diagnosis and set a quotation first.
@@ -148,7 +148,7 @@ export default function Receipt() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <Button variant="ghost" onClick={() => navigate(`/ticket/${ticket.id}`)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Ticket
@@ -165,8 +165,8 @@ export default function Receipt() {
 
       <div className="glass-card p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <ReceiptText className="w-5 h-5" />
             </div>
             <div>
@@ -202,7 +202,7 @@ export default function Receipt() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3 text-sm">
+        <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-4 text-sm">
           <p>
             <strong className="text-foreground">Diagnosis:</strong>{" "}
             <span className="text-muted-foreground">{ticket.diagnosis}</span>

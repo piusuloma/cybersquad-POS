@@ -29,6 +29,10 @@ import {
 	MapPin,
 	ShoppingCart,
 	ClipboardList,
+	Receipt,
+	ShieldCheck,
+	UserCog,
+	History,
 } from "lucide-react";
 import OperationsWorkspace from "../operations/OperationsWorkspace";
 import OperationsOverview from "../operations/OperationsOverview";
@@ -184,7 +188,7 @@ export function DashboardLayout({ onLogout }) {
 		switch (activeView) {
 			case "overview":
 				return (
-					<div className="space-y-7">
+					<div className="space-y-8">
 						<DashboardOverview
 							onViewSales={(filter) => {
 								setSalesInitialFilter(filter ?? null);
@@ -196,7 +200,7 @@ export function DashboardLayout({ onLogout }) {
 								openSection("repairs", "jobs");
 							}}
 						/>
-						<div className="space-y-3">
+						<div className="space-y-4">
 							<h2 className="text-base font-semibold text-foreground">Needs attention</h2>
 							<OperationsOverview
 								roles={["admin"]}
@@ -219,11 +223,13 @@ export function DashboardLayout({ onLogout }) {
 							{
 								value: "records",
 								label: "Sales records",
+								icon: Receipt,
 								content: <SalesRecords initialFilter={salesInitialFilter} />,
 							},
 							{
 								value: "shift-history",
 								label: "Shift history",
+								icon: History,
 								content: (
 									<div className="glass-card p-4">
 										<ShiftHistoryTable showVariance />
@@ -238,10 +244,10 @@ export function DashboardLayout({ onLogout }) {
 					<SectionTabs
 						{...tabState("repairs")}
 						tabs={[
-							{ value: "jobs", label: "Jobs", content: <JobManagement initialFilter={jobsInitialFilter} /> },
-							{ value: "tracking", label: "Live tracking", content: <LiveTracking /> },
-							{ value: "sla", label: "SLA", content: <SLAManagement /> },
-							{ value: "services", label: "Services", content: <ServiceManagement /> },
+							{ value: "jobs", label: "Jobs", icon: ClipboardList, content: <JobManagement initialFilter={jobsInitialFilter} /> },
+							{ value: "tracking", label: "Live tracking", icon: MapPin, content: <LiveTracking /> },
+							{ value: "sla", label: "SLA", icon: Clock, content: <SLAManagement /> },
+							{ value: "services", label: "Services", icon: Wrench, content: <ServiceManagement /> },
 						]}
 					/>
 				);
@@ -250,8 +256,8 @@ export function DashboardLayout({ onLogout }) {
 					<SectionTabs
 						{...tabState("finance")}
 						tabs={[
-							{ value: "payments", label: "Payments", content: <PaymentFinance /> },
-							{ value: "disputes", label: "Disputes", content: <DisputeManagement userRole={userRole} /> },
+							{ value: "payments", label: "Payments", icon: CreditCard, content: <PaymentFinance /> },
+							{ value: "disputes", label: "Disputes", icon: AlertTriangle, content: <DisputeManagement userRole={userRole} /> },
 						]}
 					/>
 				);
@@ -260,10 +266,10 @@ export function DashboardLayout({ onLogout }) {
 					<SectionTabs
 						{...tabState("people")}
 						tabs={[
-							{ value: "technicians", label: "Technicians", content: <UserManagement initialTab="technicians" hideTabs /> },
-							{ value: "customers", label: "Customers", content: <UserManagement initialTab="customers" hideTabs /> },
-							{ value: "admins", label: "Admins & roles", show: isSuperUser, content: <AdminManagement /> },
-							{ value: "stores", label: "Stores", show: isSuperUser, content: <StoreManagement /> },
+							{ value: "technicians", label: "Technicians", icon: UserCog, content: <UserManagement initialTab="technicians" hideTabs /> },
+							{ value: "customers", label: "Customers", icon: Users, content: <UserManagement initialTab="customers" hideTabs /> },
+							{ value: "admins", label: "Admins & roles", icon: ShieldCheck, show: isSuperUser, content: <AdminManagement /> },
+							{ value: "stores", label: "Stores", icon: Store, show: isSuperUser, content: <StoreManagement /> },
 						]}
 					/>
 				);
@@ -284,7 +290,7 @@ export function DashboardLayout({ onLogout }) {
 						<div className="flex items-center gap-2">
 							<div className="flex flex-col">
 								{/* Fixed height, auto width — a fixed-width box squeezed this logo since it didn't match the PNG's aspect ratio. */}
-								<img src={Logo} alt="Cybersquad" className="h-9 w-auto" />
+								<img src={Logo} alt="Cybersquad" className="h-10 w-auto" />
 								<span className="text-sm mt-1 text-muted-foreground">
 									Admin Panel
 								</span>
@@ -363,7 +369,9 @@ export function DashboardLayout({ onLogout }) {
 								<CardDescription>{sectionHeaders[activeView]?.description}</CardDescription>
 							</CardHeader>
 						</Card>
-						{renderContent()}
+						<div key={activeView} className="motion-rise">
+							{renderContent()}
+						</div>
 					</div>
 				</main>
 			</div>

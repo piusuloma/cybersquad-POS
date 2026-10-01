@@ -211,12 +211,12 @@ export function CustomerDetailsModal({
 										</div>
 										{isSuspended ? (
 											<Badge className="bg-error text-white">
-												<XCircle className="w-3 h-3" />
+												<XCircle className="h-4 w-4" />
 												<span className="ml-1">suspended</span>
 											</Badge>
 										) : (
 											<Badge className="bg-success text-white">
-												<CheckCircle className="w-3 h-3" />
+												<CheckCircle className="h-4 w-4" />
 												<span className="ml-1">active</span>
 											</Badge>
 										)}
@@ -227,25 +227,25 @@ export function CustomerDetailsModal({
 							<Separator />
 
 							{/* Contact Information */}
-							<div className="space-y-3">
+							<div className="space-y-4">
 								<h4 className="font-medium">Contact Information</h4>
-								<div className="grid gap-3">
-									<div className="flex items-center gap-3 text-sm">
+								<div className="grid gap-4">
+									<div className="flex items-center gap-4 text-sm">
 										<Mail className="w-4 h-4 text-muted-foreground" />
 										<span className="text-muted-foreground">Email:</span>
 										<span>{email}</span>
 									</div>
-									<div className="flex items-center gap-3 text-sm">
+									<div className="flex items-center gap-4 text-sm">
 										<Phone className="w-4 h-4 text-muted-foreground" />
 										<span className="text-muted-foreground">Phone:</span>
 										<span>{phone}</span>
 									</div>
-									<div className="flex items-center gap-3 text-sm">
+									<div className="flex items-center gap-4 text-sm">
 										<MapPin className="w-4 h-4 text-muted-foreground" />
 										<span className="text-muted-foreground">Location:</span>
 										<span>{location}</span>
 									</div>
-									<div className="flex items-center gap-3 text-sm">
+									<div className="flex items-center gap-4 text-sm">
 										<Calendar className="w-4 h-4 text-muted-foreground" />
 										<span className="text-muted-foreground">Joined:</span>
 										<span>{joinedDate}</span>
@@ -256,17 +256,17 @@ export function CustomerDetailsModal({
 							<Separator />
 
 							{/* Customer Stats */}
-							<div className="space-y-3">
+							<div className="space-y-4">
 								<h4 className="font-medium">Activity Stats</h4>
 								<div className="grid grid-cols-2 gap-4">
-									<div className="p-3 border rounded-lg">
+									<div className="p-4 border rounded-lg">
 										<div className="flex items-center gap-2 text-muted-foreground mb-1">
 											<Briefcase className="w-4 h-4" />
 											<span className="text-xs">Total Jobs</span>
 										</div>
 										<p className="text-2xl font-semibold">{totalJobs}</p>
 									</div>
-									<div className="p-3 border rounded-lg">
+									<div className="p-4 border rounded-lg">
 										<div className="flex items-center gap-2 text-muted-foreground mb-1">
 											<p className="text-sm">₦ Total Spent</p>
 										</div>
@@ -282,7 +282,7 @@ export function CustomerDetailsModal({
 							{/* Default Address */}
 							{defaultAddress && (
 								<>
-									<div className="space-y-3">
+									<div className="space-y-4">
 										<h4 className="font-medium">Default Address</h4>
 										<div className="p-4 border rounded-lg bg-muted/30">
 											<div className="space-y-2 text-sm">
@@ -313,7 +313,7 @@ export function CustomerDetailsModal({
 							{/* All Addresses */}
 							{customer?.profile?.addresses &&
 								customer.profile.addresses.length > 0 && (
-									<div className="space-y-3">
+									<div className="space-y-4">
 										<h4 className="font-medium">
 											All Addresses ({customer.profile.addresses.length})
 										</h4>
@@ -321,7 +321,7 @@ export function CustomerDetailsModal({
 											{customer.profile.addresses.map((addr) => (
 												<div
 													key={addr.id}
-													className="p-3 border rounded-lg text-sm"
+													className="p-4 border rounded-lg text-sm"
 												>
 													<div className="flex items-start justify-between">
 														<div className="flex-1">

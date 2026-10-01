@@ -40,7 +40,7 @@ export default function WarrantyLookup({ onSelect, initialId, includeSamples = f
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <Input aria-label="Search warranty records" placeholder="IMEI, serial, receipt, customer or phone" value={query} onChange={(event) => setQuery(event.target.value)} />
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input type="checkbox" checked={samples} onChange={(event) => setSamples(event.target.checked)} />
@@ -55,7 +55,7 @@ export default function WarrantyLookup({ onSelect, initialId, includeSamples = f
           </p>
         )}
 
-        <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
           {matches.map((record) => (
             <article key={record.id} className="rounded-lg border border-border p-4 space-y-2">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">

@@ -205,7 +205,7 @@ export default function CartPanel({
           <ShoppingCart className="w-5 h-5 text-primary" />
           <h3 className="font-semibold text-foreground">Current Sale</h3>
           {itemCount > 0 && (
-            <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold px-1.5">
+            <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold px-2">
               {itemCount}
             </span>
           )}
@@ -213,11 +213,11 @@ export default function CartPanel({
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="w-3.5 h-3.5 mr-1" />Refund</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="w-3.5 h-3.5 mr-1" />Hold</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="w-3.5 h-3.5 mr-1" />Discount</Button>
-        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="w-3.5 h-3.5 mr-1" />Reserve</Button>
-        <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="w-3.5 h-3.5 mr-1" />Clear sale</Button>
+        <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="h-4 w-4 mr-1" />Refund</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="h-4 w-4 mr-1" />Hold</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="h-4 w-4 mr-1" />Discount</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="h-4 w-4 mr-1" />Reserve</Button>
+        <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="h-4 w-4 mr-1" />Clear sale</Button>
       </div>
 
       {lines.length > 0 && (
@@ -237,9 +237,9 @@ export default function CartPanel({
           <p className="text-xs text-muted-foreground">Scan a barcode or select a product to get started.</p>
         </div>
       ) : (
-        <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto pr-1" aria-live="polite">
+        <div className="space-y-4 mb-4 max-h-[40vh] overflow-y-auto pr-1" aria-live="polite">
           {lines.map((line) => (
-            <div key={line.productId} onClick={() => { setSelectedId(line.productId); setKeyBuffer(""); }} className={`flex items-center justify-between gap-2 rounded-md p-1 cursor-pointer ${selected?.productId === line.productId ? "ring-2 ring-primary/50 bg-secondary" : ""}`}>
+            <div key={line.productId} onClick={() => { setSelectedId(line.productId); setKeyBuffer(""); }} className={`flex items-center justify-between gap-2 rounded-md p-2 cursor-pointer motion-pop transition-colors duration-150 ${selected?.productId === line.productId ? "ring-2 ring-primary/50 bg-secondary" : ""}`}>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{line.name}</p>
                 <DeviceDetails line={line} />
@@ -253,12 +253,12 @@ export default function CartPanel({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9"
+                  className="h-10 w-10"
                   aria-label={`Decrease quantity of ${line.name}`}
                   disabled={line.tracking === "serial"}
                   onClick={() => onUpdateQuantity(line.productId, line.quantity - 1)}
                 >
-                  <Minus className="h-3 w-3" />
+                  <Minus className="h-4 w-4" />
                 </Button>
                 <Input
                   type="number"
@@ -270,26 +270,26 @@ export default function CartPanel({
                     const value = Math.max(1, Math.floor(Number(e.target.value) || 1));
                     onUpdateQuantity(line.productId, value);
                   }}
-                  className="w-14 h-9 text-center px-1"
+                  className="w-14 h-10 text-center px-1"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9"
+                  className="h-10 w-10"
                   aria-label={`Increase quantity of ${line.name}`}
                   disabled={line.tracking === "serial"}
                   onClick={() => onUpdateQuantity(line.productId, line.quantity + 1)}
                 >
-                  <Plus className="h-3 w-3" />
+                  <Plus className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-destructive"
+                  className="h-8 w-8 text-destructive"
                   aria-label={`Remove ${line.name} from cart`}
                   onClick={() => onRemoveItem(line.productId)}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -303,28 +303,28 @@ export default function CartPanel({
             const mode = key === "qty" || key === "disc" || key === "price";
             if (mode) {
               const label = key === "qty" ? "Qty" : key === "disc" ? "% Disc" : "Price";
-              return <Button key={key} type="button" size="sm" variant={keyMode === key ? "default" : "outline"} className="h-11" disabled={key === "price" && !onSetPrice}
+              return <Button key={key} type="button" size="sm" variant={keyMode === key ? "default" : "outline"} className="h-12" disabled={key === "price" && !onSetPrice}
                 title={key === "price" && !onSetPrice ? "Price changes need an admin account" : undefined} onClick={() => changeKeyMode(key as "qty" | "disc" | "price")}>{label}</Button>;
             }
-            return <Button key={key} type="button" size="sm" variant="outline" className="h-11 text-base" aria-label={key === "back" ? "Backspace" : key === "clear" ? "Clear entry" : key}
+            return <Button key={key} type="button" size="sm" variant="outline" className="h-12 text-base" aria-label={key === "back" ? "Backspace" : key === "clear" ? "Clear entry" : key}
               onClick={() => pressKey(key)}>{key === "back" ? <Delete className="w-4 h-4" /> : key === "clear" ? "C" : key}</Button>;
           })}
           <p className="col-span-4 text-xs text-muted-foreground">{keyMode === "qty" ? "Type a quantity for the highlighted item." : keyMode === "price" ? "Type a new unit price for the highlighted item." : "Type a % discount, then confirm it below."}</p>
         </div>
       )}
 
-      <div className="border-t border-border pt-4 space-y-3 mt-auto">
+      <div className="border-t border-border pt-4 space-y-4 mt-auto">
         {lines.length > 0 && (discount ? (
           <div className="space-y-1 text-sm">
             <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatCurrency(itemsTotal)}</span></div>
             <div className="flex justify-between items-center">
               <span>Discount ({discount.reason})</span>
               <span className="flex items-center gap-1">-{formatCurrency(discount.amount)}
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Remove discount" onClick={onRemoveDiscount}><X className="h-3 w-3" /></Button></span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Remove discount" onClick={onRemoveDiscount}><X className="h-4 w-4" /></Button></span>
             </div>
           </div>
         ) : discountOpen ? (
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className="space-y-2 rounded-lg border border-border p-4 motion-rise">
             <div className="flex gap-2">
               <select aria-label="Discount type" className="border rounded p-2 bg-background" value={discountKind} onChange={(event) => setDiscountKind(event.target.value as "percent" | "amount")}>
                 <option value="percent">%</option><option value="amount">Amount</option></select>
@@ -357,9 +357,9 @@ export default function CartPanel({
             </Select>
 
             {paymentMode === "cash" && (
-              <div className="space-y-2 rounded-lg border border-border p-3">
+              <div className="space-y-2 rounded-lg border border-border p-4">
                 <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground" htmlFor="cash-tendered">
-                  <Banknote className="w-3.5 h-3.5" />
+                  <Banknote className="h-4 w-4" />
                   Cash Tendered
                 </label>
                 <Input
@@ -382,16 +382,16 @@ export default function CartPanel({
 
             {lines.length > 0 && (
               <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={startSplit}>
-                <SplitSquareHorizontal className="w-3.5 h-3.5 mr-1.5" />
+                <SplitSquareHorizontal className="h-4 w-4 mr-2" />
                 Split Payment
               </Button>
             )}
           </>
         ) : (
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className="space-y-2 rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <SplitSquareHorizontal className="w-3.5 h-3.5" />
+                <SplitSquareHorizontal className="h-4 w-4" />
                 Split Payment
               </span>
               <Button variant="ghost" size="sm" className="h-6 px-2 text-muted-foreground" onClick={cancelSplit}>
@@ -400,9 +400,9 @@ export default function CartPanel({
             </div>
 
             {(splitRows ?? []).map((row) => (
-              <div key={row.id} className="flex items-center gap-1.5">
+              <div key={row.id} className="flex items-center gap-2">
                 <Select value={row.mode} onValueChange={(v) => updateSplitRow(row.id, { mode: v as SalePaymentMode })}>
-                  <SelectTrigger aria-label="Payment method" className="h-9">
+                  <SelectTrigger aria-label="Payment method" className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -421,22 +421,22 @@ export default function CartPanel({
                   aria-label={`Amount for ${PAYMENT_MODE_LABELS[row.mode]}`}
                   value={row.amount}
                   onChange={(e) => updateSplitRow(row.id, { amount: e.target.value })}
-                  className="h-9"
+                  className="h-10"
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
+                  className="h-10 w-10 shrink-0 text-muted-foreground hover:text-destructive"
                   aria-label="Remove payment method"
                   onClick={() => removeSplitRow(row.id)}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             ))}
 
             <Button variant="outline" size="sm" className="w-full" onClick={addSplitRow}>
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              <Plus className="h-4 w-4 mr-2" />
               Add Payment Method
             </Button>
 
@@ -452,7 +452,7 @@ export default function CartPanel({
         {!shiftActive && (
           <p className="text-xs text-destructive text-center">Start a shift to accept payment.</p>
         )}
-        <Button className="w-full h-11 text-base" disabled={!canCharge} onClick={handleCharge}>
+        <Button className="w-full h-12 text-base" disabled={!canCharge} onClick={handleCharge}>
           {charging ? "Processing..." : `Charge ${formatCurrency(subtotal)}`}
         </Button>
       </div>

@@ -62,7 +62,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
 
   return (
     <div className="space-y-4">
-      <div className="glass-card p-4 space-y-3">
+      <div className="glass-card p-4 space-y-4">
         <SearchField
           ref={searchRef}
           placeholder="Search by name or SKU, or scan a barcode..."
@@ -71,7 +71,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
           onKeyDown={handleSearchKeyDown}
         />
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <ScanBarcode className="w-3.5 h-3.5" />
+          <ScanBarcode className="h-4 w-4" />
           <span>Scan a barcode or type a SKU and press Enter to add instantly. Shortcuts: F2 search · F4 refunds · F7 hold.</span>
         </div>
 
@@ -94,7 +94,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
 
       <div className="glass-card p-4">
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3" aria-busy="true" aria-label="Loading products">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4" aria-busy="true" aria-label="Loading products">
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-24 rounded-lg" />
             ))}
@@ -108,7 +108,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
             <p className="text-xs text-muted-foreground">Try a different search term or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 motion-stagger">
             {filtered.map((item) => {
               const outOfStock = item.quantity - item.locked <= 0;
               return (
@@ -117,7 +117,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   type="button"
                   disabled={outOfStock}
                   onClick={() => onAddItem(item)}
-                  className={`text-left rounded-lg border p-3 transition-all min-h-[8rem] flex flex-col ${
+                  className={`text-left rounded-lg border p-4 press lift min-h-[8rem] flex flex-col ${
                     scanFlashId === item.id
                       ? "border-primary ring-2 ring-primary/40 bg-secondary"
                       : "border-border hover:border-primary hover:bg-secondary"
@@ -135,7 +135,7 @@ export default function ProductGrid({ items, loading, onAddItem }: ProductGridPr
                   {item.sku && <p className="text-xs text-muted-foreground truncate">SKU: {item.sku}</p>}
                   {item.tracking === "serial" && <p className="text-xs text-primary mt-1">IMEI / serial selection required</p>}
                   <p className="text-xs text-muted-foreground mt-1">{warrantyLabel(item.warranty)}</p>
-                  <p className="mt-2 rounded-md bg-primary text-primary-foreground text-center text-sm font-semibold py-1.5">{formatCurrency(item.price)}</p>
+                  <p className="mt-2 rounded-md bg-primary text-primary-foreground text-center text-sm font-semibold py-2">{formatCurrency(item.price)}</p>
                   {!outOfStock && (
                     <p className={`text-xs mt-1 ${item.quantity - item.locked <= 3 ? "text-amber-600" : "text-muted-foreground"}`}>
                       {item.quantity - item.locked <= 3 ? "Low stock: " : "In stock: "}{item.quantity - item.locked}

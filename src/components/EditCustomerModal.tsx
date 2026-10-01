@@ -186,10 +186,10 @@ export function EditCustomerModal({
 
         <div className="flex-1 min-h-0 overflow-y-auto px-6">
           <div className="space-y-6 py-1">
-            <section className="space-y-3">
+            <section className="space-y-4">
               <h4 className="font-medium text-sm">Contact</h4>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="ec-first-name">First name</Label>
                   <Input
                     id="ec-first-name"
@@ -198,7 +198,7 @@ export function EditCustomerModal({
                     placeholder="Tunde"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-last-name">Last name</Label>
                   <Input
                     id="ec-last-name"
@@ -207,7 +207,7 @@ export function EditCustomerModal({
                     placeholder="Ibrahim"
                   />
                 </div>
-                <div className="space-y-1.5 sm:col-span-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="ec-full-name">Full name (display)</Label>
                   <Input
                     id="ec-full-name"
@@ -216,7 +216,7 @@ export function EditCustomerModal({
                     placeholder="Tunde Ibrahim"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-email">Email</Label>
                   <Input
                     id="ec-email"
@@ -226,7 +226,7 @@ export function EditCustomerModal({
                     placeholder="tunde@example.com"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-phone">Phone</Label>
                   <Input
                     id="ec-phone"
@@ -242,10 +242,10 @@ export function EditCustomerModal({
 
             <Separator />
 
-            <section className="space-y-3">
+            <section className="space-y-4">
               <h4 className="font-medium text-sm">Address</h4>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5 sm:col-span-2">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="ec-address">Street address</Label>
                   <Input
                     id="ec-address"
@@ -254,19 +254,19 @@ export function EditCustomerModal({
                     placeholder="12 Allen Avenue"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-city">City</Label>
                   <Input id="ec-city" value={form.city} onChange={setField("city")} placeholder="Ikeja" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-lga">LGA</Label>
                   <Input id="ec-lga" value={form.lga} onChange={setField("lga")} placeholder="Ikeja" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-state">State</Label>
                   <Input id="ec-state" value={form.state} onChange={setField("state")} placeholder="Lagos" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-country">Country</Label>
                   <Input
                     id="ec-country"
@@ -275,7 +275,7 @@ export function EditCustomerModal({
                     placeholder="Nigeria"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="ec-postal">Postal code</Label>
                   <Input
                     id="ec-postal"

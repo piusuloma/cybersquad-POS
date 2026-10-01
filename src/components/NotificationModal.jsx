@@ -21,7 +21,7 @@ function PaginationBar({
   onPageSizeChange,
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4 border-t">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4 border-t">
       <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" onClick={onPrev} disabled={!canPrev}>
           <ChevronLeft className="h-4 w-4" />
@@ -155,14 +155,14 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-140px)] pr-4">
-          <div className="space-y-3">
+          <div className="space-y-4">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : notifications.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No notifications yet</p>
               </div>
             ) : (
@@ -172,7 +172,7 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
                 return (
                   <div
                     key={notification.id}
-                    className={`flex gap-3 p-4 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
+                    className={`flex gap-4 p-4 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
                       notification.is_read ? 'bg-background' : 'bg-purple-50/50 border-purple-200'
                     }`}
                     onClick={() => !notification.is_read && markAsRead(notification.id)}
@@ -184,7 +184,7 @@ export function NotificationModal({ open, onOpenChange, onUnreadCountChange }) {
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <h4 className="font-medium">{notification.subject}</h4>
                         {!notification.is_read && (
-                          <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-600 mt-1.5" />
+                          <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-600 mt-2" />
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mb-1">

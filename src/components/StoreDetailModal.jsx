@@ -154,7 +154,7 @@ export function StoreDetailModal({ open, onOpenChange, store }) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh]">
           <DialogHeader>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Store className="w-5 h-5 text-muted-foreground" />
               <div>
                 <DialogTitle>{store.name}</DialogTitle>
@@ -179,7 +179,7 @@ export function StoreDetailModal({ open, onOpenChange, store }) {
                   <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <StatCard
                     icon={ClipboardList}
                     label="Total (30d)"
@@ -212,8 +212,8 @@ export function StoreDetailModal({ open, onOpenChange, store }) {
               )}
 
               {/* Jobs Table */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
                   <h4 className="font-medium">Jobs</h4>
                   <Select
                     value={statusFilter}
@@ -303,7 +303,7 @@ export function StoreDetailModal({ open, onOpenChange, store }) {
                 </Table>
 
                 {jobs.length > 0 && (
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-2">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-2">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"

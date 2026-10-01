@@ -46,7 +46,7 @@ function WalkInIcon({ className }: { className?: string }) {
   return (
     <span className={`relative inline-block ${className ?? "w-5 h-5"}`}>
       <Laptop className="w-full h-full" />
-      <UserRound className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sidebar p-[2px]" />
+      <UserRound className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-sidebar p-[2px]" />
     </span>
   );
 }
@@ -309,13 +309,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg border border-transparent text-sm font-medium transition-all ${
+                className={`flex items-center gap-4 px-4 py-4 rounded-lg border border-transparent text-sm font-medium transition-all ${
                   isActive
                     ? "bg-sidebar-accent text-primary border-primary/25"
                     : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-4 min-w-0">
                   <item.icon className="w-5 h-5" />
                   <span className="truncate">{item.label}</span>
                 </div>
@@ -336,7 +336,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 px-4 py-2 mb-3">
+          <div className="flex items-center gap-4 px-4 py-2 mb-4">
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-foreground">
               {user?.name?.charAt(0) || "U"}
             </div>
@@ -377,7 +377,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center">
             {isConnected && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mr-3 hidden sm:flex">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mr-4 hidden sm:flex">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span>Live</span>
               </div>

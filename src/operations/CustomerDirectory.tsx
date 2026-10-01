@@ -51,7 +51,7 @@ export default function CustomerDirectory({ onOpenRepair }: { onOpenRepair: (tic
           <CardTitle>Customer Directory</CardTitle>
           <CardDescription>Find a customer, review purchases, returns, enquiries, and repair history.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <CustomerPicker value={customer} onChange={(value) => { setCustomer(value); void load(); }} />
           <Input placeholder="Search customer name, phone or email" aria-label="Search customer directory" value={query} onChange={(event) => setQuery(event.target.value)} />
         </CardContent>
@@ -66,7 +66,7 @@ export default function CustomerDirectory({ onOpenRepair }: { onOpenRepair: (tic
           <CardContent>
             <div className="space-y-2 max-h-[36rem] overflow-y-auto pr-1">
               {visibleCustomers.map((entry) => (
-                <button key={entry.id} type="button" className="w-full text-left rounded-lg border border-border p-3 hover:bg-secondary" onClick={() => setCustomer(entry)}>
+                <button key={entry.id} type="button" className="w-full text-left rounded-lg border border-border p-4 hover:bg-secondary" onClick={() => setCustomer(entry)}>
                   <span className="block font-medium">{entry.name}</span>
                   <span className="text-sm text-muted-foreground">{entry.phone} - {entry.email}</span>
                 </button>
@@ -82,12 +82,12 @@ export default function CustomerDirectory({ onOpenRepair }: { onOpenRepair: (tic
             <CardTitle>{customer?.name ? customer.name : "Customer Activity"}</CardTitle>
             <CardDescription>Purchases, returns, enquiries, and repairs for the selected customer.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {!customer?.name && <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Select a customer to see their history.</p>}
             {customer?.name && !hasActivity && <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">This customer is saved as a contact but has no sales or repair history yet.</p>}
 
             {selectedSales.map((sale) => (
-              <div key={sale.id} className="rounded-lg border border-border p-3 space-y-1">
+              <div key={sale.id} className="rounded-lg border border-border p-4 space-y-1">
                 <Button variant="link" className="h-auto p-0" onClick={() => setSelected(sale)}>{sale.saleNumber}</Button>
                 <p className="text-sm text-muted-foreground">{formatCurrency(sale.total)} - {sale.lifecycle ?? "completed"}</p>
                 {refunds.filter((refund) => refund.saleId === sale.id && refund.status !== "cancelled").map((refund) => (
@@ -97,7 +97,7 @@ export default function CustomerDirectory({ onOpenRepair }: { onOpenRepair: (tic
             ))}
 
             {selectedEnquiries.map((enquiry) => (
-              <div key={enquiry.id} className="rounded-lg border border-border p-3 text-sm space-y-1">
+              <div key={enquiry.id} className="rounded-lg border border-border p-4 text-sm space-y-1">
                 <p className="font-medium">Enquiry: {enquiry.request}</p>
                 <p className="text-muted-foreground">{enquiry.status} - {enquiry.owner} - follow up {new Date(enquiry.followUpAt).toLocaleDateString()} - {enquiry.contacts?.length ?? 0} contact(s)</p>
               </div>

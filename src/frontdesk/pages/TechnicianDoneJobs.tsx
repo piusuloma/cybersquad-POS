@@ -67,7 +67,7 @@ export default function TechnicianDoneJobs() {
         <p className="text-2xl font-bold text-foreground mt-1">{doneJobs.length}</p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {doneJobs.length === 0 ? (
           <div className="glass-card p-6 text-sm text-muted-foreground">
             No completed jobs yet.

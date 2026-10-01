@@ -238,7 +238,7 @@ export default function QADesk() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">QA Desk</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -295,8 +295,8 @@ export default function QADesk() {
 
       {dashboardStats?.technician_summary && dashboardStats.technician_summary.length > 0 && (
         <div className="glass-card p-4">
-          <h2 className="text-sm font-semibold text-foreground mb-3">Technician Performance (30d)</h2>
-          <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Technician Performance (30d)</h2>
+          <div className="space-y-4">
             {dashboardStats.technician_summary.map((tech: any) => (
               <div key={tech.technician_id} className="flex items-center justify-between text-sm border-b border-border/50 pb-2 last:border-0 last:pb-0">
                 <span className="font-medium text-foreground">{tech.technician_name || `Tech #${tech.technician_id}`}</span>
@@ -321,16 +321,16 @@ export default function QADesk() {
 
       <section className="space-y-4">
         <h2 className="text-sm font-semibold text-foreground">QA Queue</h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {qaQueue.length === 0 ? (
             <div className="glass-card p-10 text-center">
-              <ClipboardCheck className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+              <ClipboardCheck className="w-10 h-10 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-sm text-muted-foreground">No devices are waiting for QA right now.</p>
             </div>
           ) : (
             qaQueue.map((ticket) => (
-              <div key={ticket.id} className="glass-card p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div key={ticket.id} className="glass-card p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-1">
                     <p className="font-mono text-sm font-semibold text-primary">{ticket.jobId}</p>
                     <p className="text-sm text-foreground">{ticket.customer.name}</p>
@@ -392,7 +392,7 @@ export default function QADesk() {
 
       <section className="space-y-4">
         <h2 className="text-sm font-semibold text-foreground">Recently Approved</h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {qaPassedRecently.length === 0 ? (
             <div className="glass-card p-6 text-sm text-muted-foreground">
               No recently approved QA tickets yet.

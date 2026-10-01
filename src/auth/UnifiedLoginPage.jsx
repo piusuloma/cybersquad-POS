@@ -163,7 +163,7 @@ export default function UnifiedLoginPage() {
               <p className="text-muted-foreground">Sign in to your account</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5" onChange={() => setError("")}>
+            <form onSubmit={handleSubmit} className="space-y-6" onChange={() => setError("")}>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

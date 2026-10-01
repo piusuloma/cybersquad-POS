@@ -144,7 +144,7 @@ export function SLADetailsModal({ open, onClose, jobId }) {
             {/* Current Stage Highlight */}
             {currentStage && (
               <div className="p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-10 h-10 rounded-full ${getStageColor(currentStage.status)} flex items-center justify-center`}
@@ -163,7 +163,7 @@ export function SLADetailsModal({ open, onClose, jobId }) {
                   {getSLAStatusBadge(currentStage.status)}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Started</p>
                     <p className="font-medium">
@@ -208,12 +208,12 @@ export function SLADetailsModal({ open, onClose, jobId }) {
                 </div>
 
                 {currentStage.can_request_extension && (
-                  <div className="mt-3 p-2 bg-blue-50 rounded text-sm text-blue-700">
+                  <div className="mt-4 p-2 bg-blue-50 rounded text-sm text-blue-700">
                     ✓ Extension requests available
                   </div>
                 )}
                 {currentStage.disabled_reason && (
-                  <div className="mt-3 p-2 bg-slate-50 rounded text-sm text-slate-600">
+                  <div className="mt-4 p-2 bg-slate-50 rounded text-sm text-slate-600">
                     {currentStage.disabled_reason}
                   </div>
                 )}
@@ -250,9 +250,9 @@ export function SLADetailsModal({ open, onClose, jobId }) {
 
             {/* Timeline Tab */}
             {activeTab === "timeline" && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-semibold">Complete Stage Timeline</h4>
-                <div className="space-y-3 border-l-2 border-purple-200 pl-4 ml-2">
+                <div className="space-y-4 border-l-2 border-purple-200 pl-4 ml-2">
                   {timelineData.timeline.map((stage, index) => (
                     <div key={`${stage.stage}-${index}`} className="relative">
                       <div
@@ -310,7 +310,7 @@ export function SLADetailsModal({ open, onClose, jobId }) {
             {/* Metadata Tab */}
             {activeTab === "metadata" && timelineData.sla_metadata && (
               <div className="space-y-4">
-                <div className="p-3 border rounded-lg">
+                <div className="p-4 border rounded-lg">
                   <h4 className="font-semibold mb-2">Configuration</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
@@ -344,7 +344,7 @@ export function SLADetailsModal({ open, onClose, jobId }) {
                   </div>
                 </div>
 
-                <div className="p-3 border rounded-lg">
+                <div className="p-4 border rounded-lg">
                   <h4 className="font-semibold mb-2">Usage Statistics</h4>
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div>
@@ -372,7 +372,7 @@ export function SLADetailsModal({ open, onClose, jobId }) {
                   </div>
                 </div>
 
-                <div className="p-3 border rounded-lg">
+                <div className="p-4 border rounded-lg">
                   <h4 className="font-semibold mb-2">Policy Limits</h4>
                   <div className="text-sm space-y-1">
                     <p>

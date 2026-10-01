@@ -342,15 +342,15 @@ const handleUpdateWorkScope = async (newValue) => {
                     </div>
                     {isSuspended ? (
                       <Badge className="bg-error text-white">
-                        <XCircle className="w-3 h-3" />
+                        <XCircle className="h-4 w-4" />
                         <span className="ml-1">suspended</span>
                       </Badge>
                     ) : (
                       <Badge className={statusClass}>
                         {docVerified ? (
-                          <CheckCircle className="w-3 h-3" />
+                          <CheckCircle className="h-4 w-4" />
                         ) : (
-                          <XCircle className="w-3 h-3" />
+                          <XCircle className="h-4 w-4" />
                         )}
                         <span className="ml-1">{docVerified ? 'verified' : 'not verified'}</span>
                       </Badge>
@@ -368,25 +368,25 @@ const handleUpdateWorkScope = async (newValue) => {
               <Separator />
 
               {/* Contact Information */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">Contact Information</h4>
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-3 text-sm">
+                <div className="grid gap-4">
+                  <div className="flex items-center gap-4 text-sm">
                     <Mail className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Email:</span>
                     <span>{email}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <Phone className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Phone:</span>
                     <span>{phone}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <MapPin className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Location:</span>
                     <span>{location}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Joined:</span>
                     <span>{joinedDate}</span>
@@ -397,10 +397,10 @@ const handleUpdateWorkScope = async (newValue) => {
               <Separator />
 
               {/* Professional Details */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">Professional Details</h4>
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="p-3 border rounded-lg">
+                  <div className="p-4 border rounded-lg">
                     <div className="flex items-center gap-2 text-muted-foreground mb-1">
                       <Briefcase className="w-4 h-4" />
                       <span className="text-xs">Expertise</span>
@@ -417,7 +417,7 @@ const handleUpdateWorkScope = async (newValue) => {
                       <p className="text-sm text-muted-foreground">No expertise set</p>
                     )}
                   </div>
-                  <div className="p-3 border rounded-lg">
+                  <div className="p-4 border rounded-lg">
                     <div className="flex items-center gap-2 text-muted-foreground mb-1">
                       <Briefcase className="w-4 h-4" />
                       <span className="text-xs">Work Scope</span>
@@ -443,14 +443,14 @@ const handleUpdateWorkScope = async (newValue) => {
               <Separator />
 
               {/* Verification Documents */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">Verification Documents</h4>
                 {!hasAnyDoc ? (
                   <div className="p-4 border rounded-lg text-sm text-muted-foreground">
                     No documents uploaded yet.
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {docs.map((d) => {
                       const Icon = d.icon;
                       const exists = Boolean(d.path);
@@ -460,7 +460,7 @@ const handleUpdateWorkScope = async (newValue) => {
                           className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-4">
                               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
                                 <Icon className="w-5 h-5 text-purple-600" />
                               </div>
@@ -490,10 +490,10 @@ const handleUpdateWorkScope = async (newValue) => {
               <Separator />
 
               {/* Bank Details */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">Bank Details</h4>
                 <div className="p-4 border rounded-lg bg-muted/30">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
                       <CreditCard className="w-5 h-5 text-purple-600" />
                     </div>

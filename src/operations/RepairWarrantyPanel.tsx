@@ -15,7 +15,7 @@ export default function RepairWarrantyPanel({ ticket, user }: { ticket: Ticket; 
     setLinked(state.warrantyLinks[ticket.id]); setIssued(records.find((record) => record.source === "repair" && record.sourceId === ticket.id));
   }).catch(() => toast.error("Could not load repair coverage.")); }, [ticket.id]);
   const canRecord = userHasRole(user, "admin", "qa") && ["completed", "delivered", "closed"].includes(ticket.status);
-  return <section className="glass-card p-4 space-y-3">
+  return <section className="glass-card p-4 space-y-4">
     <h2 className="font-semibold">Warranty records</h2>
     {linked ? <div className="text-sm space-y-1"><p>Original {linked.source}: {linked.reference} · {linked.serial}</p>
       <p>{warrantyStatus(linked)} · {linked.coverage.startsAt.slice(0, 10)} to {linked.coverage.expiresAt.slice(0, 10)}</p><p>{linked.coverage.terms}</p>

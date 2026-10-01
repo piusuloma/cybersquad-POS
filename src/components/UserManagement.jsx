@@ -92,7 +92,7 @@ function PaginationBar({
 	onPageSizeChange,
 }) {
 	return (
-		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
+		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
 			<div className="flex items-center gap-2">
 				<Button
 					variant="outline"
@@ -602,7 +602,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 										<PopoverContent className="w-64" align="end">
 											<div className="space-y-4">
 												<div>
-													<h4 className="font-medium mb-3">Filter by Status</h4>
+													<h4 className="font-medium mb-4">Filter by Status</h4>
 													<Select
 														value={techStatusFilter}
 														onValueChange={setTechStatusFilter}
@@ -624,7 +624,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 												</div>
 
 												<div>
-													<h4 className="font-medium mb-3">Filter by Work Scope</h4>
+													<h4 className="font-medium mb-4">Filter by Work Scope</h4>
 													<Select
 														value={techWorkScopeFilter}
 														onValueChange={setTechWorkScopeFilter}
@@ -780,7 +780,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 																variant="destructive"
 																className="bg-error text-white"
 															>
-																<XCircle className="w-3 h-3 mr-1" />
+																<XCircle className="h-4 w-4 mr-1" />
 																suspended
 															</Badge>
 														) : (
@@ -797,9 +797,9 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 																}
 															>
 																{tech?.profile?.document_verified ? (
-																	<CheckCircle className="w-3 h-3 mr-1" />
+																	<CheckCircle className="h-4 w-4 mr-1" />
 																) : (
-																	<XCircle className="w-3 h-3 mr-1" />
+																	<XCircle className="h-4 w-4 mr-1" />
 																)}
 																{tech?.profile?.document_verified
 																	? "verified"
@@ -922,7 +922,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 										<PopoverContent className="w-64" align="end">
 											<div className="space-y-4">
 												<div>
-													<h4 className="font-medium mb-3">Filter by Status</h4>
+													<h4 className="font-medium mb-4">Filter by Status</h4>
 													<Select
 														value={customerStatusFilter}
 														onValueChange={setCustomerStatusFilter}
@@ -940,7 +940,7 @@ export function UserManagement({ initialTab = "technicians", hideTabs = false } 
 													</Select>
 												</div>
 
-												<div className="flex items-center justify-between gap-3">
+												<div className="flex items-center justify-between gap-4">
 													<Label
 														htmlFor="customer-profile-complete-only"
 														className="text-sm font-medium leading-tight"

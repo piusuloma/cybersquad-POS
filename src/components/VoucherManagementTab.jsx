@@ -479,13 +479,13 @@ export function VoucherManagementTab() {
             </Button>
 
             {previewError ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-4 text-sm text-destructive">
                 {previewError}
               </div>
             ) : null}
 
             {previewResult ? (
-              <div className="space-y-3 rounded-lg border bg-secondary/20 p-4">
+              <div className="space-y-4 rounded-lg border bg-secondary/20 p-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Voucher</span>
                   <span className="font-medium">{previewResult.voucher_code}</span>

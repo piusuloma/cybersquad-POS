@@ -90,12 +90,12 @@ function ConfigStatusBadge({ config }) {
 function ScopeChips({ config, compact = false }) {
   const parts = getScopeParts(config);
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {parts.map((part) => (
         <Badge
           key={part}
           variant="secondary"
-          className={`rounded-md font-normal ${compact ? "text-[10px] px-1.5" : "text-xs"}`}
+          className={`rounded-md font-normal ${compact ? "text-[10px] px-2" : "text-xs"}`}
         >
           {part}
         </Badge>
@@ -112,8 +112,8 @@ function StageRuleSummary({ stage, rule }) {
   const canReassign = Boolean(rule?.reassignment_eligible || rule?.reassign_on_overdue);
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="font-medium text-slate-900">{getStageLabel(stage)}</p>
           <p className="text-xs text-slate-500 font-mono">{stage}</p>
@@ -125,7 +125,7 @@ function StageRuleSummary({ stage, rule }) {
         )}
       </div>
 
-      <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
+      <div className="mt-4 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
         <div className="rounded-md bg-slate-50 p-2">
           <p className="text-slate-400">Deadline</p>
           <p className="font-medium text-slate-800">
@@ -145,7 +145,7 @@ function StageRuleSummary({ stage, rule }) {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-4 flex flex-wrap gap-2">
         {hasAdminExtensions && (
           <Badge variant="outline" className="text-[10px]">
             Admin extensions
@@ -169,8 +169,8 @@ function StageRuleSummary({ stage, rule }) {
 function EmptyDetail() {
   return (
     <Card className="border-dashed shadow-none">
-      <CardContent className="flex min-h-[360px] flex-col items-center justify-center gap-3 text-center">
-        <div className="rounded-full bg-slate-100 p-3">
+      <CardContent className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-center">
+        <div className="rounded-full bg-slate-100 p-4">
           <Clock className="h-6 w-6 text-slate-400" />
         </div>
         <div>
@@ -336,7 +336,7 @@ export function SLAConfigManagement() {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
       <Card className="shadow-none border-slate-200 rounded-lg">
         <CardHeader className="space-y-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <CardTitle className="text-base">SLA Policies</CardTitle>
               <CardDescription>
@@ -355,7 +355,7 @@ export function SLAConfigManagement() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row">
+          <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <Input
@@ -494,7 +494,7 @@ export function SLAConfigManagement() {
             </Table>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="text-sm text-slate-500">
               Showing {filteredConfigs.length} of {pagination.count || configs.length} policies
             </div>
@@ -541,8 +541,8 @@ export function SLAConfigManagement() {
 
       {selectedConfig ? (
         <Card className="shadow-none border-slate-200 rounded-lg">
-          <CardHeader className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
+          <CardHeader className="space-y-4">
+            <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <CardTitle className="truncate text-base">
                   {selectedConfig.name || "Untitled SLA"}
@@ -557,7 +557,7 @@ export function SLAConfigManagement() {
             <ScopeChips config={selectedConfig} />
 
             {selectedConfig.is_active ? (
-              <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                 <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <p>
                   Active policies are read-only. Clone this policy, edit the inactive draft,
@@ -565,7 +565,7 @@ export function SLAConfigManagement() {
                 </p>
               </div>
             ) : (
-              <div className="flex gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+              <div className="flex gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <p>This inactive policy can be edited safely before activation.</p>
               </div>
@@ -579,20 +579,20 @@ export function SLAConfigManagement() {
               </div>
             ) : (
               <>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-slate-200 p-3">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-lg border border-slate-200 p-4">
                     <p className="text-xs text-slate-400">Default TTL</p>
                     <p className="font-medium">{formatSeconds(selectedConfig.default_ttl_seconds)}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-200 p-3">
+                  <div className="rounded-lg border border-slate-200 p-4">
                     <p className="text-xs text-slate-400">Max reassignments</p>
                     <p className="font-medium">{selectedConfig.max_reassignments ?? 0}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-200 p-3">
+                  <div className="rounded-lg border border-slate-200 p-4">
                     <p className="text-xs text-slate-400">Created</p>
                     <p className="font-medium text-sm">{formatDateTime(selectedConfig.created_at)}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-200 p-3">
+                  <div className="rounded-lg border border-slate-200 p-4">
                     <p className="text-xs text-slate-400">Updated</p>
                     <p className="font-medium text-sm">{formatDateTime(selectedConfig.updated_at)}</p>
                   </div>
@@ -600,7 +600,7 @@ export function SLAConfigManagement() {
 
                 <Separator />
 
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-medium text-slate-900">Stage Rules</p>
                     <p className="text-sm text-slate-500">
@@ -630,13 +630,13 @@ export function SLAConfigManagement() {
                   </Button>
                 </div>
 
-                <ScrollArea className="h-[500px] pr-3">
+                <ScrollArea className="h-[500px] pr-4">
                   {stageOrder.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-8 text-center text-sm text-slate-500">
                       No stage rules configured for this policy.
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {stageOrder.map((stage) => (
                         <StageRuleSummary
                           key={stage}

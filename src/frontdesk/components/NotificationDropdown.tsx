@@ -57,7 +57,7 @@ export function NotificationDropdown({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <button className="relative w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors mr-1">
+        <button className="relative w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors mr-1">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
             <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
@@ -91,7 +91,7 @@ export function NotificationDropdown({
             </div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <Bell className="w-8 h-8 mx-auto mb-3 opacity-20" />
+              <Bell className="w-8 h-8 mx-auto mb-4 opacity-20" />
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
@@ -102,7 +102,7 @@ export function NotificationDropdown({
                   <div
                     key={notification.id}
                     onClick={() => !notification.is_read && markAsRead(notification.id)}
-                    className={`flex gap-3 p-4 transition-colors hover:bg-muted/50 cursor-pointer ${
+                    className={`flex gap-4 p-4 transition-colors hover:bg-muted/50 cursor-pointer ${
                       notification.is_read ? 'bg-background' : 'bg-indigo-50/30'
                     }`}
                   >
@@ -114,7 +114,7 @@ export function NotificationDropdown({
                         <h4 className={`text-sm tracking-tight ${notification.is_read ? 'font-medium' : 'font-semibold'}`}>
                           {notification.subject}
                         </h4>
-                        {!notification.is_read && <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0 mt-1.5" />}
+                        {!notification.is_read && <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0 mt-2" />}
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2 leading-snug tracking-tight mb-2">
                         {notification.message}

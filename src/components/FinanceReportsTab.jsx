@@ -498,7 +498,7 @@ export function FinanceReportsTab() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-green-600" />
               Job Revenue (Selected Period)
@@ -519,7 +519,7 @@ export function FinanceReportsTab() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-success" />
               POS Revenue (Selected Period)
@@ -544,7 +544,7 @@ export function FinanceReportsTab() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Users className="w-4 h-4 text-blue-600" />
               Average Transaction
@@ -559,7 +559,7 @@ export function FinanceReportsTab() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Store className="w-4 h-4 text-purple-600" />
               Voucher Discounts
@@ -576,7 +576,7 @@ export function FinanceReportsTab() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Badge className="bg-orange-600 text-white">Voucher</Badge>
               Full Waivers
@@ -615,7 +615,7 @@ export function FinanceReportsTab() {
                     {Object.entries(dailyReport?.by_payment_type || {}).map(([key, value]) => (
                       <div
                         key={key}
-                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                        className="flex items-center justify-between rounded-lg border px-4 py-2 text-sm"
                       >
                         <span>{formatLabel(key)}</span>
                         <span className="font-medium">
@@ -632,7 +632,7 @@ export function FinanceReportsTab() {
                     {Object.entries(dailyReport?.by_source_channel || {}).map(([key, value]) => (
                       <div
                         key={key}
-                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                        className="flex items-center justify-between rounded-lg border px-4 py-2 text-sm"
                       >
                         <span>{formatLabel(key)}</span>
                         <span className="font-medium">
@@ -784,19 +784,19 @@ export function FinanceReportsTab() {
           ) : (
             <>
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg border px-4 py-3">
+                <div className="rounded-lg border px-4 py-4">
                   <p className="text-sm text-muted-foreground">Total Discounts</p>
                   <p className="text-xl font-semibold">
                     {formatAmount(voucherSummary.total_discounts, appliedFilters.currency)}
                   </p>
                 </div>
-                <div className="rounded-lg border px-4 py-3">
+                <div className="rounded-lg border px-4 py-4">
                   <p className="text-sm text-muted-foreground">Total Usages</p>
                   <p className="text-xl font-semibold">
                     {Number(voucherSummary.total_usages || 0).toLocaleString()}
                   </p>
                 </div>
-                <div className="rounded-lg border px-4 py-3">
+                <div className="rounded-lg border px-4 py-4">
                   <p className="text-sm text-muted-foreground">Full Waivers</p>
                   <p className="text-xl font-semibold">
                     {Number(voucherSummary.full_waiver_count || 0).toLocaleString()}
@@ -805,7 +805,7 @@ export function FinanceReportsTab() {
               </div>
 
               <div className="grid gap-6 xl:grid-cols-2">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h4 className="text-sm font-medium">By Voucher</h4>
                   {(voucherReport?.by_voucher || []).length === 0 ? (
                     <div className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
@@ -844,7 +844,7 @@ export function FinanceReportsTab() {
                   )}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h4 className="text-sm font-medium">By Payment Type</h4>
                   {(voucherReport?.by_payment_type || []).length === 0 ? (
                     <div className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">

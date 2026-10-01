@@ -211,7 +211,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
 
         <div className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Voucher Code</Label>
               <Input
                 value={form.code}
@@ -220,7 +220,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Voucher Type</Label>
               <Select
                 value={form.voucher_type}
@@ -240,7 +240,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
 
           <div className="grid gap-6 md:grid-cols-3">
             {isPercentageVoucher && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Discount Percentage</Label>
                 <Input
                   type="number"
@@ -252,7 +252,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
             )}
 
             {isFixedAmountVoucher && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Discount Amount</Label>
                 <Input
                   type="number"
@@ -263,7 +263,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
               </div>
             )}
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Currency</Label>
               <Input
                 value={form.currency}
@@ -273,7 +273,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(value) => setField("status", value)}>
                 <SelectTrigger>
@@ -288,11 +288,11 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label>Applicable Payment Types</Label>
             <div className="grid gap-4 md:grid-cols-2">
               {PAYMENT_TYPE_OPTIONS.map((option) => (
-                <label key={option} className="flex items-center gap-3 rounded-lg border px-3 py-2">
+                <label key={option} className="flex items-center gap-4 rounded-lg border px-4 py-2">
                   <Checkbox
                     checked={form.applicable_payment_types.includes(option)}
                     onCheckedChange={(checked) =>
@@ -305,11 +305,11 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label>Applicable Channels</Label>
             <div className="grid gap-4 md:grid-cols-3">
               {CHANNEL_OPTIONS.map((option) => (
-                <label key={option} className="flex items-center gap-3 rounded-lg border px-3 py-2">
+                <label key={option} className="flex items-center gap-4 rounded-lg border px-4 py-2">
                   <Checkbox
                     checked={form.applicable_channels.includes(option)}
                     onCheckedChange={(checked) =>
@@ -323,7 +323,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Maximum Total Uses</Label>
               <Input
                 type="number"
@@ -333,7 +333,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Maximum Uses Per Customer</Label>
               <Input
                 type="number"
@@ -345,7 +345,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Valid From</Label>
               <Input
                 type="datetime-local"
@@ -354,7 +354,7 @@ export function VoucherFormModal({ open, onClose, onSaved, voucher = null }) {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Valid Until</Label>
               <Input
                 type="datetime-local"

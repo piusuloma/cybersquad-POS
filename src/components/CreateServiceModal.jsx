@@ -94,7 +94,7 @@ export function CreateServiceModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Code</Label>
               <Input value={form.code} onChange={(e) => setField("code", e.target.value)} placeholder="e.g. PHONE-SCREEN" />
@@ -127,7 +127,7 @@ export function CreateServiceModal({
             <Input value={form.title} onChange={(e) => setField("title", e.target.value)} placeholder="e.g. My phone screen is cracked..." />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Base Price (NGN)</Label>
               <Input type="number" value={form.base_price} onChange={(e) => setField("base_price", e.target.value)} placeholder="0" />

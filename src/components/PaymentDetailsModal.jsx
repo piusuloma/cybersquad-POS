@@ -84,7 +84,7 @@ export function PaymentDetailsModal({ open, onClose, payment }) {
             <Separator />
 
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Job Reference</p>
@@ -92,7 +92,7 @@ export function PaymentDetailsModal({ open, onClose, payment }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <p className='w-5 h-5 text-muted-foreground flex justify-center'>₦</p>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Amount</p>
@@ -102,7 +102,7 @@ export function PaymentDetailsModal({ open, onClose, payment }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <CreditCard className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Provider Reference</p>
@@ -110,7 +110,7 @@ export function PaymentDetailsModal({ open, onClose, payment }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Transaction Date</p>
@@ -119,7 +119,7 @@ export function PaymentDetailsModal({ open, onClose, payment }) {
               </div>
 
               {payment.updated_at && payment.updated_at !== payment.created_at && (
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">Last Updated</p>

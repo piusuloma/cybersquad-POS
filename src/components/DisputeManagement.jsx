@@ -64,7 +64,7 @@ function PaginationBar({
   onPageSizeChange,
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -446,7 +446,7 @@ export function DisputeManagement({ userRole }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1>Dispute Management</h1>
           <p className="text-muted-foreground">
@@ -478,7 +478,7 @@ export function DisputeManagement({ userRole }) {
 
       <div className="dispute-stats-grid">
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm">Total Disputes</CardTitle>
           </CardHeader>
           <CardContent>
@@ -489,7 +489,7 @@ export function DisputeManagement({ userRole }) {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm">Open Disputes</CardTitle>
           </CardHeader>
           <CardContent>
@@ -500,7 +500,7 @@ export function DisputeManagement({ userRole }) {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm">Pending Response</CardTitle>
           </CardHeader>
           <CardContent>
@@ -513,7 +513,7 @@ export function DisputeManagement({ userRole }) {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm">Closed Disputes</CardTitle>
           </CardHeader>
           <CardContent>
@@ -524,7 +524,7 @@ export function DisputeManagement({ userRole }) {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle className="text-sm">Average Resolution Time</CardTitle>
           </CardHeader>
           <CardContent>
@@ -644,7 +644,7 @@ export function DisputeManagement({ userRole }) {
                             className="w-20 justify-center"
                           >
                             {dispute.priority === "high" && (
-                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              <AlertTriangle className="h-4 w-4 mr-1" />
                             )}
                             {dispute.priority}
                           </Badge>

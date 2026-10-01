@@ -24,12 +24,12 @@ export default function CustomerPicker({ value, onChange }: { value?: SaleCustom
       <DialogHeader><DialogTitle>Customers</DialogTitle><DialogDescription>Search existing customers or create a contact without losing the current sale.</DialogDescription></DialogHeader>
       <Input aria-label="Search customers" placeholder="Name, phone or email" value={query} onChange={(event) => setQuery(event.target.value)} />
       <div className="space-y-2 max-h-48 overflow-y-auto">
-        {matches.slice(0, 30).map((customer) => <button type="button" key={customer.id} className="w-full text-left border border-border rounded-lg p-3 hover:bg-secondary" onClick={() => choose(customer)}>
+        {matches.slice(0, 30).map((customer) => <button type="button" key={customer.id} className="w-full text-left border border-border rounded-lg p-4 hover:bg-secondary" onClick={() => choose(customer)}>
           <span className="block font-medium">{customer.name}</span><span className="text-sm text-muted-foreground">{customer.phone} · {customer.email}</span>
         </button>)}
         {!matches.length && <p className="text-sm text-muted-foreground">No matching customer.</p>}
       </div>
-      <form className="border-t border-border pt-4 space-y-3" onSubmit={async (event) => {
+      <form className="border-t border-border pt-4 space-y-4" onSubmit={async (event) => {
         event.preventDefault(); setBusy(true);
         try {
           const existing = customers.find((customer) => normalizePhone(customer.phone) === normalizePhone(draft.phone));

@@ -1176,12 +1176,12 @@ export default function SelfService() {
             Create the parent job first, then create the individual child jobs directly under it.
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-border bg-secondary/40 px-4 py-4 text-sm text-muted-foreground">
           Parent jobs waiting: <span className="font-semibold text-foreground">{pendingParentCount}</span>
         </div>
       </div>
 
-      <div className="glass-card space-y-6 p-5">
+      <div className="glass-card space-y-6 p-6">
         <div className="space-y-2">
           <h2 className="text-lg font-semibold text-foreground">Create Parent Job</h2>
           <p className="text-sm text-muted-foreground">
@@ -1189,7 +1189,7 @@ export default function SelfService() {
           </p>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border bg-secondary/20 p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-secondary/20 p-4">
           <div>
             <h3 className="text-sm font-semibold text-foreground">Search Existing Customer</h3>
             <p className="text-xs text-muted-foreground">
@@ -1213,7 +1213,7 @@ export default function SelfService() {
                 <button
                   key={customer.id}
                   type="button"
-                  className="w-full p-3 bg-secondary/50 hover:bg-secondary text-left transition-colors"
+                  className="w-full p-4 bg-secondary/50 hover:bg-secondary text-left transition-colors"
                   onClick={() => selectCustomerFromResult(customer)}
                 >
                   <p className="text-sm font-medium text-foreground">
@@ -1356,7 +1356,7 @@ export default function SelfService() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-4">
+          <div className="flex items-center gap-4 rounded-lg border border-border bg-secondary/40 p-4">
             <FileSignature className="w-6 h-6 text-primary shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">Printable Service Agreement</p>
@@ -1375,7 +1375,7 @@ export default function SelfService() {
             </Button>
           </div>
 
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-4">
             <Checkbox
               id="bulk-parent-terms"
               checked={parentTermsAccepted}
@@ -1424,7 +1424,7 @@ export default function SelfService() {
           </div>
 
           {selectedParent && (
-            <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-foreground">
+            <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground">
               Adding individual jobs under <span className="font-mono text-primary">{selectedParent.bookingId}</span> for <span className="font-medium">{selectedParent.companyName}</span>. The parent-job address will be copied into every child job automatically.
             </div>
           )}
@@ -1535,7 +1535,7 @@ export default function SelfService() {
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="glass-card p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Parent Jobs</p>
           <p className="mt-2 text-2xl font-bold text-foreground">{bookings.length}</p>
@@ -1546,7 +1546,7 @@ export default function SelfService() {
         </div>
       </div>
 
-      <div className="glass-card p-4 space-y-3">
+      <div className="glass-card p-4 space-y-4">
         <SearchField value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search parent job, company, contact, child ticket, or device..." />
         <p className="text-xs text-muted-foreground">
           Each individual device is created directly as its own child ticket. Open the ticket below whenever you need the full job workflow.
@@ -1568,7 +1568,7 @@ export default function SelfService() {
         <div className="space-y-4">
           {filteredBookings.map((booking) => {
             return (
-              <div key={booking.id} className="glass-card space-y-4 p-5">
+              <div key={booking.id} className="glass-card space-y-4 p-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-1">
                     <p className="font-mono text-sm font-semibold text-primary">{booking.bookingId}</p>
@@ -1586,13 +1586,13 @@ export default function SelfService() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_STYLES[booking.status]}`}>
+                    <span className={`rounded-full border px-4 py-1 text-xs font-semibold ${STATUS_STYLES[booking.status]}`}>
                       {booking.backendStatus ? booking.backendStatus.replace(/_/g, " ") : BOOKING_STATUS_LABELS[booking.status]}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 rounded-lg border border-border bg-secondary/40 p-4">
+                <div className="flex flex-col gap-4 rounded-lg border border-border bg-secondary/40 p-4">
                   <div className="flex flex-wrap items-center gap-4">
                     <Label className="text-muted-foreground">Voucher Code (Optional)</Label>
                     <div className="flex gap-2">
@@ -1682,19 +1682,19 @@ export default function SelfService() {
                 </div>
 
                 <details className="overflow-hidden rounded-lg border border-border bg-background/30">
-                  <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-medium text-foreground">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-4 text-sm font-medium text-foreground">
                     <FolderTree className="h-4 w-4 text-primary" />
                     Individual Jobs ({booking.childJobs.length})
                   </summary>
-                  <div className="space-y-3 border-t border-border px-4 py-4">
+                  <div className="space-y-4 border-t border-border px-4 py-4">
                     {booking.childJobs.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
                         No child jobs yet. Create the parent job first, then add devices under it.
                       </div>
                     ) : (
                       booking.childJobs.map((childJob) => (
-                        <div key={childJob.id} className="space-y-3 rounded-lg border border-border bg-secondary/40 p-4">
-                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div key={childJob.id} className="space-y-4 rounded-lg border border-border bg-secondary/40 p-4">
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                               <p className="font-mono text-sm font-semibold text-primary">{childJob.childJobId}</p>
                               <p className="text-sm text-foreground">
@@ -1705,13 +1705,13 @@ export default function SelfService() {
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_STYLES[childJob.status]}`}>
+                              <span className={`rounded-full border px-4 py-1 text-xs font-semibold ${STATUS_STYLES[childJob.status]}`}>
                                 {(childJob.backendStatus || CHILD_STATUS_LABELS[childJob.status]).replace(/_/g, " ")}
                               </span>
                             </div>
                           </div>
 
-                          <div className="space-y-1 rounded-lg border border-border bg-background/50 p-3 text-sm text-muted-foreground">
+                          <div className="space-y-1 rounded-lg border border-border bg-background/50 p-4 text-sm text-muted-foreground">
                             <p><span className="font-medium text-foreground">Issue:</span> {childJob.issueReported}</p>
                             {childJob.backendDisplayId && (
                               <p>

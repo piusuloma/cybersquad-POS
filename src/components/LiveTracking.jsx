@@ -155,7 +155,7 @@ export function LiveTracking() {
           variant={isConnected ? "default" : "secondary"}
           className="flex w-fit items-center gap-1"
         >
-          <Radio className="h-3 w-3" />
+          <Radio className="h-4 w-4" />
           {isConnected ? "Live" : "Connecting…"}
         </Badge>
       </div>
@@ -174,7 +174,7 @@ export function LiveTracking() {
         </div>
 
         <div className="rounded-xl border border-border p-4">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="font-medium">Active technicians</h2>
             <Badge variant="secondary">{techs.length}</Badge>
           </div>
@@ -188,7 +188,7 @@ export function LiveTracking() {
               {techs.map((t) => (
                 <li
                   key={t.technician_id}
-                  className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-sm"
+                  className="flex items-center justify-between rounded-lg bg-muted/40 px-4 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <Navigation className="h-4 w-4 text-muted-foreground" />

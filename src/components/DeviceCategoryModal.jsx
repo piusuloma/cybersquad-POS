@@ -163,7 +163,7 @@ export function DeviceCategoryModal({
               />
             </div>
 
-            <label className="flex items-center gap-3 rounded-lg border p-3">
+            <label className="flex items-center gap-4 rounded-lg border p-4">
               <Checkbox
                 checked={form.is_active}
                 onCheckedChange={(checked) => setField("is_active", checked === true)}
@@ -174,7 +174,7 @@ export function DeviceCategoryModal({
               </div>
             </label>
 
-            <label className="flex items-center gap-3 rounded-lg border p-3">
+            <label className="flex items-center gap-4 rounded-lg border p-4">
               <Checkbox
                 checked={form.is_default}
                 onCheckedChange={(checked) => setField("is_default", checked === true)}

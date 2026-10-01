@@ -156,8 +156,8 @@ export function CreateRoleModal({ open, onClose, onCreated }) {
           </div>
 
           <div className="border-t pt-4 mt-2">
-            <h4 className="text-sm font-semibold mb-3">Role Permissions</h4>
-            <div className="space-y-3">
+            <h4 className="text-sm font-semibold mb-4">Role Permissions</h4>
+            <div className="space-y-4">
               {Object.entries(permissions).map(([permission, enabled]) => (
                 <div
                   key={permission}

@@ -306,7 +306,7 @@ export function SLAManagement() {
         return (
           <Badge
             variant="outline"
-            className="bg-green-50 text-green-600 border-green-200 rounded-full px-3 py-0.5 text-[11px] font-medium"
+            className="bg-green-50 text-green-600 border-green-200 rounded-full px-4 py-0.5 text-[11px] font-medium"
           >
             On Track
           </Badge>
@@ -315,7 +315,7 @@ export function SLAManagement() {
         return (
           <Badge
             variant="outline"
-            className="bg-yellow-50 text-yellow-600 border-yellow-200 rounded-full px-3 py-0.5 text-[11px] font-medium"
+            className="bg-yellow-50 text-yellow-600 border-yellow-200 rounded-full px-4 py-0.5 text-[11px] font-medium"
           >
             At Risk
           </Badge>
@@ -324,7 +324,7 @@ export function SLAManagement() {
         return (
           <Badge
             variant="destructive"
-            className="bg-red-500 text-white border-none rounded-full px-3 py-0.5 text-[11px] font-medium uppercase"
+            className="bg-red-500 text-white border-none rounded-full px-4 py-0.5 text-[11px] font-medium uppercase"
           >
             Breached
           </Badge>
@@ -333,7 +333,7 @@ export function SLAManagement() {
         return (
           <Badge
             variant="secondary"
-            className="rounded-full px-3 py-0.5 text-[11px]"
+            className="rounded-full px-4 py-0.5 text-[11px]"
           >
             {status}
           </Badge>
@@ -375,7 +375,7 @@ export function SLAManagement() {
     return (
       <Badge
         variant="outline"
-        className={`${colorClasses[stageInfo.color]} rounded-full px-3 py-0.5 font-normal text-[11px]`}
+        className={`${colorClasses[stageInfo.color]} rounded-full px-4 py-0.5 font-normal text-[11px]`}
       >
         {stageInfo.label}
       </Badge>
@@ -389,7 +389,7 @@ export function SLAManagement() {
     return (
       <div className="flex items-center gap-2 text-xs">
         <Clock
-          className={`w-3.5 h-3.5 ${timeInfo.isOverdue ? "text-red-500" : "text-slate-400"}`}
+          className={`h-4 w-4 ${timeInfo.isOverdue ? "text-red-500" : "text-slate-400"}`}
         />
         <span
           className={
@@ -418,7 +418,7 @@ export function SLAManagement() {
   return (
     <div className="space-y-6 bg-white min-h-screen">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             SLA Management
@@ -471,7 +471,7 @@ export function SLAManagement() {
       {/* ── Stats Section ── */}
       {dashStatsLoading ? (
         <div className="flex items-center justify-center py-10">
-          <Loader2 className="w-7 h-7 animate-spin text-slate-400" />
+          <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
         </div>
       ) : dashStats ? (
         <>
@@ -488,7 +488,7 @@ export function SLAManagement() {
                 className="shadow-none border-slate-200 rounded-lg"
               >
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-4">
                     <card.icon
                       className="w-4 h-4 flex-shrink-0"
                       style={{ color: card.iconColor }}
@@ -595,7 +595,7 @@ export function SLAManagement() {
                     No extensions recorded
                   </p>
                 ) : (
-                  <div className="space-y-3 mt-1">
+                  <div className="space-y-4 mt-1">
                     {extensionReasons.map((r) => (
                       <div
                         key={r.reason}
@@ -634,16 +634,16 @@ export function SLAManagement() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/60">
-                      <th className="text-left text-slate-400 font-medium px-5 py-2">
+                      <th className="text-left text-slate-400 font-medium px-6 py-2">
                         Stage
                       </th>
-                      <th className="text-center text-slate-400 font-medium px-3 py-2">
+                      <th className="text-center text-slate-400 font-medium px-4 py-2">
                         Overdue
                       </th>
-                      <th className="text-center text-slate-400 font-medium px-3 py-2">
+                      <th className="text-center text-slate-400 font-medium px-4 py-2">
                         On Time
                       </th>
-                      <th className="text-right text-slate-400 font-medium px-5 py-2">
+                      <th className="text-right text-slate-400 font-medium px-6 py-2">
                         Adherence
                       </th>
                     </tr>
@@ -654,10 +654,10 @@ export function SLAManagement() {
                         key={stage.stage}
                         className="border-b border-slate-50 last:border-0 hover:bg-slate-50/40"
                       >
-                        <td className="px-5 py-2.5 font-medium text-slate-700">
+                        <td className="px-6 py-2 font-medium text-slate-700">
                           {formatStageName(stage.stage)}
                         </td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className="px-4 py-2 text-center">
                           {stage.overdue > 0 ? (
                             <span className="text-red-500 font-semibold">
                               {stage.overdue}
@@ -666,12 +666,12 @@ export function SLAManagement() {
                             <span className="text-slate-400">0</span>
                           )}
                         </td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className="px-4 py-2 text-center">
                           <span className="text-green-600">
                             {stage.on_time}
                           </span>
                         </td>
-                        <td className="px-5 py-2.5 text-right">
+                        <td className="px-6 py-2 text-right">
                           <span
                             className={`font-semibold ${stage.adherence_rate === 100 ? "text-green-600" : stage.adherence_rate === 0 ? "text-red-500" : "text-yellow-600"}`}
                           >
@@ -701,7 +701,7 @@ export function SLAManagement() {
                     No performance data available
                   </p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {topPerformers.map((tech, i) => {
                       const adherence = (tech.sla_adherence_rate * 100).toFixed(
                         1,
@@ -709,10 +709,10 @@ export function SLAManagement() {
                       return (
                         <div
                           key={tech.technician_id}
-                          className="flex items-center gap-3"
+                          className="flex items-center gap-4"
                         >
-                          <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                            <UserCheck className="w-3.5 h-3.5 text-purple-600" />
+                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                            <UserCheck className="h-4 w-4 text-purple-600" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium text-slate-700">
@@ -780,7 +780,7 @@ export function SLAManagement() {
             <Button
               variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-lg border-slate-200 bg-white"
+              className="h-10 w-10 rounded-lg border-slate-200 bg-white"
               onClick={() => setShowFilterModal(true)}
             >
               <Filter className="h-4 w-4 text-slate-500" />
@@ -788,7 +788,7 @@ export function SLAManagement() {
             <Button
               variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-lg border-slate-200 bg-white"
+              className="h-10 w-10 rounded-lg border-slate-200 bg-white"
               onClick={() => setShowExportModal(true)}
             >
               <Download className="h-4 w-4 text-slate-500" />
@@ -847,7 +847,7 @@ export function SLAManagement() {
                     key={item.sla_id}
                     className="border-slate-100 hover:bg-slate-50/30"
                   >
-                    <TableCell style={{ paddingLeft: "24px" }} className="py-3">
+                    <TableCell style={{ paddingLeft: "24px" }} className="py-4">
                       <span className="font-semibold text-slate-700 text-xs">
                         {item.sla_id}
                       </span>
@@ -873,24 +873,24 @@ export function SLAManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-slate-400 hover:text-purple-600"
+                          className="h-8 w-8 text-slate-400 hover:text-purple-600"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleExtendSLA(item);
                           }}
                         >
-                          <Settings2 className="h-3.5 w-3.5" />
+                          <Settings2 className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-slate-400 hover:text-purple-600"
+                          className="h-8 w-8 text-slate-400 hover:text-purple-600"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleViewDetails(item);
                           }}
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

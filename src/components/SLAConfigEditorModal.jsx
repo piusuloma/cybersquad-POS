@@ -109,7 +109,7 @@ function DurationInput({ label, seconds, onChange, hint }) {
   };
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       {label && <Label className="text-xs text-slate-600">{label}</Label>}
       <div className="grid gap-2" style={{ gridTemplateColumns: "1fr 120px" }}>
         <Input
@@ -162,7 +162,7 @@ function ToggleBadge({ checked, children, onCheckedChange }) {
     <button
       type="button"
       onClick={() => onCheckedChange(!checked)}
-      className={`rounded-md border px-2.5 py-1 text-xs transition ${
+      className={`rounded-md border px-2 py-1 text-xs transition ${
         checked
           ? "border-purple-300 bg-purple-50 text-purple-700"
           : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
@@ -191,7 +191,7 @@ function MultiStageSelector({ label, value, onChange }) {
         <span className="text-xs text-slate-400">{selected.length} selected</span>
       </div>
       <div
-        className="grid gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 sm:grid-cols-2"
+        className="grid gap-2 overflow-y-auto rounded-lg border border-slate-200 p-4 sm:grid-cols-2"
         style={{
           maxHeight: "11rem",
           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -233,8 +233,8 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
 
   if (isRef) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <div className="flex items-center justify-between gap-3">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-slate-800">Default reminder reference</p>
             <p className="font-mono text-xs text-slate-500">{reminder.$ref}</p>
@@ -248,16 +248,16 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="mb-4 flex items-center justify-between">
         <p className="text-sm font-medium">Reminder {index + 1}</p>
         <Button variant="ghost" size="icon" onClick={onRemove}>
           <Trash2 className="h-4 w-4 text-red-500" />
         </Button>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-1.5">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
           <Label className="text-xs">Type</Label>
           <Select value={reminder.type || "at_seconds_from_start"} onValueChange={(value) => setField("type", value)}>
             <SelectTrigger>
@@ -273,7 +273,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
           </Select>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs">Kind</Label>
           <OptionSelect
             value={reminder.kind || ""}
@@ -282,7 +282,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs">Target</Label>
           <Select value={reminder.target || "technician"} onValueChange={(value) => setField("target", value)}>
             <SelectTrigger>
@@ -298,7 +298,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
           </Select>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs">Sequence</Label>
           <Input
             type="number"
@@ -309,7 +309,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
         </div>
 
         {reminder.type === "percent_of_ttl" ? (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs">Percent of TTL</Label>
             <Input
               type="number"
@@ -326,7 +326,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
               seconds={reminder.every_seconds ?? 60}
               onChange={(seconds) => setField("every_seconds", seconds)}
             />
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs">Max repeats</Label>
               <Input
                 type="number"
@@ -335,7 +335,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
                 onChange={(event) => setField("max_repeats", Number(event.target.value || 1))}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs">Reference</Label>
               <Input
                 value={reminder.reference || "started_at"}
@@ -352,7 +352,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
         )}
       </div>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-2">
         <Label className="text-xs">Channels</Label>
         <div className="flex flex-wrap gap-2">
           {CHANNEL_OPTIONS.map((channel) => (
@@ -367,7 +367,7 @@ function ReminderEditor({ reminder, index, onChange, onRemove }) {
         </div>
       </div>
 
-      <div className="mt-3 space-y-1.5">
+      <div className="mt-4 space-y-2">
         <Label className="text-xs">Note</Label>
         <Input
           value={reminder.note || ""}
@@ -405,7 +405,7 @@ function ExtensionPolicyEditor({ title, value, onChange }) {
 
   return (
     <div className="rounded-lg border border-slate-200 p-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <p className="font-medium text-slate-900">{title}</p>
           <p className="text-xs text-slate-500">
@@ -423,8 +423,8 @@ function ExtensionPolicyEditor({ title, value, onChange }) {
 
       {policy.allowed && (
         <div className="mt-4 space-y-4">
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
               <Label className="text-xs">Max requests</Label>
               <Input
                 type="number"
@@ -433,7 +433,7 @@ function ExtensionPolicyEditor({ title, value, onChange }) {
                 onChange={(event) => setField("max_requests", Number(event.target.value || 1))}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs">Approval mode</Label>
               <Select value={policy.approval_mode || "auto"} onValueChange={(value) => setField("approval_mode", value)}>
                 <SelectTrigger>
@@ -447,7 +447,7 @@ function ExtensionPolicyEditor({ title, value, onChange }) {
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <DurationInput
               label="Max total extension"
               seconds={policy.max_total_extension_seconds ?? 900}
@@ -460,7 +460,7 @@ function ExtensionPolicyEditor({ title, value, onChange }) {
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="text-xs">Extension options in seconds</Label>
             <Input
               value={optionSeconds}
@@ -932,7 +932,7 @@ export function SLAConfigEditorModal({
                   key={item.id}
                   type="button"
                   onClick={() => setStep(item.id)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${
+                  className={`flex w-full items-center gap-4 rounded-lg px-4 py-2 text-left text-sm transition ${
                     step === item.id
                       ? "bg-purple-600 text-white"
                       : "text-slate-600 hover:bg-white"
@@ -954,7 +954,7 @@ export function SLAConfigEditorModal({
 
             <div className="space-y-2 text-xs text-slate-500">
               <p className="font-medium text-slate-700">Scope preview</p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {getScopeParts(draft).map((part) => (
                   <Badge key={part} variant="secondary" className="rounded-md font-normal">
                     {part}
@@ -977,7 +977,7 @@ export function SLAConfigEditorModal({
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Name</Label>
                       <Input
                         value={draft.name}
@@ -985,7 +985,7 @@ export function SLAConfigEditorModal({
                         placeholder="Generic SLA"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Version</Label>
                       <Input
                         type="number"
@@ -994,7 +994,7 @@ export function SLAConfigEditorModal({
                         onChange={(event) => setField("version", Number(event.target.value || 1))}
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Device type</Label>
                       <Select
                         value={draft.service_type || ALL_SERVICE_TYPE_VALUE}
@@ -1015,7 +1015,7 @@ export function SLAConfigEditorModal({
                         All device types save as <span className="font-mono">*</span>.
                       </p>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Source channel</Label>
                       <OptionSelect
                         value={draft.source_channel}
@@ -1023,7 +1023,7 @@ export function SLAConfigEditorModal({
                         options={SOURCE_CHANNEL_OPTIONS}
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Workflow type</Label>
                       <OptionSelect
                         value={draft.workflow_type}
@@ -1031,7 +1031,7 @@ export function SLAConfigEditorModal({
                         options={WORKFLOW_TYPE_OPTIONS}
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Job group type</Label>
                       <OptionSelect
                         value={draft.job_group_type}
@@ -1039,7 +1039,7 @@ export function SLAConfigEditorModal({
                         options={JOB_GROUP_TYPE_OPTIONS}
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>City</Label>
                       <Input
                         value={draft.customer_city}
@@ -1047,7 +1047,7 @@ export function SLAConfigEditorModal({
                         placeholder="All cities"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Region</Label>
                       <Input
                         value={draft.region}
@@ -1055,7 +1055,7 @@ export function SLAConfigEditorModal({
                         placeholder="All regions"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Coverage type</Label>
                       <Input
                         value={draft.coverage_type}
@@ -1063,7 +1063,7 @@ export function SLAConfigEditorModal({
                         placeholder="All coverage types"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Email template</Label>
                       <Input
                         value={draft.template_name}
@@ -1078,7 +1078,7 @@ export function SLAConfigEditorModal({
                       seconds={draft.default_ttl_seconds}
                       onChange={(seconds) => setField("default_ttl_seconds", seconds)}
                     />
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label>Max reassignments</Label>
                       <Input
                         type="number"
@@ -1125,11 +1125,11 @@ export function SLAConfigEditorModal({
                   </div>
 
                   <div
-                    className="grid gap-5"
+                    className="grid gap-6"
                     style={{ gridTemplateColumns: "280px minmax(0, 1fr)" }}
                   >
                     <div className="space-y-4">
-                      <div className="rounded-lg border border-slate-200 p-3">
+                      <div className="rounded-lg border border-slate-200 p-4">
                         <Label className="text-xs">Add stage</Label>
                         <div className="mt-2 flex gap-2">
                           <Select
@@ -1166,7 +1166,7 @@ export function SLAConfigEditorModal({
 
                       <div className="space-y-2">
                         {stageOrder.length === 0 ? (
-                          <div className="rounded-lg border border-dashed p-5 text-center text-sm text-slate-500">
+                          <div className="rounded-lg border border-dashed p-6 text-center text-sm text-slate-500">
                             No stage rules yet.
                           </div>
                         ) : (
@@ -1175,7 +1175,7 @@ export function SLAConfigEditorModal({
                               key={stage}
                               type="button"
                               onClick={() => setSelectedStage(stage)}
-                              className={`w-full rounded-lg border p-3 text-left text-sm transition ${
+                              className={`w-full rounded-lg border p-4 text-left text-sm transition ${
                                 selectedStage === stage
                                   ? "border-purple-300 bg-purple-50 text-purple-800"
                                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -1190,8 +1190,8 @@ export function SLAConfigEditorModal({
                     </div>
 
                     {selectedRule ? (
-                      <div className="space-y-5">
-                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-4">
+                      <div className="space-y-6">
+                        <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
                           <div>
                             <p className="font-semibold text-slate-900">
                               {getStageLabel(selectedStage)}
@@ -1229,7 +1229,7 @@ export function SLAConfigEditorModal({
                         </div>
 
                         <div className="rounded-lg border border-slate-200 p-4">
-                          <div className="mb-4 flex items-center justify-between gap-3">
+                          <div className="mb-4 flex items-center justify-between gap-4">
                             <div>
                               <p className="font-medium">Deadline mode</p>
                               <p className="text-xs text-slate-500">
@@ -1248,7 +1248,7 @@ export function SLAConfigEditorModal({
                           </div>
 
                           <div className="space-y-4">
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                               <Label className="text-xs">Mode</Label>
                               <Select
                                 value={deadlineMode.type || "fixed_ttl"}
@@ -1276,7 +1276,7 @@ export function SLAConfigEditorModal({
                             )}
 
                             {deadlineMode.type === "service_based" && (
-                              <div className="grid gap-3 md:grid-cols-3">
+                              <div className="grid gap-4 md:grid-cols-3">
                                 <DurationInput
                                   label="Minimum"
                                   seconds={deadlineMode.min_ttl_seconds ?? 0}
@@ -1322,7 +1322,7 @@ export function SLAConfigEditorModal({
                             )}
 
                             {deadlineMode.type === "eta_plus_buffer" && (
-                              <div className="grid gap-3 md:grid-cols-3">
+                              <div className="grid gap-4 md:grid-cols-3">
                                 <DurationInput
                                   label="Buffer"
                                   seconds={deadlineMode.buffer_seconds ?? 0}
@@ -1348,7 +1348,7 @@ export function SLAConfigEditorModal({
                         </div>
 
                         <div className="rounded-lg border border-slate-200 p-4">
-                          <div className="mb-3 flex items-center justify-between gap-3">
+                          <div className="mb-4 flex items-center justify-between gap-4">
                             <div>
                               <p className="font-medium">Reminders</p>
                               <p className="text-xs text-slate-500">
@@ -1371,9 +1371,9 @@ export function SLAConfigEditorModal({
                             </div>
                           </div>
 
-                          <div className="space-y-3">
+                          <div className="space-y-4">
                             {(selectedRule.reminders || []).length === 0 ? (
-                              <div className="rounded-lg border border-dashed p-5 text-center text-sm text-slate-500">
+                              <div className="rounded-lg border border-dashed p-6 text-center text-sm text-slate-500">
                                 No reminders configured.
                               </div>
                             ) : (
@@ -1404,8 +1404,8 @@ export function SLAConfigEditorModal({
                         </div>
 
                         <div className="rounded-lg border border-slate-200 p-4">
-                          <p className="mb-3 font-medium">Reassignment and escalation</p>
-                          <div className="grid gap-3 md:grid-cols-2">
+                          <p className="mb-4 font-medium">Reassignment and escalation</p>
+                          <div className="grid gap-4 md:grid-cols-2">
                             <label className="flex items-center gap-2 text-sm text-slate-700">
                               <Checkbox
                                 checked={Boolean(selectedRule.reassignment_eligible)}
@@ -1495,7 +1495,7 @@ export function SLAConfigEditorModal({
                   </div>
 
                   <div className="rounded-lg border border-slate-200 p-4">
-                    <div className="mb-3 flex items-center justify-between">
+                    <div className="mb-4 flex items-center justify-between">
                       <p className="font-medium text-slate-900">Stages</p>
                       <Badge variant="outline">{stageOrder.length} total</Badge>
                     </div>

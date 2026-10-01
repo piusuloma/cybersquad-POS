@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Banknote, ClipboardCheck, PackageCheck, Percent, RotateCcw, ShieldCheck, TrendingUp, Wrench, type LucideIcon } from "lucide-react";
 import { getAuth, getTickets, mapBackendTicketToFrontend, type Ticket } from "@/frontdesk/lib/store";
 import { useApi } from "@/hooks/useApi";
 import { getSales, getRefunds, orderBalance, type Sale, type Refund } from "@/pos/lib/store";
@@ -10,12 +11,17 @@ import { SaleRecordDetailModal } from "@/components/SaleRecordDetailModal";
 import { getBusiness, periodBounds, repairStage, saveBlocker, type BlockerContext } from "./business";
 
 type Blocker = { id: string; title: string; state: string; owner: string; action: string; since: string; open: () => void; };
+const KPI_ICONS: Record<string, LucideIcon> = {
+  "Gross sales": Banknote, "Paid returns": RotateCcw, "Net sales": TrendingUp, "Sales / average value": TrendingUp,
+  "Open repairs": Wrench, "Paid, uncollected": PackageCheck, "Order balances": Banknote, "Enquiry conversion": Percent,
+  "New repair jobs": ClipboardCheck, "Completed repairs": ClipboardCheck, "Warranty / repeat intake": ShieldCheck,
+};
 function BlockerRow({ item, context, refresh }: { item: Blocker; context?: BlockerContext; refresh: () => void }) {
   const [owner, setOwner] = useState(context?.owner ?? item.owner);
   const [action, setAction] = useState(context?.nextAction ?? item.action);
   const [due, setDue] = useState(context?.dueAt ?? ""); const [editing, setEditing] = useState(false); const [busy, setBusy] = useState(false);
   const age = Math.max(0, Math.floor((Date.now() - Date.parse(item.since)) / 86400000));
-  return <div className="rounded-lg border border-border p-3 space-y-2">
+  return <div className="rounded-lg border border-border p-4 space-y-2">
     <div className="flex flex-wrap justify-between gap-2"><Button variant="link" className="p-0" onClick={item.open}>{item.title}</Button><span className={age > 3 ? "text-sm font-medium text-destructive" : "text-sm"}>{item.state} · {age} days{age > 3 ? " · Aged" : ""}</span></div>
     <p className="text-sm">Owner: {context?.owner ?? item.owner} ? Next: {context?.nextAction ?? item.action}</p>
     {context?.dueAt && <p className="text-xs">Action due {new Date(context.dueAt).toLocaleDateString()}{Date.parse(context.dueAt) < Date.now() ? " ? Overdue" : ""}</p>}
@@ -90,11 +96,11 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
   completed.forEach((sale) => sale.lines.forEach((line) => { const row = products.get(line.productId) ?? { name: line.name, quantity: 0, amount: 0 }; row.quantity += line.quantity; row.amount += line.quantity * line.unitPrice; products.set(line.productId, row); }));
   return <div className="space-y-4">
     {management ? <>
-    <div className="flex flex-wrap justify-between gap-3"><select aria-label="Reporting period" className="border rounded p-2 bg-background" value={period} onChange={(event) => setPeriod(event.target.value)}>
+    <div className="flex flex-wrap justify-between gap-4"><select aria-label="Reporting period" className="border rounded p-2 bg-background" value={period} onChange={(event) => setPeriod(event.target.value)}>
       {[["today", "Today"], ["week", "This week"], ["previous_week", "Previous week"], ["30", "30 days"], ["60", "60 days"], ["90", "90 days"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
     </select><Button variant="outline" disabled={loading} onClick={() => void load()}>{loading ? "Refreshing..." : "Refresh"}</Button></div>
     <p className="text-xs text-muted-foreground">Sales and follow-ups: records on this device. {repairSource}. Updated {loadedAt || "?"}. Gross margin requires product cost data.</p>
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 motion-stagger">
       {[
         ["Gross sales", formatCurrency(gross)], ["Paid returns", formatCurrency(returned)], ["Net sales", formatCurrency(gross - returned)],
         ["Sales / average value", completed.length + " / " + formatCurrency(completed.length ? gross / completed.length : 0)],
@@ -104,7 +110,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
         ["New repair jobs", String(tickets.filter((ticket) => inPeriod(ticket.createdAt)).length)],
         ["Completed repairs", String(tickets.filter((ticket) => ["completed", "closed", "delivered"].includes(ticket.status) && inPeriod(ticket.handedOverAt ?? ticket.updatedAt)).length)],
         ["Warranty / repeat intake", String(tickets.filter((ticket) => (ticket.isWarranty || ticket.isRepeatCase) && inPeriod(ticket.createdAt)).length)],
-      ].filter(([label]) => !attentionOnly || ["Paid returns", "Net sales", "Paid, uncollected", "Order balances", "Enquiry conversion", "Warranty / repeat intake"].includes(label)).map(([label, value]) => <div key={label} className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm"><p className="text-xs text-muted-foreground">{label}</p><p className="text-lg font-semibold mt-1">{value}</p></div>)}
+      ].filter(([label]) => !attentionOnly || ["Paid returns", "Net sales", "Paid, uncollected", "Order balances", "Enquiry conversion", "Warranty / repeat intake"].includes(label)).map(([label, value]) => { const Icon = KPI_ICONS[label]; return <div key={label} className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm transition-shadow duration-200 hover:shadow-md"><p className="flex items-center gap-2 text-xs text-muted-foreground">{Icon && <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />}{label}</p><p className="text-lg font-semibold mt-2">{value}</p></div>; })}
     </div>
     {!attentionOnly && <>
     <div className="grid md:grid-cols-2 gap-4"><div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm space-y-2"><h3 className="font-medium">Salesperson performance</h3>{[...performance].map(([name, row]) => <p key={name} className="text-sm">{name}: {row.count} sales ? {formatCurrency(row.amount)}</p>)}{!performance.size && <p className="text-sm text-muted-foreground">No completed sales in this period.</p>}</div>
@@ -120,7 +126,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
           return rows.size ? [...rows].map(([branch, entry]) => <p key={branch} className="text-sm">{branch}: {entry.sales} sales · {formatCurrency(entry.revenue)}</p>) : <p className="text-sm text-muted-foreground">No branch activity in this period.</p>; })()}
         <p className="text-xs text-muted-foreground">Repair volume by branch needs a branch on each repair job.</p></div>
     </div>
-    </> : <div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-semibold">My work</h2><p className="text-sm text-muted-foreground">Follow-ups, orders and actions assigned to you.</p></div><Button variant="outline" disabled={loading} onClick={() => void load()}>{loading ? "Refreshing..." : "Refresh"}</Button></div>}
+    </> : <div className="flex flex-wrap justify-between gap-4"><div><h2 className="font-semibold">My work</h2><p className="text-sm text-muted-foreground">Follow-ups, orders and actions assigned to you.</p></div><Button variant="outline" disabled={loading} onClick={() => void load()}>{loading ? "Refreshing..." : "Refresh"}</Button></div>}
     {(() => { const endOfDay = new Date(); endOfDay.setHours(23, 59, 59, 999);
       const due = enquiries.filter((enquiry) => enquiry.status === "open" && (management || enquiry.owner === userName) && Date.parse(enquiry.followUpAt) <= endOfDay.getTime())
         .sort((a, b) => Date.parse(a.followUpAt) - Date.parse(b.followUpAt));
@@ -129,7 +135,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
         {!due.length && <p className="text-sm text-muted-foreground">Nothing due today.</p>}
         {due.slice(0, 8).map((enquiry) => <p key={enquiry.id} className="text-sm">{Date.parse(enquiry.followUpAt) < Date.now() ? "Overdue · " : "Today · "}{enquiry.customer.name} · {enquiry.request} · {enquiry.owner} · {new Date(enquiry.followUpAt).toLocaleString()}</p>)}
       </div>; })()}
-    <div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm space-y-3"><h3 className="font-semibold">Open work and next actions</h3><p className="text-xs text-muted-foreground">Includes all open work, regardless of reporting period. Repair age is time since its latest recorded update; action due dates are explicit commitments, not inferred SLA deadlines.</p>
+    <div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm space-y-4"><h3 className="font-semibold">Open work and next actions</h3><p className="text-xs text-muted-foreground">Includes all open work, regardless of reporting period. Repair age is time since its latest recorded update; action due dates are explicit commitments, not inferred SLA deadlines.</p>
       <select aria-label="Filter blockers" className="border rounded p-2 bg-background" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All open work ({visible.length})</option>{groups.map((group) => <option key={group}>{group}</option>)}</select>
       {visible.filter((item) => filter === "all" || item.state === filter).sort((a, b) => Date.parse(a.since) - Date.parse(b.since)).map((item) => <BlockerRow key={item.id} item={item} context={state?.blockers[item.id]} refresh={load} />)}
       {!visible.length && <p>No open work in the available records.</p>}

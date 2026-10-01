@@ -512,7 +512,7 @@ export function JobDetailsModal({
 
                   {job.has_open_dispute && (
                     <Badge className="bg-red-600 text-white">
-                      <AlertCircle className="w-3 h-3 mr-1" />
+                      <AlertCircle className="h-4 w-4 mr-1" />
                       Dispute Open
                     </Badge>
                   )}
@@ -540,7 +540,7 @@ export function JobDetailsModal({
               <Separator />
 
               {/* Job Classification */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium flex items-center gap-2">
                   <Tag className="w-4 h-4" />
                   Job Classification
@@ -616,7 +616,7 @@ export function JobDetailsModal({
                   {job.store && (
                     <div className="text-sm flex items-center gap-1">
                       <span className="text-muted-foreground">Store:</span>
-                      <Store className="w-3 h-3 ml-2 text-muted-foreground" />
+                      <Store className="h-4 w-4 ml-2 text-muted-foreground" />
                       <span className="ml-1 font-medium">
                         {job.store.name}
                         {job.store.code && (
@@ -629,7 +629,7 @@ export function JobDetailsModal({
                   {job.parent_job && (
                     <div className="text-sm flex items-center gap-1">
                       <span className="text-muted-foreground">Parent Job:</span>
-                      <LinkIcon className="w-3 h-3 ml-2 text-muted-foreground" />
+                      <LinkIcon className="h-4 w-4 ml-2 text-muted-foreground" />
                       <span className="ml-1 font-medium font-mono">
                         #{job.parent_job}
                       </span>
@@ -651,7 +651,7 @@ export function JobDetailsModal({
               {job.has_open_dispute && (
                 <>
                   <div className="p-4 border-2 border-red-500 rounded-lg bg-red-50 dark:bg-red-950">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <h4 className="font-semibold text-red-900 dark:text-red-100">
@@ -672,13 +672,13 @@ export function JobDetailsModal({
               {/* Device Information */}
               {(job.brand || job.model_name || job.serial_imei) && (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <h4 className="font-medium flex items-center gap-2">
                       <Smartphone className="w-4 h-4" />
                       Device Information
                     </h4>
 
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2">
                       {job.brand && (
                         <div className="text-sm">
                           <span className="text-muted-foreground">Brand:</span>
@@ -736,7 +736,7 @@ export function JobDetailsModal({
 
               {intakeMedia.length > 0 && (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <h4 className="font-medium">Customer Uploaded Images</h4>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -764,10 +764,10 @@ export function JobDetailsModal({
               )}
 
               {/* Customer Information */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">Customer Information</h4>
 
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
+                <div className="flex items-start gap-4 p-4 border rounded-lg">
                   <Avatar className="w-10 h-10">
                     {customerAvatarUrl ? (
                       <AvatarImage
@@ -806,13 +806,13 @@ export function JobDetailsModal({
               {/* Assessment/Diagnosis */}
               {job.assessment && (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <h4 className="font-medium flex items-center gap-2">
                       <FileText className="w-4 h-4" />
                       Assessment & Diagnosis
                     </h4>
 
-                    <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
+                    <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
                       {job.assessment.preliminary_diagnosis && (
                         <div>
                           <Label className="text-xs text-muted-foreground">
@@ -824,7 +824,7 @@ export function JobDetailsModal({
                         </div>
                       )}
 
-                      <div className="grid gap-3 md:grid-cols-2">
+                      <div className="grid gap-4 md:grid-cols-2">
                         {job.assessment.estimated_hours && (
                           <div>
                             <Label className="text-xs text-muted-foreground">
@@ -907,13 +907,13 @@ export function JobDetailsModal({
               {/* Repair Information */}
               {job.repair && repairMedia.length > 0 && (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <h4 className="font-medium flex items-center gap-2">
                       <Wrench className="w-4 h-4" />
                       Repair Completion
                     </h4>
 
-                    <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
+                    <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
                       <div>
                         <Label className="text-xs text-muted-foreground mb-2 block">
                           Proof of Completion
@@ -951,7 +951,7 @@ export function JobDetailsModal({
                                   variant="secondary"
                                   className="text-xs"
                                 >
-                                  <Box className="w-3 h-3 mr-1" />
+                                  <Box className="h-4 w-4 mr-1" />
                                   {formatPartLabel(part)}
                                 </Badge>
                               ))}
@@ -968,10 +968,10 @@ export function JobDetailsModal({
               {/* Technician Information */}
               {job.technician?.name || job.technician_name ? (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <h4 className="font-medium">Assigned Technician</h4>
 
-                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                    <div className="flex items-start gap-4 p-4 border rounded-lg">
                       <Avatar className="w-10 h-10">
                         {technicianAvatarUrl ? (
                           <AvatarImage
@@ -1009,10 +1009,10 @@ export function JobDetailsModal({
 
                   {canReassignTechnician && (
                     <>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <h4 className="font-medium">Reassign Technician</h4>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           <div>
                             <Label htmlFor="technician-select">
                               Select Available Technician
@@ -1091,7 +1091,7 @@ export function JobDetailsModal({
 
                   {canOfferTechnicians && (
                     <>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <h4 className="font-medium">
                           Offer Job to Technicians
                         </h4>
@@ -1099,7 +1099,7 @@ export function JobDetailsModal({
                         <div className="space-y-2">
                           <Label>Select one or more technicians</Label>
 
-                          <div className="rounded-lg border p-3 space-y-3">
+                          <div className="rounded-lg border p-4 space-y-4">
                             <div className="flex items-center justify-between">
                               <p className="text-sm text-muted-foreground">
                                 {selectedTechnicianIds.length} selected
@@ -1135,7 +1135,7 @@ export function JobDetailsModal({
                                   return (
                                     <label
                                       key={techId}
-                                      className="flex items-start gap-3 rounded-md border p-2 cursor-pointer hover:bg-muted/50"
+                                      className="flex items-start gap-4 rounded-md border p-2 cursor-pointer hover:bg-muted/50"
                                     >
                                       <Checkbox
                                         checked={checked}
@@ -1145,7 +1145,7 @@ export function JobDetailsModal({
                                       />
 
                                       <div className="flex-1">
-                                        <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center justify-between gap-4">
                                           <span className="text-sm font-medium">
                                             {getTechName(tech)}
                                           </span>
@@ -1170,11 +1170,11 @@ export function JobDetailsModal({
               )}
 
               {/* Job Details */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium">Job Information</h4>
 
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-3 text-sm">
+                <div className="grid gap-4">
+                  <div className="flex items-center gap-4 text-sm">
                     <DollarSign className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
                       Service Quote:
@@ -1187,7 +1187,7 @@ export function JobDetailsModal({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <Package className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
                       Shipment Status:
@@ -1198,7 +1198,7 @@ export function JobDetailsModal({
                   </div>
 
                   {job.pickup_date && (
-                    <div className="flex items-center gap-3 text-sm">
+                    <div className="flex items-center gap-4 text-sm">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <span className="text-muted-foreground">
                         Pickup Scheduled:
@@ -1209,7 +1209,7 @@ export function JobDetailsModal({
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <MapPin className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Location:</span>
                     <span>
@@ -1219,13 +1219,13 @@ export function JobDetailsModal({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Created:</span>
                     <span>{formatDate(job.created_at)}</span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm">
                     <Clock className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Last Updated:</span>
                     <span>{formatDate(job.updated_at)}</span>
@@ -1241,7 +1241,7 @@ export function JobDetailsModal({
               <Separator />
 
               {/* Job Status Timeline */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h4 className="font-medium flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Status Timeline
@@ -1263,24 +1263,24 @@ export function JobDetailsModal({
                       return (
                         <div
                           key={idx}
-                          className="grid grid-cols-[22px_1fr] gap-3"
+                          className="grid grid-cols-[22px_1fr] gap-4"
                         >
                           {/* Left rail (dot + line) */}
                           <div className="relative flex flex-col items-center">
-                            {/* <div className="mt-1 h-3 w-3 rounded-full bg-primary ring-4 ring-primary/15" /> */}
+                            {/* <div className="mt-1 h-4 w-4 rounded-full bg-primary ring-4 ring-primary/15" /> */}
                             {!isLast && (
                               <div className="mt-2 w-px flex-1 bg-border" />
                             )}
                           </div>
 
                           {/* Content */}
-                          <div className="rounded-lg border bg-muted/20 p-3">
-                            <div className="flex items-start justify-between gap-3">
+                          <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="flex items-start justify-between gap-4">
                               <div className="min-w-0 space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <Badge
                                     variant="outline"
-                                    className="text-xs capitalize px-2.5 py-0.5"
+                                    className="text-xs capitalize px-2 py-0.5"
                                   >
                                     {prettyStatus(entry.from_status)}
                                   </Badge>
@@ -1289,7 +1289,7 @@ export function JobDetailsModal({
                                     →
                                   </span>
 
-                                  <Badge className="text-xs capitalize px-2.5 py-0.5">
+                                  <Badge className="text-xs capitalize px-2 py-0.5">
                                     {prettyStatus(entry.to_status)}
                                   </Badge>
                                 </div>

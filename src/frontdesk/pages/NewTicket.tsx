@@ -2014,9 +2014,9 @@ export default function NewTicket() {
         {addedChildJobs.length > 0 && (
           <div className="glass-card p-6 space-y-4">
             <h3 className="text-lg font-semibold text-foreground">Added Devices ({addedChildJobs.length})</h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {addedChildJobs.map((cj) => (
-                <div key={cj.id} className="p-3 rounded-lg border border-success/20 bg-success/10 flex justify-between items-center">
+                <div key={cj.id} className="p-4 rounded-lg border border-success/20 bg-success/10 flex justify-between items-center">
                   <div>
                     <p className="text-sm font-medium text-foreground">{cj.make} {cj.model}</p>
                     <p className="text-xs text-muted-foreground">IMEI: {cj.imei || "N/A"} | {cj.issue}</p>
@@ -2064,7 +2064,7 @@ export default function NewTicket() {
             <Textarea value={issueReported} onChange={(e) => setIssueReported(e.target.value)} placeholder="Describe the issue..." className="min-h-[100px] resize-none bg-secondary border-border" />
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label>Device Images</Label>
             <div
               className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${
@@ -2076,7 +2076,7 @@ export default function NewTicket() {
               onClick={() => fileInputRef.current?.click()}
             >
               <input type="file" ref={fileInputRef} className="hidden" accept={ALLOWED_IMAGE_TYPES.join(",")} multiple onChange={handleImageInputChange} />
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-4">
                 <Smartphone className="w-5 h-5" />
               </div>
               <p className="text-sm font-medium text-foreground text-center">Click or drag images here</p>
@@ -2087,7 +2087,7 @@ export default function NewTicket() {
                   <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-border group">
                     <img src={src} alt="Device" className="w-full h-full object-cover" />
                     <button type="button" onClick={(e) => { e.stopPropagation(); setDeviceImages(prev => prev.filter((_, idx) => idx !== i)); setDeviceFiles(prev => prev.filter((_, idx) => idx !== i)); }} className="absolute top-1 right-1 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                      <X className="w-3 h-3" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
@@ -2161,7 +2161,7 @@ export default function NewTicket() {
                   if (index <= highestUnlockedStep) setStep(index);
                 }}
                 disabled={index > highestUnlockedStep}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                   index === step
                     ? "bg-primary text-primary-foreground"
                     : index <= highestUnlockedStep
@@ -2231,7 +2231,7 @@ export default function NewTicket() {
                     <button
                       key={c.id}
                       type="button"
-                      className="w-full flex items-start gap-3 p-3 bg-secondary/50 hover:bg-secondary text-left transition-colors"
+                      className="w-full flex items-start gap-4 p-4 bg-secondary/50 hover:bg-secondary text-left transition-colors"
                       onClick={() => selectCustomerFromResult(c)}
                     >
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold shrink-0">
@@ -2254,7 +2254,7 @@ export default function NewTicket() {
 
 
             {sourceTicket && (
-              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-sm space-y-1">
+              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-sm space-y-1">
                 <p className="text-foreground">
                   Linked source job: <span className="font-mono text-primary">{sourceTicket.jobId}</span>
                 </p>
@@ -2268,13 +2268,13 @@ export default function NewTicket() {
             )}
 
             {!isOnsite && organizationName.trim() && (
-              <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-foreground">
+              <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground">
                 Corporate account: <span className="font-medium">{organizationName}</span>
               </div>
             )}
 
             {intakeType !== "repeat_return" && intakeType !== "warranty" && foundCustomer && (
-              <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-sm">
+              <div className="p-4 rounded-lg bg-success/10 border border-success/20 text-sm">
                 <p className="text-success">
                   Existing customer found - {returningTicketCount} previous ticket{returningTicketCount === 1 ? "" : "s"}.
                 </p>
@@ -2290,7 +2290,7 @@ export default function NewTicket() {
                         Customer & Device auto-filled from {validatedRepeatJob.display_id || `Job #${validatedRepeatJob.id}`}
                         <span className="flex h-2 w-2 rounded-full bg-success ml-2 animate-pulse mx-auto shadow-sm"></span>
                       </p>
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm border-t border-border/50 pt-3">
+                      <div className="mt-4 grid gap-4 sm:grid-cols-2 text-sm border-t border-border/50 pt-4">
                         <div>
                           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Original Ticket</p>
                           <p className="text-foreground tracking-wide font-mono mt-0.5">{validatedRepeatJob.display_id}</p>
@@ -2329,7 +2329,7 @@ export default function NewTicket() {
                       <span className="text-xs mt-2 block opacity-80">Once validated, click Continue to enter customer details.</span>
                     </div>
                     {imei.trim() && (
-                      <div className="rounded-lg border border-success/20 bg-success/10 p-3 text-sm text-success">
+                      <div className="rounded-lg border border-success/20 bg-success/10 p-4 text-sm text-success">
                         IMEI/Serial captured: <span className="font-mono font-medium">{imei.trim()}</span>
                       </div>
                     )}
@@ -2509,7 +2509,7 @@ export default function NewTicket() {
                 <p className="text-xs text-muted-foreground font-medium">Select a customer:</p>
                 <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
                   {customerSearchResults.map((c: any) => (
-                    <button key={c.id} type="button" className="w-full flex items-start gap-3 p-3 bg-secondary/50 hover:bg-secondary text-left transition-colors" onClick={() => selectCustomerFromResult(c)}>
+                    <button key={c.id} type="button" className="w-full flex items-start gap-4 p-4 bg-secondary/50 hover:bg-secondary text-left transition-colors" onClick={() => selectCustomerFromResult(c)}>
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold shrink-0">
                         {(c.profile?.full_name || c.first_name || "?").charAt(0).toUpperCase()}
                       </div>
@@ -2523,7 +2523,7 @@ export default function NewTicket() {
               </div>
             )}
             {foundCustomer && (
-              <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-sm">
+              <div className="p-4 rounded-lg bg-success/10 border border-success/20 text-sm">
                 <p className="text-success">Existing customer found — {returningTicketCount} previous ticket{returningTicketCount === 1 ? "" : "s"}.</p>
               </div>
             )}
@@ -2691,7 +2691,7 @@ export default function NewTicket() {
                     <p className="text-xs text-muted-foreground">
                       {deviceImages.length} image{deviceImages.length === 1 ? "" : "s"} selected
                     </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                       {deviceImages.map((image, index) => (
                         <div
                           key={`${index}-${image.slice(0, 20)}`}
@@ -2707,7 +2707,7 @@ export default function NewTicket() {
                             className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/90 text-foreground flex items-center justify-center hover:bg-background"
                             aria-label={`Remove image ${index + 1}`}
                           >
-                            <X className="w-3.5 h-3.5" />
+                            <X className="h-4 w-4" />
                           </button>
                         </div>
                       ))}
@@ -2731,7 +2731,7 @@ export default function NewTicket() {
             </div>
 
             {/* PDF agreement printout */}
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-4">
+            <div className="flex items-center gap-4 rounded-lg border border-border bg-secondary/40 p-4">
               <FileSignature className="w-6 h-6 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">Printable Service Agreement</p>
@@ -2750,7 +2750,7 @@ export default function NewTicket() {
               </Button>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Checkbox
                 id="terms"
                 checked={termsAccepted}
@@ -2817,7 +2817,7 @@ export default function NewTicket() {
                 <span className="text-foreground font-medium">{deviceImages.length}</span>
               </div>
               {flow.summaryNote && (
-                <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-foreground">
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground">
                   {flow.summaryNote}
                 </div>
               )}
@@ -2887,12 +2887,12 @@ export default function NewTicket() {
                     )}
                   </div>
                   {pendingDiagnosisTicket && (
-                    <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-foreground">
+                    <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground">
                       Invoice ready for <span className="font-mono text-primary">{pendingDiagnosisTicket.jobId}</span>.
                       Confirm payment after the customer pays to push the ticket to diagnosis.
                     </div>
                   )}
-                  <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-4">
+                  <div className="flex items-center gap-4 rounded-lg border border-border bg-secondary/40 p-4">
                     <FileSignature className="w-6 h-6 text-primary shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">Customer Job Card</p>

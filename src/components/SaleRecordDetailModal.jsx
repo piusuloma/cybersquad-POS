@@ -40,7 +40,7 @@ export function SaleRecordDetailModal({ open, onOpenChange, sale: inputSale }) {
         {sale && (
           <>
             <DialogHeader>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Receipt className="w-5 h-5 text-muted-foreground" />
                 <div>
                   <DialogTitle>{sale.saleNumber}</DialogTitle>
@@ -88,7 +88,7 @@ export function SaleRecordDetailModal({ open, onOpenChange, sale: inputSale }) {
               </TableBody>
             </Table>
 
-            <div className="space-y-1 border-t border-border pt-3">
+            <div className="space-y-1 border-t border-border pt-4">
               {sale.discount?.amount > 0 && (
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Subtotal {formatCurrency(sale.subtotal)} · Discount ({sale.discount.reason})</span>

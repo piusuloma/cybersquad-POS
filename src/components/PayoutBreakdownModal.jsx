@@ -89,14 +89,14 @@ export function PayoutBreakdownModal({ open, onClose, payout }) {
             <Separator />
 
             {/* Earnings Breakdown */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <p className="text-lg text-purple-600" >₦</p>
                 <h4 className="font-semibold">Earnings Breakdown</h4>
               </div>
               
               <div className="border rounded-lg overflow-hidden">
-                <div className="bg-muted/50 p-4 space-y-3">
+                <div className="bg-muted/50 p-4 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Service Total</span>
                     <span className="font-medium">{formatAmount(breakdown.service_total, payout.currency)}</span>
@@ -117,7 +117,7 @@ export function PayoutBreakdownModal({ open, onClose, payout }) {
 
                 <Separator />
 
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-4">
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="text-sm text-muted-foreground">Platform Commission</span>
@@ -128,7 +128,7 @@ export function PayoutBreakdownModal({ open, onClose, payout }) {
 
                   <Separator />
 
-                  <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center bg-green-50 p-4 rounded-lg">
                     <span className="font-semibold text-green-900">Technician Net Amount</span>
                     <span className="font-bold text-xl text-green-700">{formatAmount(breakdown.technician_amount, payout.currency)}</span>
                   </div>
@@ -140,7 +140,7 @@ export function PayoutBreakdownModal({ open, onClose, payout }) {
             {payout.ledger_entries && payout.ledger_entries.length > 0 && (
               <>
                 <Separator />
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h4 className="font-semibold">Ledger Entries</h4>
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
@@ -184,18 +184,18 @@ export function PayoutBreakdownModal({ open, onClose, payout }) {
 
             {/* Timestamps */}
             <Separator />
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
                 <h4 className="font-semibold">Timeline</h4>
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between p-3 bg-muted/50 rounded">
+                <div className="flex justify-between p-4 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Created</span>
                   <span className="font-medium">{formatDate(payout.created_at)}</span>
                 </div>
                 {payout.updated_at && payout.updated_at !== payout.created_at && (
-                  <div className="flex justify-between p-3 bg-muted/50 rounded">
+                  <div className="flex justify-between p-4 bg-muted/50 rounded">
                     <span className="text-muted-foreground">Last Updated</span>
                     <span className="font-medium">{formatDate(payout.updated_at)}</span>
                   </div>

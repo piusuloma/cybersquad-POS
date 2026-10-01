@@ -122,14 +122,14 @@ export default function EndShiftDialog({ open, shift, onOpenChange, onEnded, sho
                   }`}
                 >
                   {(result.variance ?? 0) > 0 ? (
-                    <TrendingUp className="w-3.5 h-3.5" />
+                    <TrendingUp className="h-4 w-4" />
                   ) : (result.variance ?? 0) < 0 ? (
-                    <TrendingDown className="w-3.5 h-3.5" />
+                    <TrendingDown className="h-4 w-4" />
                   ) : null}
                   {formatCurrency(Math.abs(result.variance ?? 0))}
                   {(result.variance ?? 0) > 0 ? " over" : (result.variance ?? 0) < 0 ? " short" : ""}
                 </span>
-              </div> : <p className="rounded-md bg-secondary px-3 py-2 text-sm text-muted-foreground">
+              </div> : <p className="rounded-md bg-secondary px-4 py-2 text-sm text-muted-foreground">
                 Variance and reconciliation details are visible to admins only.
               </p>}
             </div>

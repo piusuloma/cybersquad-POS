@@ -207,13 +207,13 @@ export default function DraftTickets() {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground uppercase tracking-wider border-b border-border">
-                  <th className="px-6 py-3">Job ID</th>
-                  <th className="px-6 py-3">Customer</th>
-                  <th className="px-6 py-3">Device</th>
-                  <th className="px-6 py-3">Payment Mode</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3">Updated</th>
-                  <th className="px-6 py-3"></th>
+                  <th className="px-6 py-4">Job ID</th>
+                  <th className="px-6 py-4">Customer</th>
+                  <th className="px-6 py-4">Device</th>
+                  <th className="px-6 py-4">Payment Mode</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Updated</th>
+                  <th className="px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -243,7 +243,7 @@ export default function DraftTickets() {
                       {new Date(ticket.updatedAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Link to={`/ticket/${ticket.id}`} className="text-sm text-muted-foreground hover:underline">
                           View
                         </Link>

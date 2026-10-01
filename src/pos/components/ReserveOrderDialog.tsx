@@ -11,7 +11,7 @@ export default function ReserveOrderDialog({ total, busy, onClose, onSave }: {
   const [amount, setAmount] = useState("0"); const [mode, setMode] = useState<SalePaymentMode>("cash"); const [due, setDue] = useState("");
   return <Dialog open onOpenChange={(open) => !open && !busy && onClose()}><DialogContent>
     <DialogHeader><DialogTitle>Reserve for collection</DialogTitle><DialogDescription>Reserve the selected items at the current price. No quotation or approval request is sent.</DialogDescription></DialogHeader>
-    <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); onSave(Number(amount), mode, new Date(due).toISOString()); }}>
+    <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); onSave(Number(amount), mode, new Date(due).toISOString()); }}>
       <p>Total: {formatCurrency(total)}</p>
       <label className="block text-sm">Payment received now<Input aria-label="Deposit received" type="number" min={0} max={total} step="0.01" required value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
       <label className="block text-sm">Payment method<select className="block w-full border rounded p-2 bg-background" value={mode} onChange={(event) => setMode(event.target.value as SalePaymentMode)}><option value="cash">Cash</option><option value="pos">Card terminal</option><option value="bank_transfer">Bank transfer</option></select></label>

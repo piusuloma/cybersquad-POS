@@ -69,7 +69,7 @@ function PaginationBar({
   onPageSizeChange,
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -873,7 +873,7 @@ export function JobManagement({ initialFilter } = {}) {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <h2 className="text-base font-semibold">Repair Status</h2>
           <p className="text-sm text-muted-foreground">

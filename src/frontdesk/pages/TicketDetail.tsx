@@ -2482,7 +2482,7 @@ export default function TicketDetail() {
 
   if (loadingTicket) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
         <Loader2 className="w-8 h-8 animate-spin" />
         <p>Loading ticket details...</p>
       </div>
@@ -2831,7 +2831,7 @@ export default function TicketDetail() {
       <RepairWarrantyPanel ticket={ticket} user={user} />
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="glass-card p-5 space-y-3">
+        <div className="glass-card p-6 space-y-4">
           <div className="flex items-center justify-between gap-2 text-sm font-semibold text-foreground">
             <div className="flex items-center gap-2">
               <UserIcon className="w-4 h-4 text-primary" />
@@ -2841,15 +2841,15 @@ export default function TicketDetail() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs"
+                className="h-8 px-2 text-xs"
                 onClick={handleOpenEditCustomer}
                 disabled={loadingCustomerForEdit}
               >
                 {loadingCustomerForEdit ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Pencil className="w-3.5 h-3.5 mr-1" />
+                    <Pencil className="h-4 w-4 mr-1" />
                     Edit
                   </>
                 )}
@@ -2865,7 +2865,7 @@ export default function TicketDetail() {
             <p className="text-muted-foreground">{ticket.customer.email}</p>
           </div>
         </div>
-        <div className="glass-card p-5 space-y-3">
+        <div className="glass-card p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Smartphone className="w-4 h-4 text-primary" />
             {deviceCardTitle}
@@ -2882,20 +2882,20 @@ export default function TicketDetail() {
         </div>
       </div>
 
-      <div className="glass-card p-5 space-y-2">
+      <div className="glass-card p-6 space-y-2">
         <p className="text-sm font-semibold text-foreground">{issueTitle}</p>
         <p className="text-sm text-muted-foreground">{ticket.issueReported || "Not captured during intake."}</p>
       </div>
 
       {serviceLocation && (
-        <div className="glass-card p-5 space-y-2">
+        <div className="glass-card p-6 space-y-2">
           <p className="text-sm font-semibold text-foreground">Service Location</p>
           <p className="text-sm text-muted-foreground">{serviceLocation}</p>
         </div>
       )}
 
       {ticket.sourceTicketId && (
-        <div className="glass-card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="glass-card p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-foreground">Source Job</p>
             <p className="text-sm text-muted-foreground">
@@ -2909,9 +2909,9 @@ export default function TicketDetail() {
       )}
 
       {ticket.device.images.length > 0 && (
-        <div className="glass-card p-5 space-y-3">
+        <div className="glass-card p-6 space-y-4">
           <p className="text-sm font-semibold text-foreground">{imageTitle} ({ticket.device.images.length})</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {ticket.device.images.map((image, index) => (
               <button
                 type="button"
@@ -2934,14 +2934,14 @@ export default function TicketDetail() {
       <ImageLightbox imageUrl={previewImage} onClose={() => setPreviewImage(null)} alt="Ticket attachment" />
 
       {ticket.customerNote && (
-        <div className="glass-card p-5 space-y-2">
+        <div className="glass-card p-6 space-y-2">
           <p className="text-sm font-semibold text-foreground">Customer Note</p>
           <p className="text-sm text-muted-foreground">{ticket.customerNote}</p>
         </div>
       )}
 
       {ticket.agreement && canViewSignedAgreement && (
-        <div className="glass-card p-5 space-y-3">
+        <div className="glass-card p-6 space-y-4">
           <p className="text-sm font-semibold text-foreground">Signed Agreement</p>
           <p className="text-sm text-muted-foreground">
             Signed {new Date(ticket.agreement.acceptedAt).toLocaleString()}
@@ -2961,7 +2961,7 @@ export default function TicketDetail() {
       )}
 
       {(ticket.diagnosis || typeof ticket.quotation === "number" || ticketPartRequests.length > 0 || ticket.engineerUpdate) && (
-        <div className="glass-card p-5 space-y-2">
+        <div className="glass-card p-6 space-y-2">
           <p className="text-sm font-semibold text-foreground">Technician Diagnosis</p>
           {ticket.assignedEngineer && (
             <p className="text-sm text-muted-foreground">
@@ -3014,10 +3014,10 @@ export default function TicketDetail() {
       )}
 
       {(user?.role === "front_desk" || user?.role === "admin") && !["delivered", "closed", "cancelled"].includes(ticket.status) && isBackendJob && (
-        <div className="glass-card p-5 space-y-4">
+        <div className="glass-card p-6 space-y-4">
           <p className="text-sm font-semibold text-foreground">Technician Assignment</p>
           {ticket.assignedEngineer ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Current Technician: <span className="text-foreground font-medium">{ticket.assignedEngineer}</span>
               </p>
@@ -3047,7 +3047,7 @@ export default function TicketDetail() {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 No technician is currently assigned to this ticket.
               </p>
@@ -3081,13 +3081,13 @@ export default function TicketDetail() {
       )}
 
       {intakeNotice && (
-        <div className="glass-card p-4 border-warning/30 flex items-center gap-3">
+        <div className="glass-card p-4 border-warning/30 flex items-center gap-4">
           <AlertTriangle className="w-5 h-5 text-warning" />
           <p className="text-sm text-foreground">{intakeNotice}</p>
         </div>
       )}
 
-      <div className="glass-card p-6 space-y-5">
+      <div className="glass-card p-6 space-y-6">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
           <Wrench className="w-4 h-4 text-primary" />
           Actions
@@ -3104,7 +3104,7 @@ export default function TicketDetail() {
                   This ticket has fallen back to the normal paid repair flow. You can continue with diagnosis fee
                   payment or cancel the booking.
                 </p>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-4">
                   <Button type="button" variant="outline" onClick={handleRepeatCaseCancel}>
                     Cancel Booking
                   </Button>
@@ -3259,7 +3259,7 @@ export default function TicketDetail() {
         )}
 
         {isPreDiagnosisPaymentStatus && !canManagePayments && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {ticket.intakeType === "repeat_return" && (
               <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
                 <p className="text-sm text-muted-foreground">
@@ -3278,7 +3278,7 @@ export default function TicketDetail() {
 
         {isCorporateParentTicket &&
           ["diagnosing", "quote_sent", "quote_accepted", "awaiting_payment", "payment_confirmed"].includes(ticket.status) && (
-          <div className="space-y-3 rounded-lg border border-primary/20 bg-primary/10 p-4">
+          <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/10 p-4">
             <p className="text-sm font-medium text-foreground">This is a bulk parent job.</p>
             <p className="text-sm text-muted-foreground">
               Submit diagnosis, quotation updates, and repair work on the <span className="text-foreground font-medium">individual child jobs</span>, not on this parent record.
@@ -3300,7 +3300,7 @@ export default function TicketDetail() {
                 className="bg-secondary border-border"
               />
             </div>
-            <label className="flex items-start gap-3 rounded-lg border border-border bg-background/60 px-3 py-3">
+            <label className="flex items-start gap-4 rounded-lg border border-border bg-background/60 px-4 py-4">
               <Checkbox
                 checked={noPartsRequired}
                 onCheckedChange={(checked) => {
@@ -3324,7 +3324,7 @@ export default function TicketDetail() {
               </div>
             </label>
             {noPartsRequired && (
-              <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-3">
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-4">
                 {isBackendJob ? (
                   <>
                     <p className="text-xs text-muted-foreground">
@@ -3357,7 +3357,7 @@ export default function TicketDetail() {
                         return (
                           <label
                             key={serviceKey}
-                            className="flex items-start gap-3 rounded-md border border-border bg-background/60 px-3 py-2"
+                            className="flex items-start gap-4 rounded-md border border-border bg-background/60 px-4 py-2"
                           >
                             <Checkbox
                               checked={checked}
@@ -3388,7 +3388,7 @@ export default function TicketDetail() {
               <Label>Parts Required</Label>
               <div
                 className={
-                  noPartsRequired ? "hidden" : "rounded-lg border border-border bg-secondary/30 p-3 space-y-3"
+                  noPartsRequired ? "hidden" : "rounded-lg border border-border bg-secondary/30 p-4 space-y-4"
                 }
               >
                 <p className="text-xs text-muted-foreground">
@@ -3398,7 +3398,7 @@ export default function TicketDetail() {
                   value={inventorySearch}
                   onChange={(event) => setInventorySearch(event.target.value)}
                   placeholder="Search parts by name or category..."
-                  inputClassName="h-11"
+                  inputClassName="h-12"
                 />
                 <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
                   {filteredInventory.map((item) => {
@@ -3410,7 +3410,7 @@ export default function TicketDetail() {
                     return (
                       <label
                         key={item.id}
-                        className="flex items-start gap-3 rounded-md border border-border bg-background/60 px-3 py-2"
+                        className="flex items-start gap-4 rounded-md border border-border bg-background/60 px-4 py-2"
                       >
                         <Checkbox
                           checked={isChecked}
@@ -3450,13 +3450,13 @@ export default function TicketDetail() {
                 </div>
               </div>
             {noPartsRequired && !isWarrantyTicket && (
-              <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-xs text-foreground">
+              <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-xs text-foreground">
                 No hardware parts will be requested. Selected service items total NGN {selectedPartsRepairCost.toLocaleString()}.
               </div>
             )}
             {!noPartsRequired && selectedUnavailableTicketParts.length > 0 && (
               isWarrantyTicket ? (
-                <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/10 p-3">
+                <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/10 p-4">
                   <p className="text-xs text-warning">
                     Requested part{selectedUnavailableTicketParts.length === 1 ? "" : "s"} currently unavailable:
                     {" "}
@@ -3468,7 +3468,7 @@ export default function TicketDetail() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
+                <div className="space-y-4 rounded-lg border border-warning/40 bg-warning/10 p-4">
                   <p className="text-xs text-warning">
                     Requested part{selectedUnavailableTicketParts.length === 1 ? "" : "s"} currently unavailable:
                     {" "}
@@ -3545,7 +3545,7 @@ export default function TicketDetail() {
             </p>
 
             {isWarrantyTicket && (
-              <div className="border-t border-border pt-4 space-y-3">
+              <div className="border-t border-border pt-4 space-y-4">
                 <div className="space-y-2">
                   <Label>Reason for Cancellation</Label>
                   <Textarea
@@ -3570,7 +3570,7 @@ export default function TicketDetail() {
         )}
 
         {ticket.status === "diagnosing" && !canEditDiagnosisActions && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {isCorporateParentTicket ? (
               <>
                 <p className="text-sm text-muted-foreground">
@@ -3626,12 +3626,12 @@ export default function TicketDetail() {
             </div>
             <div className="space-y-2">
               <Label>Parts Required</Label>
-              <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-3">
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-4">
                 <SearchField
                   value={inventorySearch}
                   onChange={(event: any) => setInventorySearch(event.target.value)}
                   placeholder="Search parts by name or category..."
-                  inputClassName="h-11"
+                  inputClassName="h-12"
                 />
                 <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
                   {filteredInventory.map((item: InventoryItem) => {
@@ -3639,7 +3639,7 @@ export default function TicketDetail() {
                     return (
                       <label
                         key={item.id}
-                        className="flex items-start gap-3 rounded-md border border-border bg-background/60 px-3 py-2"
+                        className="flex items-start gap-4 rounded-md border border-border bg-background/60 px-4 py-2"
                       >
                         <Checkbox
                           checked={isChecked}
@@ -3675,7 +3675,7 @@ export default function TicketDetail() {
         )}
         {ticket.status === "quote_sent" && !isNaN(Number(ticket.id)) && canManagePayments && (
           <div className="space-y-4">
-            <div className="bg-secondary/50 rounded-lg p-4 space-y-3 text-sm">
+            <div className="bg-secondary/50 rounded-lg p-4 space-y-4 text-sm">
               <h4 className="font-semibold text-foreground flex items-center gap-2">
                 <FileText className="w-4 h-4 text-primary" />
                 Customer Quote Acceptance
@@ -3839,7 +3839,7 @@ export default function TicketDetail() {
                 </>
               )}
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-4">
               {!repairVoucherValidation?.isFullWaiver && (
                 <Button
                   variant="outline"
@@ -3892,7 +3892,7 @@ export default function TicketDetail() {
         )}
 
         {showRepairPaymentSection && !canManagePayments && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Repair payment and invoice handling are managed by the <span className="text-foreground font-medium">front desk or admin</span>.
             </p>
@@ -3909,7 +3909,7 @@ export default function TicketDetail() {
                 <Wrench className="w-4 h-4 text-primary" />
                 Request Parts for Repair
               </h4>
-              <div className="bg-secondary/40 rounded-lg p-4 space-y-3 text-sm">
+              <div className="bg-secondary/40 rounded-lg p-4 space-y-4 text-sm">
                 <p className="text-muted-foreground">
                   Payment has been confirmed (or quote accepted). You must now explicitly request the required parts from the inventory manager so they can be released to you.
                 </p>
@@ -3921,7 +3921,7 @@ export default function TicketDetail() {
               </div>
               
               {/* Request custom part temporarily disabled per user request
-              <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-4">
                 <Label htmlFor="custom-part-name">Need an additional unquoted part?</Label>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
@@ -3942,7 +3942,7 @@ export default function TicketDetail() {
               */}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Payment confirmed. Waiting for the <span className="text-foreground font-medium">technician</span> to formally request the quoted parts from inventory so the handoff can begin.
               </p>
@@ -4036,9 +4036,9 @@ export default function TicketDetail() {
                   Pending Authorizations
                 </p>
                 {backendPartRequests.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {pendingBackendInventoryRequests.map((req: any) => (
-                      <div key={req.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-secondary/30 rounded-lg border border-border">
+                      <div key={req.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-secondary/30 rounded-lg border border-border">
                         <div>
                           <p className="text-sm font-medium text-foreground">{req.displayName}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">Quantity: {req.requested_qty || 1}</p>
@@ -4083,14 +4083,14 @@ export default function TicketDetail() {
                   Parts Requested
                 </p>
                 {backendPartRequests.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {pendingBackendInventoryRequests.map((req: any) => (
-                      <div key={req.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-secondary/30 rounded-lg border border-border">
+                      <div key={req.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-secondary/30 rounded-lg border border-border">
                         <div>
                           <p className="text-sm font-medium text-foreground">{req.displayName}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">Quantity: {req.requested_qty || 1}</p>
                         </div>
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 capitalize">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 capitalize">
                           {req.status || "requested"}
                         </span>
                       </div>
@@ -4202,7 +4202,7 @@ export default function TicketDetail() {
         )}
 
         {effectiveStatus === "ready_for_repair" && !canStartRepair && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               {(isBackendJob ? backendAwaitingTechnicianReceiptRequests.length > 0 : awaitingTechnicianConfirmationParts.length > 0)
                 ? <>Required parts have been released and this job is now waiting for the <span className="text-foreground font-medium">technician</span> to confirm receipt.</>
@@ -4217,7 +4217,7 @@ export default function TicketDetail() {
               Technician is working on the device. Mark as complete when done and send it to QA.
             </p>
             {defectiveReturnedParts.length > 0 && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 space-y-3">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 space-y-4">
                 <p className="text-sm font-medium text-destructive">Defective Return Logged</p>
                 {defectiveReturnedParts.map((request) => (
                   <div key={request.partId} className="space-y-1 text-sm">
@@ -4302,7 +4302,7 @@ export default function TicketDetail() {
                   </Button>
                 </div>
                 {completionMediaPreviews.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {completionMediaPreviews.map((image, index) => (
                       <button
                         type="button"
@@ -4325,7 +4325,7 @@ export default function TicketDetail() {
         )}
 
         {isRepairingStage && !canStartRepair && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Technician is currently working on this device.
             </p>
@@ -4365,7 +4365,7 @@ export default function TicketDetail() {
               />
             </div>
             {canRunQA ? (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-4">
                 <Button variant="outline" onClick={handleQAFail}>
                   Send Back To Technician
                 </Button>
@@ -4398,7 +4398,7 @@ export default function TicketDetail() {
                     className="bg-secondary border-border"
                   />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <Button variant="destructive" onClick={handleWarrantyVoid} disabled={!warrantyVoidReason}>
                     Warranty Void
                   </Button>
@@ -4434,7 +4434,7 @@ export default function TicketDetail() {
                     />
                   </div>
                 )}
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-4">
                   {ticket.intakeType === "warranty" ? (
                     <Button variant="destructive" onClick={handleWarrantyVoid} disabled={!warrantyVoidReason.trim()}>
                       Invalidate Warranty
@@ -4499,7 +4499,7 @@ export default function TicketDetail() {
 
         {isCompletedStage && (
           <div className="text-center py-6">
-            <CheckCircle2 className="w-12 h-12 mx-auto text-success mb-3" />
+            <CheckCircle2 className="w-12 h-12 mx-auto text-success mb-4" />
             <p className="text-lg font-semibold text-foreground">Ticket Complete</p>
             <p className="text-sm text-muted-foreground mt-1">
               Device was handed back to the customer

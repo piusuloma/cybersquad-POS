@@ -185,7 +185,7 @@ export function ExtendSLAModal({
                   padding: "12px",
                 }}
               >
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <div className="mt-0.5">
                     <AlertTriangle
                       className="w-5 h-5"
@@ -220,7 +220,7 @@ export function ExtendSLAModal({
                   padding: "12px",
                 }}
               >
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <div className="mt-0.5">
                     <AlertTriangle
                       className="w-5 h-5"
@@ -259,7 +259,7 @@ export function ExtendSLAModal({
                     padding: "12px",
                   }}
                 >
-                  <div className="flex gap-3">
+                  <div className="flex gap-4">
                     <div className="mt-0.5">
                       <AlertTriangle
                         className="w-5 h-5"
@@ -295,7 +295,7 @@ export function ExtendSLAModal({
                   padding: "12px",
                 }}
               >
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <div className="mt-0.5">
                     <Clock className="w-5 h-5" style={{ color: "#1447E6" }} />
                   </div>

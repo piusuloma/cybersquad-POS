@@ -88,7 +88,7 @@ function PaginationBar({
 	onPageSizeChange,
 }) {
 	return (
-		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
+		<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4">
 			<div className="flex items-center gap-2">
 				<Button
 					variant="outline"
@@ -652,7 +652,7 @@ export function AdminManagement() {
 							</Button>
 						</div>
 
-						<div className="space-y-3 pt-4">
+						<div className="space-y-4 pt-4">
 							{Object.entries(permissions).map(([permission, enabled]) => (
 								<div
 									key={permission}
@@ -695,9 +695,9 @@ export function AdminManagement() {
 
 				<CardContent className="space-y-6">
 					<div className="border-t pt-4">
-						<Label className="mb-3 block">Active Admin Sessions</Label>
+						<Label className="mb-4 block">Active Admin Sessions</Label>
 						<div className="border rounded-lg divide-y">
-							<div className="p-3 flex items-center justify-between">
+							<div className="p-4 flex items-center justify-between">
 								<div>
 									<p className="text-sm font-medium">Current Session</p>
 									<p className="text-xs text-muted-foreground">
@@ -712,7 +712,7 @@ export function AdminManagement() {
 							{activeSessions.map((session, index) => (
 								<div
 									key={index}
-									className="p-3 flex items-center justify-between"
+									className="p-4 flex items-center justify-between"
 								>
 									<div>
 										<p className="text-sm font-medium">{session.admin}</p>

@@ -77,7 +77,7 @@ export function SalesDetailModal({ open, onOpenChange }) {
           beat plain utility classes like "sm:max-w-3xl". Inline style always wins. */}
       <DialogContent className="sm:max-w-3xl max-h-[90vh]" style={{ maxWidth: "48rem", maxHeight: "90vh" }}>
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <ShoppingCart className="w-5 h-5 text-muted-foreground" />
             <div>
               <DialogTitle>Sales</DialogTitle>
@@ -89,7 +89,7 @@ export function SalesDetailModal({ open, onOpenChange }) {
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-140px)] pr-4">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-end">
               <Select value={range} onValueChange={setRange}>
                 <SelectTrigger className="w-[160px]">

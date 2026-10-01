@@ -216,7 +216,7 @@ export function EditAdminModal({ open, onClose, admin, roles = [], onUpdated }) 
               )}
             </div>
 
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
               <strong>Note:</strong> If this admin already has a role, it will be removed first so they only keep one role.
             </div>
                     <DialogFooter>

@@ -308,3 +308,63 @@ html {
 .bg-warning {
   background-color: #f97316; /* orange-ish */
 }
+/* ---------------------------------------------------------------------------
+   Design tokens: 8pt spacing scale and motion.
+   Spacing: use Tailwind steps that are multiples of 8px (2 = 8px, 4 = 16px, 6 = 24px, 8 = 32px,
+   10 = 40px, 12 = 48px). 4px (step 1) is allowed only for tight icon-to-label gaps.
+   Motion: short, ease-out, transform and opacity only, so it never causes layout shift.
+   --------------------------------------------------------------------------- */
+:root {
+  --space-unit: 8px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --motion-slow: 360ms;
+}
+
+@keyframes motion-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes motion-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes motion-pop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.motion-fade { animation: motion-fade var(--motion-base) var(--ease-out) both; }
+.motion-rise { animation: motion-rise var(--motion-base) var(--ease-out) both; }
+.motion-pop { animation: motion-pop var(--motion-fast) var(--ease-out) both; }
+
+/* Children enter one after another; capped so long lists don't feel slow. */
+.motion-stagger > * { animation: motion-rise var(--motion-base) var(--ease-out) both; }
+.motion-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.motion-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.motion-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.motion-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.motion-stagger > *:nth-child(n + 6) { animation-delay: 200ms; }
+
+/* Pressable controls get a small, quick press response. */
+.press {
+  transition: transform var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out);
+}
+.press:active:not(:disabled) { transform: scale(0.97); }
+
+/* Hover lift for clickable cards. */
+.lift {
+  transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out);
+}
+.lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.18); }
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-fade, .motion-rise, .motion-pop, .motion-stagger > * { animation: none; }
+  .press, .lift { transition: none; }
+  .press:active:not(:disabled), .lift:hover { transform: none; }
+}
+
+/* One stroke weight for every lucide icon so icons read as a single set. */
+svg.lucide { stroke-width: 1.75; }

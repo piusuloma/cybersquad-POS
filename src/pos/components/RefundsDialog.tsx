@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -49,10 +50,10 @@ export default function RefundsDialog({ open, onOpenChange }: { open: boolean; o
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList><TabsTrigger value="history">Refund history</TabsTrigger><TabsTrigger value="new">New refund</TabsTrigger><TabsTrigger value="audit">Audit log</TabsTrigger></TabsList>
         <TabsContent value="history" className="space-y-2">
-          {!history.length && <p className="text-sm text-muted-foreground">No refunds recorded.</p>}
+          {!history.length && <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground"><Inbox className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />No refunds recorded.</div>}
           {history.map((refund) => {
             const sale = sales.find((entry) => entry.id === refund.saleId);
-            return <div key={refund.id} className="border border-border rounded-lg p-3 flex flex-wrap justify-between gap-2 text-sm">
+            return <div key={refund.id} className="border border-border rounded-lg p-4 flex flex-wrap justify-between gap-2 text-sm">
               <div>
                 <p className="font-medium">{refund.saleNumber} · {formatCurrency(refund.total)} <Badge variant="outline">{STATUS_LABEL[refund.status]}</Badge></p>
                 <p>{refund.reason} · {refund.actor} · {refund.mode.replaceAll("_", " ")}</p>
@@ -67,13 +68,13 @@ export default function RefundsDialog({ open, onOpenChange }: { open: boolean; o
         </TabsContent>
         <TabsContent value="audit" className="space-y-2">
           <p className="text-xs text-muted-foreground">Refunds, repayments and discounts, newest first.</p>
-          {!audit.length && <p className="text-sm text-muted-foreground">Nothing recorded yet.</p>}
-          {[...audit].reverse().map((entry) => <div key={entry.id} className="border border-border rounded-lg p-3 text-sm">
+          {!audit.length && <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground"><Inbox className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />Nothing recorded yet.</div>}
+          {[...audit].reverse().map((entry) => <div key={entry.id} className="border border-border rounded-lg p-4 text-sm">
             <p className="font-medium">{entry.action.replaceAll("_", " ")} · {entry.actor}</p>
             <p>{entry.detail}</p><p className="text-xs text-muted-foreground">{new Date(entry.at).toLocaleString()}</p>
           </div>)}
         </TabsContent>
-        <TabsContent value="new" className="space-y-3">
+        <TabsContent value="new" className="space-y-4">
           {selected ? <>
             <div className="flex justify-between items-center">
               <p className="font-medium">{selected.saleNumber} · {selected.customer?.name ?? "Walk-in"} · {formatCurrency(selected.total)}</p>
@@ -82,9 +83,9 @@ export default function RefundsDialog({ open, onOpenChange }: { open: boolean; o
             <RefundPanel sale={selected} onChanged={() => void load()} />
           </> : <>
             <Input aria-label="Find sale" placeholder="Search by sale number, customer name or phone" value={query} onChange={(event) => setQuery(event.target.value)} />
-            {!matches.length && <p className="text-sm text-muted-foreground">No matching sales.</p>}
+            {!matches.length && <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground"><Inbox className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />No matching sales.</div>}
             {matches.map((sale) => <button key={sale.id} type="button" onClick={() => setSelectedId(sale.id)}
-              className="w-full text-left border border-border rounded-lg p-3 text-sm hover:bg-muted">
+              className="w-full text-left border border-border rounded-lg p-4 text-sm hover:bg-muted">
               <span className="font-medium">{sale.saleNumber}</span> · {formatCurrency(sale.total)} · {sale.customer?.name ?? "Walk-in"}
               <span className="block text-muted-foreground">{new Date(sale.createdAt).toLocaleString()} · {sale.lifecycle ?? "completed"}</span>
             </button>)}

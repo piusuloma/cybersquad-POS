@@ -6,12 +6,13 @@ import { Card, CardContent } from "./ui/card";
 export function SectionTabs({ tabs, value, onValueChange }) {
 	const visible = tabs.filter((tab) => tab.show !== false);
 	return (
-		<Tabs value={value} onValueChange={onValueChange} className="space-y-5">
+		<Tabs value={value} onValueChange={onValueChange} className="space-y-6">
 			<Card>
 				<CardContent className="p-2">
 					<TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-transparent p-0">
 						{visible.map((tab) => (
-							<TabsTrigger key={tab.value} value={tab.value}>
+							<TabsTrigger key={tab.value} value={tab.value} className="gap-2">
+								{tab.icon && <tab.icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
 								{tab.label}
 							</TabsTrigger>
 						))}
@@ -19,7 +20,7 @@ export function SectionTabs({ tabs, value, onValueChange }) {
 				</CardContent>
 			</Card>
 			{visible.map((tab) => (
-				<TabsContent key={tab.value} value={tab.value} className="mt-0">
+				<TabsContent key={tab.value} value={tab.value} className="mt-0 motion-rise">
 					{tab.content}
 				</TabsContent>
 			))}

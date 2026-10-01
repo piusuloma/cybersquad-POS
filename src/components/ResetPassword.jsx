@@ -230,7 +230,7 @@ export function ResetPasswordPage({ onResetComplete }) {
               >
                 {resendingOtp ? (
                   <>
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Resending OTP...
                   </>
                 ) : (
@@ -267,14 +267,14 @@ export function ResetPasswordPage({ onResetComplete }) {
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 text-red-500 text-sm p-3 bg-red-50 rounded-md">
+              <div className="flex items-start gap-2 text-red-500 text-sm p-4 bg-red-50 rounded-md">
                 <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             {notice && (
-              <div className="flex items-start gap-2 text-emerald-700 text-sm p-3 bg-emerald-50 rounded-md">
+              <div className="flex items-start gap-2 text-emerald-700 text-sm p-4 bg-emerald-50 rounded-md">
                 <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>{notice}</span>
               </div>

@@ -265,7 +265,7 @@ export function ServicePricesModal({ open, onClose, service, onSaved }) {
             <span className="font-medium">{serviceMeta.code}</span>
           </DialogDescription>
 
-          <div className="pt-3 space-y-3">
+          <div className="pt-4 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">Base: {formatMoney(serviceMeta.base_price)}</Badge>
               <Badge variant="secondary">Overrides: {Number(serviceMeta.override_count).toLocaleString()}</Badge>
@@ -334,14 +334,14 @@ export function ServicePricesModal({ open, onClose, service, onSaved }) {
 
             <Separator />
 
-            <div className="border rounded-lg mb-5">
+            <div className="border rounded-lg mb-6">
               <table className="w-full">
                 <thead className="bg-muted">
                   <tr>
-                    <th className="text-left p-3 font-medium w-[180px]">Brand</th>
-                    <th className="text-left p-3 font-medium w-[360px]">Model</th>
-                    <th className="text-left p-3 font-medium w-[180px]">Override Price (₦)</th>
-                    <th className="text-right p-3 font-medium w-[90px]">Action</th>
+                    <th className="text-left p-4 font-medium w-[180px]">Brand</th>
+                    <th className="text-left p-4 font-medium w-[360px]">Model</th>
+                    <th className="text-left p-4 font-medium w-[180px]">Override Price (₦)</th>
+                    <th className="text-right p-4 font-medium w-[90px]">Action</th>
                   </tr>
                 </thead>
 
@@ -359,7 +359,7 @@ export function ServicePricesModal({ open, onClose, service, onSaved }) {
 
                       return (
                         <tr key={row.id} className={row._dirty ? "bg-amber-50/40" : ""}>
-                          <td className="p-3">
+                          <td className="p-4">
                             <Input
                               value={row.brand}
                               placeholder="e.g. Apple"
@@ -367,7 +367,7 @@ export function ServicePricesModal({ open, onClose, service, onSaved }) {
                             />
                           </td>
 
-                          <td className="p-3">
+                          <td className="p-4">
                             <Input
                               value={row.model_name}
                               placeholder="e.g. iPhone 14"
@@ -377,13 +377,13 @@ export function ServicePricesModal({ open, onClose, service, onSaved }) {
                             />
                           </td>
 
-                          <td className="p-3">
+                          <td className="p-4">
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                                 ₦
                               </span>
                               <Input
-                                className="pl-7"
+                                className="pl-8"
                                 type="number"
                                 value={row.override_price}
                                 placeholder="0"
@@ -396,7 +396,7 @@ export function ServicePricesModal({ open, onClose, service, onSaved }) {
                             ) : null}
                           </td>
 
-                          <td className="p-3 text-right">
+                          <td className="p-4 text-right">
                             {row._isNew ? (
                               <Button
                                 variant="ghost"

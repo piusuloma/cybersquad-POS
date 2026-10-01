@@ -318,7 +318,7 @@ export function FilterModal({ open, onClose, type, initialFilters, onApply }) {
                 <p className="text-xs text-muted-foreground">
                   Select one or more channels
                 </p>
-                <div className="space-y-2 rounded-md border border-border p-3">
+                <div className="space-y-2 rounded-md border border-border p-4">
                   {SOURCE_CHANNEL_OPTIONS.map((option) => (
                     <div
                       key={option.value}
@@ -563,7 +563,7 @@ export function FilterModal({ open, onClose, type, initialFilters, onApply }) {
 
           <div className="space-y-2">
             <Label>Date Range</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Popover modal={true}>
                 <PopoverTrigger asChild>
                   <Button

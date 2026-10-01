@@ -850,7 +850,7 @@ export default function EngineerDesk() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Good Afternoon, {user.name}</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -889,16 +889,16 @@ export default function EngineerDesk() {
           </div>
 
           <h2 className="text-sm font-semibold text-foreground">All Tickets</h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {availableTickets.length === 0 ? (
               <div className="glass-card p-10 text-center">
-                <ClipboardList className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                <ClipboardList className="w-10 h-10 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-sm text-muted-foreground">No tickets found.</p>
               </div>
             ) : (
               availableTickets.map((ticket) => (
-                <div key={ticket.id} className="glass-card p-5 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div key={ticket.id} className="glass-card p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="space-y-1">
                       <p className="font-mono text-sm font-semibold text-primary">{ticket.jobId}</p>
                       <p className="text-sm text-foreground">{ticket.customer.name}</p>
@@ -925,7 +925,7 @@ export default function EngineerDesk() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                     <span>Updated {new Date(ticket.updatedAt).toLocaleString()}</span>
                     {ticket.device.images.length > 0 && (
                       <span>
@@ -936,11 +936,11 @@ export default function EngineerDesk() {
                   </div>
 
                   {ticket.device.images.length > 0 && (
-                    <details className="rounded-lg border border-border bg-secondary/20 p-3">
+                    <details className="rounded-lg border border-border bg-secondary/20 p-4">
                       <summary className="cursor-pointer text-sm font-medium text-foreground">
                         Intake Images ({ticket.device.images.length})
                       </summary>
-                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
                         {ticket.device.images.map((image, index) => (
                           <button
                             type="button"
@@ -993,7 +993,7 @@ export default function EngineerDesk() {
                   )}
 
                   {ticket.status === "diagnosing" && (
-                    <details className="rounded-lg border border-border bg-secondary/20 p-3">
+                    <details className="rounded-lg border border-border bg-secondary/20 p-4">
                       <summary className="cursor-pointer text-sm font-medium text-foreground">
                         {isWarrantyServiceTicket(ticket)
                           ? "Open Warranty Diagnosis Workspace"
@@ -1048,7 +1048,7 @@ export default function EngineerDesk() {
                         />
                       </div>
                       {!isWarrantyTicket && (
-                        <label className="flex items-start gap-3 rounded-lg border border-border bg-background/60 px-3 py-3">
+                        <label className="flex items-start gap-4 rounded-lg border border-border bg-background/60 px-4 py-4">
                           <Checkbox
                             checked={noPartsRequired}
                             onCheckedChange={(checked) =>
@@ -1066,7 +1066,7 @@ export default function EngineerDesk() {
                         </label>
                       )}
                       {noPartsRequired && !isWarrantyTicket && isBackendJob && (
-                        <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-3">
+                        <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-4">
                           <p className="text-xs text-muted-foreground">
                             Choose the non-parts service to bill for this diagnosis. The selected service base price becomes the quotation.
                           </p>
@@ -1093,7 +1093,7 @@ export default function EngineerDesk() {
                         </div>
                       )}
                       {noPartsRequired && !isWarrantyTicket && !isBackendJob && (
-                        <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-3">
+                        <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-4">
                           <p className="text-xs text-muted-foreground">
                             Choose every service included in this repair. The quotation is the sum of all selected service items.
                           </p>
@@ -1103,7 +1103,7 @@ export default function EngineerDesk() {
                               return (
                                 <label
                                   key={`${ticket.id}-${serviceKey}`}
-                                  className="flex items-start gap-3 rounded-md border border-border bg-background/60 px-3 py-2"
+                                  className="flex items-start gap-4 rounded-md border border-border bg-background/60 px-4 py-2"
                                 >
                                   <Checkbox
                                     checked={checked}
@@ -1127,7 +1127,7 @@ export default function EngineerDesk() {
                         <Label>Parts Required (Optional)</Label>
                         <div
                           className={
-                            noPartsRequired ? "hidden" : "rounded-lg border border-border bg-secondary/30 p-3 space-y-3"
+                            noPartsRequired ? "hidden" : "rounded-lg border border-border bg-secondary/30 p-4 space-y-4"
                           }
                         >
                           <p className="text-xs text-muted-foreground">
@@ -1137,7 +1137,7 @@ export default function EngineerDesk() {
                             value={inventorySearch}
                             onChange={(event) => setInventorySearch(event.target.value)}
                             placeholder="Search parts by name or category..."
-                            inputClassName="h-11"
+                            inputClassName="h-12"
                           />
                           <div className="max-h-44 overflow-y-auto space-y-2 pr-1">
                             {filteredInventory.map((item) => {
@@ -1149,7 +1149,7 @@ export default function EngineerDesk() {
                               return (
                                 <label
                                   key={`${ticket.id}-${item.id}`}
-                                  className="flex items-start gap-3 rounded-md border border-border bg-background/60 px-3 py-2"
+                                  className="flex items-start gap-4 rounded-md border border-border bg-background/60 px-4 py-2"
                                 >
                                   <Checkbox
                                     checked={isChecked}
@@ -1182,7 +1182,7 @@ export default function EngineerDesk() {
                         {/* Request custom part temporarily disabled per user request
                         <div
                           className={
-                            noPartsRequired ? "hidden" : "rounded-lg border border-border bg-secondary/30 p-3 space-y-2"
+                            noPartsRequired ? "hidden" : "rounded-lg border border-border bg-secondary/30 p-4 space-y-2"
                           }
                         >
                           <Label htmlFor={`custom-part-${ticket.id}`}>Part Missing From Inventory / Odoo?</Label>
@@ -1213,7 +1213,7 @@ export default function EngineerDesk() {
                         </div>
                         */}
                         {noPartsRequired && !isWarrantyTicket && (
-                          <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-xs text-foreground">
+                          <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-xs text-foreground">
                             No hardware parts will be requested.{" "}
                             {isBackendJob ? "Selected service costs" : "Selected service items total"}{" "}
                             NGN {noPartsRepairCost.toLocaleString()}.
@@ -1256,7 +1256,7 @@ export default function EngineerDesk() {
                         )}
                         {!noPartsRequired && unavailableSelectedParts.length > 0 && (
                           isWarrantyTicket ? (
-                            <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/10 p-3">
+                            <div className="space-y-2 rounded-lg border border-warning/40 bg-warning/10 p-4">
                               <p className="text-xs text-warning">
                                 Requested part{unavailableSelectedParts.length === 1 ? "" : "s"} currently unavailable:
                                 {" "}
@@ -1268,7 +1268,7 @@ export default function EngineerDesk() {
                               </p>
                             </div>
                           ) : (
-                            <div className="space-y-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
+                            <div className="space-y-4 rounded-lg border border-warning/40 bg-warning/10 p-4">
                               <p className="text-xs text-warning">
                                 Requested part{unavailableSelectedParts.length === 1 ? "" : "s"} currently unavailable:
                                 {" "}
@@ -1414,7 +1414,7 @@ export default function EngineerDesk() {
                   )}
 
                   {ticket.status === "awaiting_parts_release" && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
                         Waiting for the <span className="text-foreground font-medium">inventory manager</span> to complete the next parts handoff for this repair.
                       </p>
@@ -1461,7 +1461,7 @@ export default function EngineerDesk() {
 
 
           <h2 id="done-jobs" className="text-sm font-semibold text-foreground pt-2">Jobs Completed By You</h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {myCompletedJobs.length === 0 ? (
               <div className="glass-card p-6 text-sm text-muted-foreground">
                 No completed jobs assigned to you yet.
@@ -1489,7 +1489,7 @@ export default function EngineerDesk() {
         </section>
 
         <section className="space-y-4">
-          <div className="glass-card p-4 space-y-3">
+          <div className="glass-card p-4 space-y-4">
             <h2 className="font-semibold text-foreground">Inventory Search</h2>
             <SearchField
               value={inventorySearch}
@@ -1502,7 +1502,7 @@ export default function EngineerDesk() {
             {filteredInventory.map((item) => {
               const available = item.quantity - item.locked;
               return (
-                <div key={item.id} className="rounded-lg border border-border bg-secondary/30 p-3">
+                <div key={item.id} className="rounded-lg border border-border bg-secondary/30 p-4">
                   <p className="text-sm font-medium text-foreground">{item.name}</p>
                   <p className="text-xs text-muted-foreground">{item.category}</p>
                   <div className="mt-2 text-xs text-muted-foreground flex justify-between">

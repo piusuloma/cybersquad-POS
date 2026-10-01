@@ -48,7 +48,7 @@ export default function HeldSalesDialog({ open, onOpenChange, onResume, refreshK
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[80vh]" style={{ maxWidth: "28rem", maxHeight: "80vh" }}>
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <PauseCircle className="w-5 h-5 text-muted-foreground" />
             <div>
               <DialogTitle>Held Sales</DialogTitle>
@@ -67,7 +67,7 @@ export default function HeldSalesDialog({ open, onOpenChange, onResume, refreshK
           ) : (
             <div className="space-y-2">
               {held.map((sale) => (
-                <div key={sale.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                <div key={sale.id} className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{sale.label}</p>
                     <p className="text-xs text-muted-foreground">
@@ -77,7 +77,7 @@ export default function HeldSalesDialog({ open, onOpenChange, onResume, refreshK
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Button size="sm" onClick={() => onResume(sale.id)}>
-                      <PlayCircle className="w-3.5 h-3.5 mr-1" />
+                      <PlayCircle className="h-4 w-4 mr-1" />
                       Resume
                     </Button>
                     <Button
@@ -87,7 +87,7 @@ export default function HeldSalesDialog({ open, onOpenChange, onResume, refreshK
                       aria-label={`Discard held sale ${sale.label}`}
                       onClick={() => handleDiscard(sale.id)}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

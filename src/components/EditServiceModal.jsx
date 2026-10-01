@@ -118,9 +118,9 @@ export function EditServiceModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1.5">
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
               <Label>Service</Label>
               <Input
                 value={form.name}
@@ -129,7 +129,7 @@ export function EditServiceModal({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Title</Label>
               <Input
                 value={form.title}
@@ -138,7 +138,7 @@ export function EditServiceModal({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Type</Label>
               <Select
                 value={form.service_type}
@@ -157,7 +157,7 @@ export function EditServiceModal({
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Base Price (NGN)</Label>
               <Input
                 type="number"
@@ -170,7 +170,7 @@ export function EditServiceModal({
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Description</Label>
             <Textarea
               value={form.description}
@@ -180,7 +180,7 @@ export function EditServiceModal({
             />
           </div>
 
-          <label className="flex items-center gap-3 rounded-lg border p-2.5">
+          <label className="flex items-center gap-4 rounded-lg border p-2">
             <Checkbox
               checked={form.is_active}
               onCheckedChange={(checked) =>

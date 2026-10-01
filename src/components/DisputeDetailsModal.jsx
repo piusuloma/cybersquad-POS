@@ -376,7 +376,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
                 }
               >
                 {dispute.priority === "high" && (
-                  <AlertTriangle className="w-3 h-3 mr-1" />
+                  <AlertTriangle className="h-4 w-4 mr-1" />
                 )}
                 {dispute.priority}
               </Badge>
@@ -394,7 +394,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
           {/* Job and Parties Info */}
           <div className="space-y-4">
             {dispute.job && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Job Reference</p>
@@ -410,7 +410,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
             )}
 
             {dispute.customer && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <User className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Customer</p>
@@ -434,7 +434,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
             )}
 
             {dispute.technician && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 <Wrench className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Technician</p>
@@ -459,7 +459,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
               </div>
             )}
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Created</p>
@@ -476,7 +476,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
           <Separator />
 
           {/* Statements/Timeline */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h4 className="font-medium flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
               Dispute Timeline
@@ -522,7 +522,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
                           >
-                            <ImageIcon className="w-3 h-3" />
+                            <ImageIcon className="h-4 w-4" />
                             Media {idx + 1}
                           </a>
                         ))}
@@ -573,7 +573,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
           )}
 
           {/* Actions */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h4 className="font-medium">Actions</h4>
 
             {/* Upload Media Evidence / Add Staff Note */}
@@ -590,7 +590,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
 
             {/* Media Upload Form */}
             {showMediaUploadForm && canUploadMedia() && (
-              <div className="border rounded-lg p-4 space-y-3 bg-blue-50">
+              <div className="border rounded-lg p-4 space-y-4 bg-blue-50">
                 <div className="flex items-center gap-2">
                   <Upload className="w-4 h-4" />
                   <h5 className="font-medium">Add Staff Note</h5>
@@ -635,7 +635,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
                             onClick={() => removeFile(index)}
                             disabled={uploadLoading}
                           >
-                            <X className="w-3 h-3" />
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       ))}
@@ -702,7 +702,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
             )}
 
             {!canAssignStaff() && !dispute.assigned_staff && (
-              <div className="text-sm text-muted-foreground bg-yellow-50 border border-yellow-200 rounded p-3">
+              <div className="text-sm text-muted-foreground bg-yellow-50 border border-yellow-200 rounded p-4">
                 Cannot assign staff until both customer and technician have
                 responded.
               </div>
@@ -722,7 +722,7 @@ export function DisputeDetailsModal({ open, onClose, disputeId }) {
 
             {/* Finalize Form */}
             {showFinalizeForm && canFinalize() && (
-              <div className="border rounded-lg p-4 space-y-3 bg-slate-50">
+              <div className="border rounded-lg p-4 space-y-4 bg-slate-50">
                 <div className="flex items-center gap-2">
                   <Gavel className="w-4 h-4" />
                   <h5 className="font-medium">Finalize Dispute</h5>

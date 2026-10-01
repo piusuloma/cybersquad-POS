@@ -36,10 +36,10 @@ export function ExportModal({ open, onClose, type, onExport }) {
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label>File Format</Label>
             <RadioGroup value={fileFormat} onValueChange={setFileFormat}>
-              <div className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+              <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                 <RadioGroupItem value="csv" id="csv" />
                 <Label htmlFor="csv" className="flex items-center gap-2 cursor-pointer flex-1">
                   <FileSpreadsheet className="w-4 h-4 text-green-600" />
@@ -50,7 +50,7 @@ export function ExportModal({ open, onClose, type, onExport }) {
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+              <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                 <RadioGroupItem value="pdf" id="pdf" />
                 <Label htmlFor="pdf" className="flex items-center gap-2 cursor-pointer flex-1">
                   <FileText className="w-4 h-4 text-red-600" />
@@ -61,7 +61,7 @@ export function ExportModal({ open, onClose, type, onExport }) {
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+              <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                 <RadioGroupItem value="excel" id="excel" />
                 <Label htmlFor="excel" className="flex items-center gap-2 cursor-pointer flex-1">
                   <FileSpreadsheet className="w-4 h-4 text-green-700" />

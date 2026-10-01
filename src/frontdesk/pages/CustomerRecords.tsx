@@ -175,7 +175,7 @@ export default function CustomerRecords() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Clients</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -190,8 +190,8 @@ export default function CustomerRecords() {
         </div>
       </div>
 
-      <div className="glass-card p-4 space-y-3">
-        <div className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
+      <div className="glass-card p-4 space-y-4">
+        <div className="grid gap-4 md:grid-cols-[1fr_220px_auto]">
           <SearchField
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -244,8 +244,8 @@ export default function CustomerRecords() {
             const hasHistory = group.tickets.length > 0 || group.sales.length > 0;
 
             return (
-              <div key={group.key} className="glass-card p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div key={group.key} className="glass-card p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
                       <UserRound className="w-4 h-4 text-primary" />
@@ -268,8 +268,8 @@ export default function CustomerRecords() {
                 )}
 
                 {group.sales.length > 0 && (
-                  <section className="space-y-3">
-                    <div className="flex items-center justify-between gap-3">
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between gap-4">
                       <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <ReceiptText className="h-4 w-4 text-primary" /> Purchases
                       </h3>
@@ -282,7 +282,7 @@ export default function CustomerRecords() {
                         onClick={() => setSelectedSale(sale)}
                         className="w-full rounded-lg border border-border bg-secondary/30 p-4 text-left transition-colors hover:bg-secondary"
                       >
-                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                           <div className="space-y-1">
                             <p className="font-mono text-sm font-semibold text-primary">{sale.saleNumber}</p>
                             <p className="text-sm text-foreground">{sale.lines.map((line) => line.name).join(", ")}</p>
@@ -299,8 +299,8 @@ export default function CustomerRecords() {
                 )}
 
                 {group.tickets.length > 0 && (
-                  <section className="space-y-3">
-                    <div className="flex items-center justify-between gap-3">
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between gap-4">
                       <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <Wrench className="h-4 w-4 text-primary" /> Repairs
                       </h3>
@@ -312,7 +312,7 @@ export default function CustomerRecords() {
 
                       return (
                         <div key={ticket.id} className="rounded-lg border border-border bg-secondary/30 p-4">
-                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                             <div className="space-y-1">
                               <p className="font-mono text-sm font-semibold text-primary">{ticket.jobId}</p>
                               <p className="text-sm text-foreground">
@@ -346,7 +346,7 @@ export default function CustomerRecords() {
                             </div>
                           </div>
 
-                          <div className="mt-3 space-y-1">
+                          <div className="mt-4 space-y-1">
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-muted-foreground">Progress</span>
                               <span className="font-medium text-foreground">{progress}%</span>

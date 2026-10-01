@@ -177,7 +177,7 @@ export function DisputeTypeModal({ open, onClose }) {
                         }
                         className="w-20 justify-center"
                       >
-                        {type.priority === 'high' && <AlertTriangle className="w-3 h-3 mr-1" />}
+                        {type.priority === 'high' && <AlertTriangle className="h-4 w-4 mr-1" />}
                         {type.priority}
                       </Badge>
                     </TableCell>
