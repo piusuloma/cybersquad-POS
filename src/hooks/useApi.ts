@@ -5,7 +5,9 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 // In dev, calls go through Vite's proxy (see vite.config.ts) via a relative
 // path — the staging backend's CORS only allows the exact production origin,
 // so the browser can never call it directly from a local dev port.
-const BASE_URL = import.meta.env.DEV
+// VITE_API_PROXY=true makes a deployed build use the same-origin /api rewrite in vercel.json, like the dev proxy.
+const USE_API_PROXY = import.meta.env.DEV || import.meta.env.VITE_API_PROXY === 'true';
+const BASE_URL = USE_API_PROXY
   ? ''
   : import.meta.env.VITE_API_BASE_URL || 'https://backend.staging.cybersquadapp.com';
 const API_BASE = `${BASE_URL}/api/v1`;
