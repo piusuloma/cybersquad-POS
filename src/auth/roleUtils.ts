@@ -46,12 +46,13 @@ function normalizeRoleCandidate(candidate: unknown): AppRole | null {
     return "inventory_manager";
   }
 
-  if (normalized === "admin" || normalized.includes("admin")) {
-    return "admin";
-  }
-
+  // Sales is checked before the loose "admin" match so names like "Sales Administrator" stay sales.
   if (normalized.includes("sales") || normalized.includes("cashier")) {
     return "sales";
+  }
+
+  if (normalized === "admin" || normalized.includes("admin")) {
+    return "admin";
   }
 
   return null;
@@ -61,12 +62,12 @@ function normalizeRoleCandidate(candidate: unknown): AppRole | null {
 export function resolveAppRolesFromAuthPayload(payload: any): AppRole[] {
   const rolesArr = Array.isArray(payload?.roles) ? payload.roles : [];
   const adminRolesArr = Array.isArray(payload?.admin_roles) ? payload.admin_roles : [];
-  const roleCandidates = [
-    ...rolesArr.map((role) => role?.name),
-    ...adminRolesArr,
-    payload?.user?.role,
-    payload?.role,
-  ];
+  // The explicit role assignments are authoritative; the looser fields only apply when there are none,
+  // so a generic "admin" flag on the account cannot override a salesperson's assigned role.
+  const assignedRoles = rolesArr.map((role) => role?.name);
+  const roleCandidates = assignedRoles.some((name) => normalizeRoleCandidate(name))
+    ? assignedRoles
+    : [...adminRolesArr, payload?.user?.role, payload?.role];
 
   const roles: AppRole[] = [];
   for (const candidate of roleCandidates) {

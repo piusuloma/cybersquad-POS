@@ -27,3 +27,9 @@ test("accounts with no recognised role fall back to admin only for superusers", 
   assert.deepEqual(roles.resolveAppRolesFromAuthPayload({ user: {} }), []);
   assert.equal(roles.resolveAppRoleFromAuthPayload({ user: {} }), null);
 });
+
+test("a salesperson is never promoted to admin by looser payload fields", () => {
+  assert.equal(roles.resolveAppRoleFromAuthPayload({ ...payload("Sales"), admin_roles: ["admin"], user: { role: "admin", is_staff: true } }), "sales");
+  assert.equal(roles.resolveAppRoleFromAuthPayload(payload("Sales Administrator")), "sales");
+  assert.equal(roles.resolveAppRoleFromAuthPayload({ admin_roles: ["Super Admin"] }), "admin");
+});
