@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DeviceDetails from "./DeviceDetails";
-import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2, BadgePercent, Delete, ClipboardList } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2, Banknote, PauseCircle, SplitSquareHorizontal, X, Undo2, BadgePercent, Delete, ClipboardList, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CustomerPicker from "@/operations/CustomerPicker";
@@ -64,6 +64,7 @@ interface CartPanelProps {
   discountLimitPercent: number | null;
   onApplyDiscount: (amount: number, reason: string) => string | undefined;
   onRemoveDiscount: () => void;
+  onApplyVoucher: (code: string) => Promise<string | undefined>;
   onSetPrice?: (productId: string, price: number) => void;
   onReserve: () => void;
   canReserve: boolean;
@@ -92,6 +93,7 @@ export default function CartPanel({
   discountLimitPercent,
   onApplyDiscount,
   onRemoveDiscount,
+  onApplyVoucher,
   onSetPrice,
   onReserve,
   canReserve,
@@ -105,6 +107,18 @@ export default function CartPanel({
   const [discountValue, setDiscountValue] = useState("");
   const [discountReason, setDiscountReason] = useState("");
   const [discountError, setDiscountError] = useState("");
+  const [voucherOpen, setVoucherOpen] = useState(false);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherError, setVoucherError] = useState("");
+  const [voucherBusy, setVoucherBusy] = useState(false);
+  const submitVoucher = async () => {
+    if (!voucherCode.trim()) { setVoucherError("Enter a voucher code."); return; }
+    setVoucherBusy(true);
+    const error = await onApplyVoucher(voucherCode.trim().toUpperCase());
+    setVoucherBusy(false);
+    setVoucherError(error ?? "");
+    if (!error) { setVoucherOpen(false); setVoucherCode(""); }
+  };
   const submitDiscount = () => {
     const value = Number(discountValue);
     const amount = discountKind === "percent" ? Math.round(itemsTotal * value) / 100 : value;
@@ -215,6 +229,7 @@ export default function CartPanel({
         <Button variant="outline" size="sm" onClick={onRefunds}><Undo2 className="h-4 w-4" />Refund</Button>
         <Button variant="outline" size="sm" disabled={lines.length === 0} onClick={onHold}><PauseCircle className="h-4 w-4" />Hold</Button>
         <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setDiscountOpen(true)}><BadgePercent className="h-4 w-4" />Discount</Button>
+        <Button variant="outline" size="sm" disabled={lines.length === 0 || !!discount} onClick={() => setVoucherOpen(true)}><Ticket className="h-4 w-4" />Voucher</Button>
         <Button variant="outline" size="sm" disabled={lines.length === 0 || !canReserve} title={canReserve ? undefined : "Add a customer name and phone first"} onClick={onReserve}><ClipboardList className="h-4 w-4" />Reserve</Button>
         <Button variant="outline" size="sm" className="col-span-2 hover:text-destructive" disabled={lines.length === 0} onClick={() => setConfirmClear(true)}><Trash2 className="h-4 w-4" />Clear sale</Button>
       </div>
@@ -322,6 +337,14 @@ export default function CartPanel({
               <span className="flex items-center gap-1">-{formatCurrency(discount.amount)}
                 <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Remove discount" onClick={onRemoveDiscount}><X className="h-4 w-4" /></Button></span>
             </div>
+          </div>
+        ) : voucherOpen ? (
+          <div className="space-y-2 rounded-lg border border-border p-4 motion-rise">
+            <Input aria-label="Voucher code" placeholder="Voucher code" value={voucherCode} onChange={(event) => setVoucherCode(event.target.value.toUpperCase())}
+              onKeyDown={(event) => { if (event.key === "Enter") void submitVoucher(); }} />
+            {voucherError && <p className="text-xs text-destructive" role="alert">{voucherError}</p>}
+            <div className="flex gap-2"><Button size="sm" disabled={voucherBusy} onClick={() => void submitVoucher()}>{voucherBusy ? "Checking..." : "Apply"}</Button>
+              <Button size="sm" variant="outline" onClick={() => { setVoucherOpen(false); setVoucherError(""); }}>Cancel</Button></div>
           </div>
         ) : discountOpen ? (
           <div className="space-y-2 rounded-lg border border-border p-4 motion-rise">

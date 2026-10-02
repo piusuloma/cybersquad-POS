@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2, ChevronLeft, ChevronRight, Eye, Wallet, ShoppingCart, Store, Globe2, Clock } from "lucide-react";
+import { Search, Loader2, ChevronLeft, ChevronRight, Eye, Wallet, ShoppingCart, Store, Globe2, Wrench } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
@@ -13,6 +13,7 @@ import {
 } from "./ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { formatCurrency } from "../frontdesk/lib/invoice";
+import { getTickets } from "../frontdesk/lib/store";
 import { getSalePaymentLabel, getSales, isWithinRange } from "../pos/lib/store";
 import { SaleRecordDetailModal } from "./SaleRecordDetailModal";
 import { StatCard } from "./ui/stat-card";
@@ -44,6 +45,7 @@ export function SalesRecords({ initialFilter } = {}) {
   const [search, setSearch] = useState(initialFilter?.search || "");
   const [channel, setChannel] = useState(initialFilter?.channel || "all");
   const [dateScope, setDateScope] = useState(initialFilter?.dateScope || "all");
+  const [tickets, setTickets] = useState([]);
   const [page, setPage] = useState(1);
   const [selectedSale, setSelectedSale] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -60,6 +62,12 @@ export function SalesRecords({ initialFilter } = {}) {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    getTickets().then((data) => { if (mounted) setTickets(data); }).catch(() => {});
+    return () => { mounted = false; };
   }, []);
 
   // Re-apply whenever a new filter object arrives from the dashboard (each
@@ -98,7 +106,10 @@ export function SalesRecords({ initialFilter } = {}) {
   const filteredRevenue = filtered.reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
   const inStoreCount = filtered.filter((sale) => sale.channel !== "website").length;
   const websiteCount = filtered.filter((sale) => sale.channel === "website").length;
-  const reservedCount = filtered.filter((sale) => sale.lifecycle === "reserved").length;
+  // Repair revenue is counted when payment is received (diagnosis fee and repair quotation separately), within the selected date range.
+  const repairSales = tickets.reduce((sum, ticket) => sum
+    + (ticket.diagnosisPaymentReceivedAt && isWithinRange(ticket.diagnosisPaymentReceivedAt, dateScope) ? Number(ticket.diagnosisFee) || 0 : 0)
+    + (ticket.repairPaymentReceivedAt && isWithinRange(ticket.repairPaymentReceivedAt, dateScope) ? Number(ticket.quotation) || 0 : 0), 0);
 
   const openSale = (sale) => {
     setSelectedSale(sale);
@@ -145,10 +156,10 @@ export function SalesRecords({ initialFilter } = {}) {
           bgColor="bg-purple-50"
         />
         <StatCard
-          title="Reserved Orders"
-          value={reservedCount}
-          note="Awaiting payment or collection"
-          icon={Clock}
+          title="Repair Sales"
+          value={formatCurrency(repairSales)}
+          note={DATE_OPTIONS.find((o) => o.value === dateScope)?.label || "All Dates"}
+          icon={Wrench}
           color="text-amber-600"
           bgColor="bg-amber-50"
         />

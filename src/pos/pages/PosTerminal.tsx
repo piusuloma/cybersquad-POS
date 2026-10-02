@@ -8,6 +8,7 @@ import { FlaskConical, History, PauseCircle, Wallet, LogOut } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { useApi } from "@/hooks/useApi";
 import { fetchPosCatalog } from "@/pos/lib/catalog";
+import { validatePosVoucher } from "@/pos/lib/vouchers";
 import { usePosCart } from "@/pos/lib/cart";
 import {
   createSale,
@@ -298,6 +299,14 @@ export default function PosTerminal() {
             setDiscount({ amount: Math.round(amount * 100) / 100, reason });
           }}
           onRemoveDiscount={() => setDiscount(null)}
+          onApplyVoucher={async (code) => {
+            try {
+              const { code: applied, discount: amount } = await validatePosVoucher(api, code, cart.subtotal, cart.lines);
+              setDiscount({ amount: Math.min(Math.round(amount * 100) / 100, cart.subtotal), reason: "Voucher " + applied });
+            } catch (error) {
+              return error instanceof Error ? error.message : "Voucher validation failed.";
+            }
+          }}
           onUpdateQuantity={(id, quantity) => {
             const product = activeCatalog.find((item) => item.id === id);
             if (!product || quantity > product.quantity - product.locked) { toast.error("Requested quantity is not available."); return; }
