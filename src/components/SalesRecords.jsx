@@ -13,7 +13,8 @@ import {
 } from "./ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { formatCurrency } from "../frontdesk/lib/invoice";
-import { getTickets } from "../frontdesk/lib/store";
+import { useApi } from "../hooks/useApi";
+import { fetchRepairSales } from "../lib/repairSales";
 import { getSalePaymentLabel, getSales, isWithinRange } from "../pos/lib/store";
 import { SaleRecordDetailModal } from "./SaleRecordDetailModal";
 import { StatCard } from "./ui/stat-card";
@@ -45,7 +46,8 @@ export function SalesRecords({ initialFilter } = {}) {
   const [search, setSearch] = useState(initialFilter?.search || "");
   const [channel, setChannel] = useState(initialFilter?.channel || "all");
   const [dateScope, setDateScope] = useState(initialFilter?.dateScope || "all");
-  const [tickets, setTickets] = useState([]);
+  const { api } = useApi();
+  const [repairSales, setRepairSales] = useState(null);
   const [page, setPage] = useState(1);
   const [selectedSale, setSelectedSale] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -66,9 +68,11 @@ export function SalesRecords({ initialFilter } = {}) {
 
   useEffect(() => {
     let mounted = true;
-    getTickets().then((data) => { if (mounted) setTickets(data); }).catch(() => {});
+    setRepairSales(null);
+    fetchRepairSales(api, dateScope).then((value) => { if (mounted) setRepairSales(value); });
     return () => { mounted = false; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateScope]);
 
   // Re-apply whenever a new filter object arrives from the dashboard (each
   // card click passes a freshly created object, so this fires every time).
@@ -106,10 +110,6 @@ export function SalesRecords({ initialFilter } = {}) {
   const filteredRevenue = filtered.reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
   const inStoreCount = filtered.filter((sale) => sale.channel !== "website").length;
   const websiteCount = filtered.filter((sale) => sale.channel === "website").length;
-  // Repair revenue is counted when payment is received (diagnosis fee and repair quotation separately), within the selected date range.
-  const repairSales = tickets.reduce((sum, ticket) => sum
-    + (ticket.diagnosisPaymentReceivedAt && isWithinRange(ticket.diagnosisPaymentReceivedAt, dateScope) ? Number(ticket.diagnosisFee) || 0 : 0)
-    + (ticket.repairPaymentReceivedAt && isWithinRange(ticket.repairPaymentReceivedAt, dateScope) ? Number(ticket.quotation) || 0 : 0), 0);
 
   const openSale = (sale) => {
     setSelectedSale(sale);
@@ -157,8 +157,8 @@ export function SalesRecords({ initialFilter } = {}) {
         />
         <StatCard
           title="Repair Sales"
-          value={formatCurrency(repairSales)}
-          note={DATE_OPTIONS.find((o) => o.value === dateScope)?.label || "All Dates"}
+          value={repairSales === null ? "—" : formatCurrency(repairSales)}
+          note="Backend job revenue · ignores channel filter"
           icon={Wrench}
           color="text-amber-600"
           bgColor="bg-amber-50"

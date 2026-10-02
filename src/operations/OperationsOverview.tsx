@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Banknote, ClipboardCheck, PackageCheck, Percent, RotateCcw, ShieldCheck, TrendingUp, Wrench, type LucideIcon } from "lucide-react";
 import { getAuth, getTickets, mapBackendTicketToFrontend, type Ticket } from "@/frontdesk/lib/store";
 import { useApi } from "@/hooks/useApi";
+// @ts-ignore -- plain JS helper
+import { fetchRepairSales } from "@/lib/repairSales";
 import { getSales, getRefunds, orderBalance, type Sale, type Refund } from "@/pos/lib/store";
 import { formatCurrency } from "@/frontdesk/lib/invoice";
 import { SaleRecordDetailModal } from "@/components/SaleRecordDetailModal";
@@ -41,6 +43,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
   const [tickets, setTickets] = useState<Ticket[]>([]); const [state, setState] = useState<Awaited<ReturnType<typeof getBusiness>>>();
   const [period, setPeriod] = useState("today"); const [selected, setSelected] = useState<Sale | null>(null);
   const [filter, setFilter] = useState("all"); const [loadedAt, setLoadedAt] = useState(""); const [repairSource, setRepairSource] = useState("Saved repair records");
+  const [repairSales, setRepairSales] = useState<number | null>(null);
   const [loading, setLoading] = useState(false); const [userName, setUserName] = useState("");
   const management = roles.includes("admin"); const isFrontDesk = roles.includes("front_desk");
   useEffect(() => { getAuth().then((user) => setUserName(user?.name ?? "")); }, []);
@@ -64,16 +67,22 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
     } catch { toast.error("Could not load operational records."); } finally { setLoading(false); }
   };
   useEffect(() => { void load(); }, [management, isFrontDesk]);
+  // Backend job revenue, the same figure as the Dashboard. Only periods the backend reports are shown.
+  const REPAIR_SALES_RANGE: Record<string, string> = { today: "today", "30": "30d", "90": "90d" };
+  useEffect(() => {
+    setRepairSales(null);
+    const range = REPAIR_SALES_RANGE[period];
+    if (!management || !range) return;
+    let active = true;
+    void fetchRepairSales(api, range).then((value: number | null) => { if (active) setRepairSales(value); });
+    return () => { active = false; };
+  }, [period, management]);
   const [from, to] = periodBounds(period);
   const inPeriod = (date: string) => Date.parse(date) >= from && Date.parse(date) <= to;
   const completed = sales.filter((sale) => !sale.isDemo && (!sale.lifecycle || sale.lifecycle === "completed") && inPeriod(sale.createdAt));
   const paidRefunds = refunds.filter((refund) => !refund.isDemo && refund.status === "paid" && inPeriod(refund.paidAt ?? refund.createdAt));
   const gross = completed.reduce((sum, sale) => sum + sale.total, 0);
   const returned = paidRefunds.filter((refund) => refund.kind !== "deposit").reduce((sum, refund) => sum + refund.total, 0);
-  // Repair revenue is counted when the money is received: the diagnosis fee and the repair quotation each on their own payment date.
-  const repairSales = tickets.reduce((sum, ticket) => sum
-    + (ticket.diagnosisPaymentReceivedAt && inPeriod(ticket.diagnosisPaymentReceivedAt) ? Number(ticket.diagnosisFee) || 0 : 0)
-    + (ticket.repairPaymentReceivedAt && inPeriod(ticket.repairPaymentReceivedAt) ? Number(ticket.quotation) || 0 : 0), 0);
   const orders = sales.filter((sale) => !sale.isDemo && sale.lifecycle === "reserved");
   const active = tickets.filter((ticket) => !["completed", "closed", "delivered", "cancelled"].includes(ticket.status));
   const enquiries = state?.enquiries ?? [];
@@ -108,7 +117,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
       {[
         ["Gross sales", formatCurrency(gross)], ["Paid returns", formatCurrency(returned)], ["Net sales", formatCurrency(gross - returned)],
         ["Sales / average value", completed.length + " / " + formatCurrency(completed.length ? gross / completed.length : 0)],
-        ["Sales from repairs", formatCurrency(repairSales)],
+        ["Sales from repairs", repairSales === null ? "—" : formatCurrency(repairSales)],
         ["Open repairs", String(active.length)], ["Paid, uncollected", String(orders.filter((sale) => orderBalance(sale) === 0).length)],
         ["Order balances", formatCurrency(orders.reduce((sum, sale) => sum + orderBalance(sale), 0))],
         ["Enquiry conversion", conversion + "% (" + enquiryCohort.length + " enquiries opened in period)"],
