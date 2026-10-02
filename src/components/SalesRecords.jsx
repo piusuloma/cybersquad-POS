@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2, ChevronLeft, ChevronRight, Eye, Wallet, ShoppingCart, Store, Globe2 } from "lucide-react";
+import { Search, Loader2, ChevronLeft, ChevronRight, Eye, Wallet, ShoppingCart, Store, Globe2, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
@@ -111,7 +111,7 @@ export function SalesRecords({ initialFilter } = {}) {
         <h1>Sales</h1>
         <p className="text-muted-foreground">This device — not yet synced to a shared backend.</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <StatCard
           title="Filtered Revenue"
           value={formatCurrency(filteredRevenue)}
@@ -137,12 +137,20 @@ export function SalesRecords({ initialFilter } = {}) {
           bgColor="bg-blue-50"
         />
         <StatCard
-          title="Website / Reserved"
-          value={`${websiteCount} / ${reservedCount}`}
-          note="Website sales / reserved orders"
+          title="Website Sales"
+          value={websiteCount}
+          note={channel === "in_store" ? "Hidden by channel filter" : "Current filter"}
           icon={Globe2}
           color="text-purple-600"
           bgColor="bg-purple-50"
+        />
+        <StatCard
+          title="Reserved Orders"
+          value={reservedCount}
+          note="Awaiting payment or collection"
+          icon={Clock}
+          color="text-amber-600"
+          bgColor="bg-amber-50"
         />
       </div>
       <Card>

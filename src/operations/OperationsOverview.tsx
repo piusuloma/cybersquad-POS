@@ -12,7 +12,7 @@ import { getBusiness, periodBounds, repairStage, saveBlocker, type BlockerContex
 
 type Blocker = { id: string; title: string; state: string; owner: string; action: string; since: string; open: () => void; };
 const KPI_ICONS: Record<string, LucideIcon> = {
-  "Gross sales": Banknote, "Paid returns": RotateCcw, "Net sales": TrendingUp, "Sales / average value": TrendingUp,
+  "Gross sales": Banknote, "Paid returns": RotateCcw, "Net sales": TrendingUp, "Sales / average value": TrendingUp, "Sales from repairs": Wrench,
   "Open repairs": Wrench, "Paid, uncollected": PackageCheck, "Order balances": Banknote, "Enquiry conversion": Percent,
   "New repair jobs": ClipboardCheck, "Completed repairs": ClipboardCheck, "Warranty / repeat intake": ShieldCheck,
 };
@@ -70,6 +70,10 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
   const paidRefunds = refunds.filter((refund) => !refund.isDemo && refund.status === "paid" && inPeriod(refund.paidAt ?? refund.createdAt));
   const gross = completed.reduce((sum, sale) => sum + sale.total, 0);
   const returned = paidRefunds.filter((refund) => refund.kind !== "deposit").reduce((sum, refund) => sum + refund.total, 0);
+  // Repair revenue is counted when the money is received: the diagnosis fee and the repair quotation each on their own payment date.
+  const repairSales = tickets.reduce((sum, ticket) => sum
+    + (ticket.diagnosisPaymentReceivedAt && inPeriod(ticket.diagnosisPaymentReceivedAt) ? Number(ticket.diagnosisFee) || 0 : 0)
+    + (ticket.repairPaymentReceivedAt && inPeriod(ticket.repairPaymentReceivedAt) ? Number(ticket.quotation) || 0 : 0), 0);
   const orders = sales.filter((sale) => !sale.isDemo && sale.lifecycle === "reserved");
   const active = tickets.filter((ticket) => !["completed", "closed", "delivered", "cancelled"].includes(ticket.status));
   const enquiries = state?.enquiries ?? [];
@@ -104,6 +108,7 @@ export default function OperationsOverview({ onOpenRepair, onEnquiries, roles, a
       {[
         ["Gross sales", formatCurrency(gross)], ["Paid returns", formatCurrency(returned)], ["Net sales", formatCurrency(gross - returned)],
         ["Sales / average value", completed.length + " / " + formatCurrency(completed.length ? gross / completed.length : 0)],
+        ["Sales from repairs", formatCurrency(repairSales)],
         ["Open repairs", String(active.length)], ["Paid, uncollected", String(orders.filter((sale) => orderBalance(sale) === 0).length)],
         ["Order balances", formatCurrency(orders.reduce((sum, sale) => sum + orderBalance(sale), 0))],
         ["Enquiry conversion", conversion + "% (" + enquiryCohort.length + " enquiries opened in period)"],
