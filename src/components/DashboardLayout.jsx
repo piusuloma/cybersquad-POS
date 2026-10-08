@@ -33,11 +33,18 @@ import {
 	ShieldCheck,
 	UserCog,
 	History,
+	ArrowDownLeft,
+	ArrowUpRight,
+	Truck,
 } from "lucide-react";
 import OperationsWorkspace from "../operations/OperationsWorkspace";
 import OperationsOverview from "../operations/OperationsOverview";
 import { ShiftHistoryTable } from "../pos/components/ShiftHistoryDialog";
 import { SectionTabs } from "./SectionTabs";
+import { FinanceOverview } from "./finance/FinanceOverview";
+import { ReceivablesView } from "./finance/ReceivablesView";
+import { PayablesView } from "./finance/PayablesView";
+import { CodBilling } from "./finance/CodBilling";
 import { useNavigate } from "react-router-dom";
 import { DashboardOverview } from "./DashboardOverview";
 import { SalesRecords } from "./SalesRecords";
@@ -75,7 +82,7 @@ const sectionHeaders = {
 	},
 	finance: {
 		title: "Finance",
-		description: "Review payments, payouts, disputes, vouchers, and finance reports.",
+		description: "Revenue, receivables, payables, COD billing, payments, payouts, disputes, and finance reports.",
 	},
 	people: {
 		title: "People & Access",
@@ -116,7 +123,7 @@ export function DashboardLayout({ onLogout }) {
 	const navigate = useNavigate();
 	const [activeView, setActiveView] = useState("overview");
 	// The tab open inside each multi-screen section; dashboard cards set these to land on the right screen.
-	const [sectionTabs, setSectionTabs] = useState({ sales: "records", repairs: "jobs", finance: "payments", people: "technicians" });
+	const [sectionTabs, setSectionTabs] = useState({ sales: "records", repairs: "jobs", finance: "overview", people: "technicians" });
 	const openSection = (section, tab) => {
 		setSectionTabs((current) => ({ ...current, [section]: tab }));
 		setActiveView(section);
@@ -256,7 +263,12 @@ export function DashboardLayout({ onLogout }) {
 					<SectionTabs
 						{...tabState("finance")}
 						tabs={[
-							{ value: "payments", label: "Payments", icon: CreditCard, content: <PaymentFinance /> },
+							{ value: "overview", label: "Overview", icon: LayoutDashboard, content: <FinanceOverview onNavigate={(tab) => openSection("finance", tab)} /> },
+							{ value: "receivables", label: "Receivables", icon: ArrowDownLeft, content: <ReceivablesView onNavigate={(tab) => openSection("finance", tab)} /> },
+							{ value: "payables", label: "Payables", icon: ArrowUpRight, content: <PayablesView /> },
+							{ value: "cod", label: "COD Billing", icon: Truck, content: <CodBilling /> },
+							// Existing screen, unchanged: it still hosts Payouts, Reports and Vouchers as its own inner tabs.
+							{ value: "payments", label: "Payments, payouts & reports", icon: CreditCard, content: <PaymentFinance /> },
 							{ value: "disputes", label: "Disputes", icon: AlertTriangle, content: <DisputeManagement userRole={userRole} /> },
 						]}
 					/>

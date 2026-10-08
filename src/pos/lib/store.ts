@@ -11,6 +11,24 @@ import { snapshotDeviceLines, validateDeviceLines, type SaleCustomer } from "./d
 export type SaleChannel = "in_store" | "website";
 export type SalePaymentMode = "cash" | "pos" | "bank_transfer";
 
+// Cash on delivery is deliberately NOT a SalePaymentMode: it is not money
+// received at the till, so it never enters `payments`, shift cash totals or
+// refund-available maths (all of which sum `payments`). It is a POS-only
+// concept — the repair desk shares SalePaymentMode/PAYMENT_MODE_LABELS from
+// frontdesk/lib/store and must not grow a COD option.
+export type CodStatus = "pending" | "delivered" | "collected" | "settled" | "cancelled";
+export const COD_COURIER = "Speedef";
+export interface SaleCod {
+  courier: string;
+  address: string;
+  // Courier's charge, deducted from what it remits to us.
+  fee: number;
+  status: CodStatus;
+  history: { status: CodStatus; at: string; by: string }[];
+  settlementId?: string;
+  settledAt?: string;
+}
+
 // One entry per payment method used on a sale. A single-method sale has
 // exactly one entry; a split sale (e.g. part cash, part POS) has 2+, whose
 // `amount`s add up to the sale total.
@@ -45,7 +63,11 @@ export interface Sale {
   payments: SalePayment[];
   // Mirrors payments[0] — kept so records saved before split payments
   // existed, and code that only cares about the primary method, keep working.
-  paymentMode: SalePaymentMode;
+  paymentMode: SalePaymentMode | "cod";
+  // Present on cash-on-delivery sales. Such a sale is a completed sale (it
+  // counts as revenue when it happens) whose payment is still pending, so
+  // `payments` is empty until/unless money is actually received.
+  cod?: SaleCod;
   cashTendered?: number;
   changeDue?: number;
   createdAt: string;
@@ -170,6 +192,8 @@ async function createSaleUnlocked(
     lifecycle: input.lifecycle ?? "completed",
     orderCreatedAt: input.lifecycle === "reserved" ? createdAt : undefined,
     payments: await stampPayments(input.payments, createdAt),
+    ...(input.cod ? { cod: { ...input.cod, courier: COD_COURIER, status: "pending" as CodStatus,
+      history: [{ status: "pending" as CodStatus, at: createdAt, by: input.cashierName }] } } : {}),
     isDemo: input.lines.some((line) => line.isDemo),
     synced: false,
   };
@@ -206,7 +230,7 @@ export function getSalePayments(sale: Sale): SalePayment[] {
   if (Array.isArray(sale.payments)) return sale.payments;
   return [
     {
-      mode: sale.paymentMode,
+      mode: sale.paymentMode as SalePaymentMode,
       amount: sale.total,
       cashTendered: sale.cashTendered,
       changeDue: sale.changeDue,
@@ -221,6 +245,7 @@ export function getSaleCashAmount(sale: Sale): number {
 }
 
 export function getSalePaymentLabel(sale: Sale): string {
+  if (sale.cod) return "Cash on Delivery";
   const payments = getSalePayments(sale);
   return payments.map((payment) => PAYMENT_MODE_LABELS[payment.mode] ?? payment.mode).join(" + ");
 }
@@ -428,6 +453,12 @@ function validateCheckout(input: Omit<Sale, "id" | "saleNumber" | "createdAt">) 
     if (!input.customer?.name.trim() || !input.customer?.phone.trim() || !input.collectionDueAt ||
         !Number.isFinite(Date.parse(input.collectionDueAt))) throw new Error("Customer and expected collection date are required.");
     if (paid > total) throw new Error("Deposit cannot exceed the order total.");
+  } else if (input.cod) {
+    if (paid !== 0) throw new Error("A cash-on-delivery sale is paid by the courier, not at the till.");
+    if (!input.customer?.name.trim() || !input.customer?.phone.trim() || !input.cod.address?.trim()) {
+      throw new Error("Customer name, phone and delivery address are required for cash on delivery.");
+    }
+    if (!Number.isFinite(input.cod.fee) || input.cod.fee < 0 || input.cod.fee > total) throw new Error("Enter a valid courier fee.");
   } else if (paid !== total) throw new Error("Payments must equal the sale total.");
 }
 async function stampPayments(payments: SalePayment[], recordedAt: string) {
@@ -470,6 +501,34 @@ export function cancelUnpaidOrder(saleId: string): Promise<void> {
     sale.lifecycle = "cancelled"; await writeToStorage(SALES_KEY, sales);
   });
 }
+// Courier-side lifecycle of a COD sale. "settled" is reached only through
+// recordSettlementPayment (src/finance/lib/settlements.ts) once the courier's
+// remittance has been received in full — never set directly here.
+const COD_TRANSITIONS: Record<CodStatus, CodStatus[]> = {
+  pending: ["delivered", "collected", "cancelled"],
+  delivered: ["collected", "cancelled"],
+  collected: [],
+  settled: [],
+  cancelled: [],
+};
+export function updateCodStatus(saleId: string, status: "delivered" | "collected" | "cancelled", actor: string): Promise<Sale> {
+  return withSaleLock(async () => {
+    const sales = await getSales(); const sale = sales.find((entry) => entry.id === saleId);
+    if (!sale?.cod) throw new Error("This is not a cash-on-delivery sale.");
+    if (!COD_TRANSITIONS[sale.cod.status].includes(status)) throw new Error("A " + sale.cod.status + " COD order cannot be marked " + status + ".");
+    sale.cod.status = status; sale.cod.history.push({ status, at: new Date().toISOString(), by: actor });
+    // A cancelled COD sale is no longer revenue and frees its serialised units.
+    if (status === "cancelled") sale.lifecycle = "cancelled";
+    sale.synced = false;
+    await appendAudit(actor, "cod_" + status, sale.saleNumber);
+    await writeToStorage(SALES_KEY, sales); return sale;
+  });
+}
+// Used by the settlement module, inside withSaleLock.
+export async function mutateSalesUnlocked(mutator: (sales: Sale[]) => void): Promise<void> {
+  const sales = await getSales(); mutator(sales); await writeToStorage(SALES_KEY, sales);
+}
+export { appendAudit as appendAuditUnlocked };
 export interface AuditEntry { id: string; at: string; actor: string; action: string; detail: string; }
 export async function getAuditLog(): Promise<AuditEntry[]> { return (await readFromStorage<AuditEntry[]>("pos_audit_log")) ?? []; }
 // Call from inside withSaleLock so writes to the log are serialised with the change they describe.

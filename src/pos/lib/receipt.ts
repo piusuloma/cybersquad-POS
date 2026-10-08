@@ -25,9 +25,11 @@ export function printSaleReceipt(sale: Sale, settings?: Partial<AppSettings>, ti
   const logoUrl = cybersquadLightLogo;
   const payments = getSalePayments(sale);
   const isSplit = payments.length > 1;
-  const paymentModeLabel = payments
-    .map((payment) => PAYMENT_MODE_LABELS[payment.mode] ?? payment.mode)
-    .join(" + ");
+  const paymentModeLabel = sale.cod
+    ? "Cash on Delivery - payment pending"
+    : payments
+        .map((payment) => PAYMENT_MODE_LABELS[payment.mode] ?? payment.mode)
+        .join(" + ");
 
   const popup = window.open("", "_blank", "width=960,height=720");
   if (!popup) return;
