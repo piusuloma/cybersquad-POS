@@ -217,6 +217,25 @@ export default function UnifiedLoginPage() {
                 {!loading && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
               </Button>
             </form>
+            {/* Local development only (stripped from production builds): browse the app with no backend account. */}
+            {import.meta.env.DEV && (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-3 w-full"
+                onClick={() => {
+                  localStorage.setItem("prototype_session", "1");
+                  localStorage.setItem("user", JSON.stringify({
+                    access: "prototype", refresh: "prototype",
+                    user: { id: 0, name: "Prototype Admin", email: "prototype@local", is_superuser: true, role: "admin" },
+                    roles: [{ name: "admin" }, { name: "sales" }],
+                  }));
+                  navigate("/admin", { replace: true });
+                }}
+              >
+                Continue as prototype admin (no backend)
+              </Button>
+            )}
           </div>
         </div>
       </div>

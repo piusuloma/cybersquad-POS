@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatCurrency } from "../../lib/currency";
 import { filterRows, ledgerTotals } from "./ledger";
-import { fmtDate, LoadingRow, OdooUnavailable, Pager, paginate, RangeSelect, ReceivableBadge } from "./shared";
+import { fmtDate, LoadingRow, OdooUnavailable, Pager, paginate, RangeSelect, ReceivableBadge, PrototypeBanner } from "./shared";
 
 const STATUS_OPTIONS = [["all", "All statuses"], ["outstanding", "Outstanding"], ["partially_paid", "Partially Paid"], ["paid", "Paid"], ["overdue", "Overdue"]];
 const PAGE_SIZE = 10;
@@ -27,6 +27,7 @@ export function LedgerView({ rows, loading, unavailable, partyLabel, referenceLa
 
   return (
     <div className="space-y-4">
+      <PrototypeBanner />
       {renderStats(totals, rows)}
       {unavailable && <OdooUnavailable what={unavailableWhat} />}
       <Card>

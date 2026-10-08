@@ -281,13 +281,19 @@ function readCanApprovePayouts() {
   }
 }
 
-export function PaymentFinance() {
+const ALL_TABS = ["payments", "payouts", "reports", "vouchers"];
+
+// `show` picks which inner tabs this instance offers, so Finance can surface
+// Payments, Payouts and Reports as their own top-level tabs (PRD navigation)
+// without duplicating the data loading. `showSummary` hides the headline cards
+// when the instance isn't the first one on screen.
+export function PaymentFinance({ show = ALL_TABS, showSummary = true }) {
   const { api } = useApi();
 
   const canApprovePayouts = useMemo(() => readCanApprovePayouts(), []);
 
   // UI tab control
-  const [activeTab, setActiveTab] = useState("payments");
+  const [activeTab, setActiveTab] = useState(show[0] ?? "payments");
 
   // Revenue on this page previously only counted jobs — but the business
   // actually collects money through three channels: repair jobs (backend,
@@ -941,6 +947,8 @@ export function PaymentFinance() {
 
   return (
     <div className="space-y-6">
+      {showSummary && (
+      <>
       <div>
         <h1>Payment & Finance</h1>
         <p className="text-muted-foreground">
@@ -1025,17 +1033,22 @@ export function PaymentFinance() {
         </Card>
       </div>
 
+      </>
+      )}
+
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-4"
       >
+        {show.length > 1 && (
         <TabsList>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          {canApprovePayouts && <TabsTrigger value="payouts">Payouts</TabsTrigger>}
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-          <TabsTrigger value="vouchers">Vouchers</TabsTrigger>
+          {show.includes("payments") && <TabsTrigger value="payments">Payments</TabsTrigger>}
+          {show.includes("payouts") && canApprovePayouts && <TabsTrigger value="payouts">Payouts</TabsTrigger>}
+          {show.includes("reports") && <TabsTrigger value="reports">Reports</TabsTrigger>}
+          {show.includes("vouchers") && <TabsTrigger value="vouchers">Vouchers</TabsTrigger>}
         </TabsList>
+        )}
 
         {/* -----------------------------
             PAYMENTS TAB
@@ -1214,6 +1227,9 @@ export function PaymentFinance() {
         {/* -----------------------------
             PAYOUTS TAB
         ------------------------------ */}
+        {!canApprovePayouts && show.length === 1 && show[0] === "payouts" && (
+          <p className="text-sm text-muted-foreground">Your account is not allowed to view or approve payouts.</p>
+        )}
         {canApprovePayouts && (
         <TabsContent value="payouts">
           <Card>

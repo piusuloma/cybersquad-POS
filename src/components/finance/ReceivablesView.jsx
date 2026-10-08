@@ -7,7 +7,8 @@ import { fetchReceivables } from "../../lib/finance";
 import { formatCurrency } from "../../lib/currency";
 import { getSettlements } from "../../finance/lib/settlements";
 import { LedgerView } from "./LedgerView";
-import { normaliseOdooRows, settlementRows } from "./ledger";
+import { mergeReceivables, normaliseOdooRows } from "./ledger";
+import { LedgerPaymentDialog } from "./LedgerPaymentDialog";
 import { RecordPaymentDialog } from "./RecordPaymentDialog";
 
 // Accounts Receivable: Odoo customer invoices plus Speedef settlements
@@ -18,6 +19,7 @@ export function ReceivablesView({ onNavigate }) {
   const [odoo, setOdoo] = useState(undefined); // undefined = loading, null = unavailable
   const [settlements, setSettlements] = useState([]);
   const [payFor, setPayFor] = useState(null);
+  const [payRow, setPayRow] = useState(null);
 
   const load = useCallback(async () => {
     const [remote, local] = await Promise.all([fetchReceivables(api), getSettlements()]);
@@ -26,8 +28,7 @@ export function ReceivablesView({ onNavigate }) {
   useEffect(() => { load(); }, [load]);
 
   const rows = useMemo(() => {
-    const remote = normaliseOdooRows(odoo, "customer");
-    return [...settlementRows(settlements, remote), ...remote];
+    return mergeReceivables(settlements, normaliseOdooRows(odoo, "customer"));
   }, [odoo, settlements]);
 
   // Paid this month = settlement payments received this month (Odoo rows only expose a balance).
@@ -54,8 +55,9 @@ export function ReceivablesView({ onNavigate }) {
             <Button size="sm" variant="outline" onClick={() => onNavigate?.("cod")}>View</Button>
             {row.balance > 0 && <Button size="sm" onClick={() => setPayFor(row.settlement.id)}>Record payment</Button>}
           </div>
-        ) : null}
+        ) : row.balance > 0 ? <Button size="sm" onClick={() => setPayRow(row)}>Record payment</Button> : null}
       />
+      <LedgerPaymentDialog kind="receivable" row={payRow} onOpenChange={(v) => !v && setPayRow(null)} onRecorded={load} />
       <RecordPaymentDialog open={!!payFor} onOpenChange={(value) => !value && setPayFor(null)} settlements={settlements} initialId={payFor} onRecorded={load} />
     </>
   );

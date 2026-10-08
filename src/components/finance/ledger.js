@@ -20,10 +20,12 @@ export function normaliseOdooRows(rows, party) {
 }
 
 // Speedef settlements are receivables too (PRD US5). Once Odoo returns the
-// invoice for a synced settlement, hide the local copy so it isn't listed twice.
-export function settlementRows(settlements, odooRows = []) {
-  const known = new Set(odooRows.map((row) => row.reference));
-  return settlements.filter((item) => !known.has(item.reference)).map((item) => ({
+// invoice for a synced settlement, the local row stays and the Odoo copy is
+// dropped: payments recorded against it must update the settlement (balance,
+// COD orders -> Settled), which only the local record can do.
+export function mergeReceivables(settlements, odooRows = []) {
+  const local = new Set(settlements.map((item) => item.reference));
+  const rows = settlements.map((item) => ({
     id: "settlement:" + item.id,
     party: item.courier,
     reference: item.reference,
@@ -36,6 +38,7 @@ export function settlementRows(settlements, odooRows = []) {
     source: "settlement",
     settlement: item,
   }));
+  return [...rows, ...odooRows.filter((row) => !local.has(row.reference))];
 }
 
 export function filterRows(rows, { range, status, query }) {

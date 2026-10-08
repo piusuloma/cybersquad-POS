@@ -42,6 +42,7 @@ export default function AdminApp() {
     try {
       localStorage.removeItem("user");
       localStorage.removeItem("auth_token");
+      localStorage.removeItem("prototype_session");
       setIsAuthenticated(false);
       navigate("/admin", { replace: true });
     } catch (error) {

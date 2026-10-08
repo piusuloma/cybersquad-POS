@@ -32,7 +32,7 @@ export async function syncSettlementChain(api, settlementId, actor = "System") {
   for (const payment of settlement.payments.filter((item) => item.odoo.state !== "synced")) {
     const result = await syncSettlementPaymentToOdoo(api, settlement, payment);
     await setPaymentOdooState(settlementId, payment.id, result.ok
-      ? { state: "synced", odooRef: result.odooRef, attemptedAt: nowIso() }
+      ? { state: "synced", odooRef: result.odooRef, reconciled: result.reconciled, attemptedAt: nowIso() }
       : failed(result.error));
     if (!result.ok) {
       firstError ??= result.error;

@@ -20,7 +20,7 @@ export const SETTLEMENT_TERMS_DAYS = 30;
 const money = (amount: number) => Math.round(amount * 100) / 100;
 
 export type OdooSyncState = "not_synced" | "synced" | "failed";
-export interface OdooSync { state: OdooSyncState; odooRef?: string; error?: string; attemptedAt?: string; }
+export interface OdooSync { state: OdooSyncState; odooRef?: string; reconciled?: boolean; error?: string; attemptedAt?: string; }
 export type ReceivableStatus = "outstanding" | "partially_paid" | "paid" | "overdue";
 
 export interface SettlementLine {

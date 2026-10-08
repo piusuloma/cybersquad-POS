@@ -10,7 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { formatCurrency } from "../../lib/currency";
 import { getSales, isWithinRange, updateCodStatus } from "../../pos/lib/store";
 import { getSettlements, isBillableCod, settlementBalance, settlementPaid, settlementStatus } from "../../finance/lib/settlements";
-import { CodBadge, currentActor, fmtDate, OdooBadge, Pager, paginate, RangeSelect, ReceivableBadge, SyncFailureBanner } from "./shared";
+import { seedDemoCodOrders } from "../../finance/lib/demo";
+import { prototypeEnabled } from "../../lib/finance";
+import { CodBadge, currentActor, fmtDate, OdooBadge, Pager, paginate, RangeSelect, ReceivableBadge, SyncFailureBanner, PrototypeBanner } from "./shared";
 import { GenerateSettlementDialog } from "./GenerateSettlementDialog";
 import { SettlementDialog } from "./SettlementDialog";
 import { RecordPaymentDialog } from "./RecordPaymentDialog";
@@ -61,6 +63,7 @@ export function CodBilling() {
 
   return (
     <div className="space-y-4">
+      <PrototypeBanner />
       <SyncFailureBanner count={failures} />
       <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList>
@@ -78,7 +81,10 @@ export function CodBilling() {
           </div>
           <Card><CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
             <p className="text-sm text-muted-foreground">Bundle delivered Speedef orders for a billing period into one receivable.</p>
-            <Button onClick={() => setGenerating(true)}><FileText className="mr-2 h-4 w-4" />Generate Settlement</Button>
+            <div className="flex gap-2">
+              {prototypeEnabled() && <Button variant="outline" onClick={async () => { try { await seedDemoCodOrders(currentActor()); toast.success("Added 6 demo COD orders."); await load(); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not add demo orders."); } }}>Add demo COD orders</Button>}
+              <Button onClick={() => setGenerating(true)}><FileText className="mr-2 h-4 w-4" />Generate Settlement</Button>
+            </div>
           </CardContent></Card>
         </TabsContent>
 

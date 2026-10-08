@@ -10,7 +10,7 @@ import { fetchWebsiteSalesSummary } from "../../lib/websiteSales";
 import { formatAmount, formatCurrency } from "../../lib/currency";
 import { getSalesSummary, getSales, isWithinRange } from "../../pos/lib/store";
 import { getSettlements, settlementBalance } from "../../finance/lib/settlements";
-import { fmtDate, OdooUnavailable, RangeSelect, SyncFailureBanner, toneBadge } from "./shared";
+import { fmtDate, OdooUnavailable, RangeSelect, SyncFailureBanner, toneBadge, PrototypeBanner } from "./shared";
 
 // Finance Overview (US8). Odoo is the source of truth for AR / AP / cash; when
 // its endpoint isn't there those cards say so rather than guessing. Revenue
@@ -71,6 +71,7 @@ export function FinanceOverview({ onNavigate }) {
 
   return (
     <div className="space-y-4">
+      <PrototypeBanner />
       <SyncFailureBanner count={figures.failures} />
       <div className="flex justify-end"><RangeSelect value={range} onChange={setRange} /></div>
       {odoo === null && <OdooUnavailable what="Accounts receivable, accounts payable, cash/bank balance and payments from Odoo" />}

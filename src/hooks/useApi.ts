@@ -96,6 +96,13 @@ export const useApi = () => {
         config.cancelToken = source.token;
         cancelTokens.current.push(source);
 
+        // Local prototype session (dev builds only; see the login page): there is no real
+        // account, so fail every request as an ordinary network error instead of sending it
+        // to the backend, where the 401 would log the prototype user straight back out.
+        if (import.meta.env.DEV && localStorage.getItem('prototype_session')) {
+          config.adapter = () => Promise.reject(Object.assign(new Error('Prototype session: backend not connected'), { code: 'ERR_NETWORK', isAxiosError: true, config }));
+        }
+
         // Block non-auth requests during token refresh
         const isAuthCall = (config.url || '').includes('/auth/');
         if (isBlockedForRequests && !isAuthCall) {

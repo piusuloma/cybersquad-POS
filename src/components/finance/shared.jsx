@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
-import { AlertTriangle, CheckCircle2, CloudOff, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CloudOff, FlaskConical, Loader2 } from "lucide-react";
+import { prototypeEnabled, prototypeOutage, resetPrototypeLedger, setPrototypeEnabled, setPrototypeOutage } from "../../lib/finance";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 export const RANGE_OPTIONS = [
@@ -60,7 +62,7 @@ export function CodBadge({ status }) {
 }
 
 export function OdooBadge({ odoo }) {
-  if (odoo?.state === "synced") return <Badge className={TONES.green}><CheckCircle2 />In Odoo</Badge>;
+  if (odoo?.state === "synced") return <Badge className={TONES.green}><CheckCircle2 />{odoo.reconciled ? "Reconciled" : "In Odoo"}</Badge>;
   if (odoo?.state === "failed") return <Badge className={TONES.red} title={odoo.error}><AlertTriangle />Sync failed</Badge>;
   return <Badge className={TONES.grey}><CloudOff />Not in Odoo</Badge>;
 }
@@ -108,6 +110,26 @@ export function Pager({ page, pages, total, size, onPage }) {
         <span>{page} / {pages}</span>
         <button type="button" className="rounded border px-2 py-1 disabled:opacity-40" disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page">›</button>
       </div>
+    </div>
+  );
+}
+
+// Shown on every finance screen while prototype mode stands in for Odoo.
+export function PrototypeBanner() {
+  const [outage, setOutage] = useState(prototypeOutage());
+  if (!prototypeEnabled()) return null;
+  const toggleOutage = () => { setPrototypeOutage(!outage); setOutage(!outage); };
+  const reset = () => { if (window.confirm("Reset the demo Odoo invoices, bills and payments?")) { resetPrototypeLedger(); window.location.reload(); } };
+  const turnOff = () => { setPrototypeEnabled(false); window.location.reload(); };
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">
+      <FlaskConical className="h-4 w-4 shrink-0" />
+      <span>Prototype mode: Odoo is simulated in this browser. COD orders, settlements and POS refunds are real local records.</span>
+      <span className="ml-auto flex gap-3">
+        <button type="button" className="underline" onClick={toggleOutage}>{outage ? "End simulated outage" : "Simulate Odoo outage"}</button>
+        <button type="button" className="underline" onClick={reset}>Reset demo Odoo</button>
+        <button type="button" className="underline" onClick={turnOff}>Use real Odoo only</button>
+      </span>
     </div>
   );
 }

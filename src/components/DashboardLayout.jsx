@@ -36,6 +36,8 @@ import {
 	ArrowDownLeft,
 	ArrowUpRight,
 	Truck,
+	Banknote,
+	Undo2,
 } from "lucide-react";
 import OperationsWorkspace from "../operations/OperationsWorkspace";
 import OperationsOverview from "../operations/OperationsOverview";
@@ -45,6 +47,8 @@ import { FinanceOverview } from "./finance/FinanceOverview";
 import { ReceivablesView } from "./finance/ReceivablesView";
 import { PayablesView } from "./finance/PayablesView";
 import { CodBilling } from "./finance/CodBilling";
+import { RefundsView } from "./finance/RefundsView";
+import { SettlementPayments } from "./finance/SettlementPayments";
 import { useNavigate } from "react-router-dom";
 import { DashboardOverview } from "./DashboardOverview";
 import { SalesRecords } from "./SalesRecords";
@@ -267,9 +271,12 @@ export function DashboardLayout({ onLogout }) {
 							{ value: "receivables", label: "Receivables", icon: ArrowDownLeft, content: <ReceivablesView onNavigate={(tab) => openSection("finance", tab)} /> },
 							{ value: "payables", label: "Payables", icon: ArrowUpRight, content: <PayablesView /> },
 							{ value: "cod", label: "COD Billing", icon: Truck, content: <CodBilling /> },
-							// Existing screen, unchanged: it still hosts Payouts, Reports and Vouchers as its own inner tabs.
-							{ value: "payments", label: "Payments, payouts & reports", icon: CreditCard, content: <PaymentFinance /> },
+							// Existing repair-payment screens, now split across the PRD's top-level tabs.
+							{ value: "payments", label: "Payments", icon: CreditCard, content: <div className="space-y-6"><SettlementPayments /><PaymentFinance show={["payments", "vouchers"]} /></div> },
+							{ value: "payouts", label: "Payouts", icon: Banknote, content: <PaymentFinance show={["payouts"]} showSummary={false} /> },
+							{ value: "refunds", label: "Refunds", icon: Undo2, content: <RefundsView /> },
 							{ value: "disputes", label: "Disputes", icon: AlertTriangle, content: <DisputeManagement userRole={userRole} /> },
+							{ value: "reports", label: "Reports", icon: BarChart3, content: <PaymentFinance show={["reports"]} showSummary={false} /> },
 						]}
 					/>
 				);
