@@ -40,6 +40,11 @@ export default function SaleCompleteDialog({ sale, settings, onNewSale }: SaleCo
                 <span className="text-muted-foreground">Total</span>
                 <span className="font-semibold text-foreground">{formatCurrency(sale.total)}</span>
               </div>
+              {sale.cod && (
+                <div className="rounded-md bg-warning/15 p-2 text-sm text-warning">
+                  Cash on delivery - payment pending. {sale.cod.courier} will collect {formatCurrency(sale.total)} from the customer.
+                </div>
+              )}
               {isSplit ? (
                 payments.map((payment, index) => (
                   <div key={index} className="flex items-center justify-between text-sm">

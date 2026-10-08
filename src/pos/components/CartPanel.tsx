@@ -28,6 +28,9 @@ import type { SalePayment, SalePaymentMode } from "@/pos/lib/store";
 import type { SaleCustomer } from "@/pos/lib/devices";
 
 const PAYMENT_MODES: SalePaymentMode[] = ["cash", "pos", "bank_transfer"];
+// COD is offered only as a single (non-split) method: it is not money taken at the till.
+type CheckoutMode = SalePaymentMode | "cod";
+export interface CodDetails { address: string; fee: number }
 
 interface PaymentRow {
   id: string;
@@ -49,6 +52,8 @@ interface CartPanelProps {
   onClear: () => void;
   onHold: () => void;
   onCharge: (payments: SalePayment[]) => void;
+  // Records the sale as cash-on-delivery (payment pending, collected by the courier).
+  onChargeCod?: (details: CodDetails) => void;
   charging: boolean;
   shiftActive: boolean;
   onSelectDevices: (productId: string) => void;
@@ -78,6 +83,7 @@ export default function CartPanel({
   onClear,
   onHold,
   onCharge,
+  onChargeCod,
   charging,
   shiftActive,
   onSelectDevices,
@@ -128,8 +134,10 @@ export default function CartPanel({
   };
 
   // Single-payment path (the common case): one method covers the whole sale.
-  const [paymentMode, setPaymentMode] = useState<SalePaymentMode>("cash");
+  const [paymentMode, setPaymentMode] = useState<CheckoutMode>("cash");
   const [cashTendered, setCashTendered] = useState("");
+  const [codAddress, setCodAddress] = useState("");
+  const [codFee, setCodFee] = useState("");
 
   // Split-payment path: two or more methods each cover part of the sale.
   const [splitRows, setSplitRows] = useState<PaymentRow[] | null>(null);
@@ -139,6 +147,8 @@ export default function CartPanel({
     if (lines.length === 0) {
       setPaymentMode("cash");
       setCashTendered("");
+      setCodAddress("");
+      setCodFee("");
       setSplitRows(null);
     }
   }, [lines.length]);
@@ -158,7 +168,7 @@ export default function CartPanel({
 
   const startSplit = () => {
     setSplitRows([
-      { id: nextRowId(), mode: paymentMode, amount: "" },
+      { id: nextRowId(), mode: paymentMode === "cod" ? "cash" : paymentMode, amount: "" },
       { id: nextRowId(), mode: "pos", amount: "" },
     ]);
   };
@@ -193,17 +203,22 @@ export default function CartPanel({
   const splitInvalid =
     isSplit && (Math.abs(splitRemaining) > 0.01 || (splitRows ?? []).some((row) => !(Number(row.amount) > 0)));
 
-  const canCharge = lines.length > 0 && !charging && !cashInsufficient && !splitInvalid && shiftActive && deviceCheckoutReady;
+  const isCod = !isSplit && paymentMode === "cod";
+  const codFeeValue = Number(codFee) || 0;
+  const codInvalid = isCod && (!codAddress.trim() || codFeeValue < 0 || codFeeValue > subtotal);
+  const canCharge = lines.length > 0 && !charging && !cashInsufficient && !splitInvalid && !codInvalid && shiftActive && deviceCheckoutReady;
   const itemCount = lines.reduce((sum, l) => sum + l.quantity, 0);
 
   const handleCharge = () => {
     if (!canCharge) return;
-    if (isSplit) {
+    if (isCod) {
+      onChargeCod?.({ address: codAddress.trim(), fee: codFeeValue });
+    } else if (isSplit) {
       onCharge((splitRows ?? []).map((row) => ({ mode: row.mode, amount: Number(row.amount) || 0 })));
     } else {
       onCharge([
         {
-          mode: paymentMode,
+          mode: paymentMode as SalePaymentMode,
           amount: subtotal,
           ...(paymentMode === "cash" ? { cashTendered: tenderedAmount, changeDue } : {}),
         },
@@ -366,7 +381,7 @@ export default function CartPanel({
 
         {!isSplit ? (
           <>
-            <Select value={paymentMode} onValueChange={(v) => setPaymentMode(v as SalePaymentMode)}>
+            <Select value={paymentMode} onValueChange={(v) => setPaymentMode(v as CheckoutMode)}>
               <SelectTrigger aria-label="Payment method">
                 <SelectValue />
               </SelectTrigger>
@@ -376,8 +391,17 @@ export default function CartPanel({
                     {PAYMENT_MODE_LABELS[mode]}
                   </SelectItem>
                 ))}
+                {onChargeCod && <SelectItem value="cod">Cash on Delivery (COD)</SelectItem>}
               </SelectContent>
             </Select>
+
+            {paymentMode === "cod" && (
+              <div className="space-y-2 rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Recorded as a sale now; payment stays Pending until the courier (Speedef) collects and settles. Customer name and phone are required.</p>
+                <Input aria-label="Delivery address" placeholder="Delivery address (required)" value={codAddress} onChange={(e) => setCodAddress(e.target.value)} />
+                <Input aria-label="Courier fee" type="number" min={0} inputMode="decimal" placeholder="Courier COD fee (optional)" value={codFee} onChange={(e) => setCodFee(e.target.value)} />
+              </div>
+            )}
 
             {paymentMode === "cash" && (
               <div className="space-y-2 rounded-lg border border-border p-4">
@@ -403,7 +427,7 @@ export default function CartPanel({
               </div>
             )}
 
-            {lines.length > 0 && (
+            {lines.length > 0 && !isCod && (
               <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={startSplit}>
                 <SplitSquareHorizontal className="h-4 w-4 mr-2" />
                 Split Payment
@@ -476,7 +500,7 @@ export default function CartPanel({
           <p className="text-xs text-destructive text-center">Start a shift to accept payment.</p>
         )}
         <Button className="w-full h-12 text-base" disabled={!canCharge} onClick={handleCharge}>
-          {charging ? "Processing..." : `Charge ${formatCurrency(subtotal)}`}
+          {charging ? "Processing..." : isCod ? `Record COD sale ${formatCurrency(subtotal)}` : `Charge ${formatCurrency(subtotal)}`}
         </Button>
       </div>
 

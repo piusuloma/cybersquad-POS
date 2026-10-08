@@ -11,6 +11,7 @@ import { fetchPosCatalog } from "@/pos/lib/catalog";
 import { validatePosVoucher } from "@/pos/lib/vouchers";
 import { usePosCart } from "@/pos/lib/cart";
 import {
+  COD_COURIER,
   createSale,
   logAudit,
   getSales,
@@ -216,6 +217,38 @@ export default function PosTerminal() {
     }
   };
 
+  // Cash on delivery: the sale is recorded (and counts as revenue) now, with
+  // payment Pending — the courier collects, and the settlement is paid later.
+  const handleChargeCod = async ({ address, fee }: { address: string; fee: number }) => {
+    if (cart.lines.length === 0) return;
+    if (!shift) { toast.error("Start a shift before recording a sale."); return; }
+    setCharging(true);
+    try {
+      validateDeviceLines(cart.lines);
+      const sale = await createSale({
+        cashierName: user?.name || "Cashier",
+        branch: user?.storeLocation,
+        customer: customer.name.trim() ? { ...customer, name: customer.name.trim(), phone: customer.phone.trim() } : undefined,
+        note,
+        channel: "in_store",
+        lines: cart.lines,
+        subtotal: cart.subtotal,
+        total: payable,
+        ...(discount ? { discount: { ...discount, approvedBy: user?.name || "Cashier" } } : {}),
+        payments: [],
+        paymentMode: "cod",
+        cod: { courier: COD_COURIER, address, fee, status: "pending", history: [] },
+      });
+      setCompletedSale(sale);
+      clearSale();
+    } catch (err) {
+      console.error("Failed to record COD sale:", err);
+      toast.error(err instanceof Error ? err.message : "Could not record the COD sale.");
+    } finally {
+      setCharging(false);
+    }
+  };
+
   const reserveOrder = async (amount: number, mode: SalePaymentMode, dueAt: string) => {
     setCharging(true);
     try {
@@ -336,6 +369,7 @@ export default function PosTerminal() {
           }}
           onHold={() => setShowHoldPrompt(true)}
           onCharge={handleCharge}
+          onChargeCod={handleChargeCod}
           charging={charging}
           shiftActive={!!shift}
         /></div>
